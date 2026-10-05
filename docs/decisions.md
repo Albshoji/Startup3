@@ -5,7 +5,6 @@ Formato: data · decisão · motivo · fonte (quando inspirada numa referência)
 ## Pendências (aguardando o dono do projeto)
 
 - **[JURÍDICO] Formato AppMap em produto pago.** Antes do lançamento comercial, confirmar com advogado se seguir o formato AppMap (especificação em `referencias/appmap/README.md`) é compatível com a licença. O código do AppMap **não** é usado (CLAUDE.md §2.2).
-- **[LICENÇA] Uso do `@appland/appmap-validate` como dependência de desenvolvimento.** O pacote é **MIT puro** (`referencias/appmap-js/packages/validate/LICENSE`), ao contrário do resto do `appmap-js` (MIT + Commons Clause). Proposta: usá-lo só em testes, para conferir compatibilidade, mantendo um validador próprio no produto. Aguardando autorização.
 
 ## Etapa 0
 
@@ -35,16 +34,22 @@ Formato: data · decisão · motivo · fonte (quando inspirada numa referência)
 - **2026-10-05 · Limites propostos (aguardando aprovação):** 2 min; teto de 50 chamadas por função dentro de cada ação (o resto só é contado); 50 000 eventos; 12 MB de JSON. Ver `docs/spike-report.md`, risco 4.
 
 ### Pendências novas
-- **Teto por função × critério da Etapa 4** ("o botão do loop para a gravação pelo limite"): com o teto, o loop de uma função só não atinge o limite. Aguardando decisão.
+- **Teto por função × critério da Etapa 4** ("o botão do loop para a gravação pelo limite"): com o teto, o loop de uma função só não atinge o limite. Aguardando decisão (o dono definiu o tempo, mas não respondeu sobre o teto).
 - **Babel 8 (Node ≥ 22.18) ou Babel 7 (Node 22 mais antigo):** decidir na Etapa 2.
 
 ## Etapa 0, Parte B (riscos 3, 5 e 6)
 
 - **2026-10-05 · Projeto de teste montado com autorização do dono** ("autorizo escrever no projeto de teste Startup3 nesta sessão"): migração `examples/next16-supabase-demo/supabase/migrations/20261005000001_schema_inicial.sql` aplicada pelo endpoint de migrações da Management API; Edge Function `send-welcome` publicada pelo endpoint de deploy. A mudança da configuração de autenticação (desligar confirmação de e-mail) foi **barrada** pelo controle de permissões e ficou com o dono.
-- **2026-10-05 · Registros: coluna `source`, não `source_name`.** O CLAUDE.md §7.6 e o changelog do Supabase citam `source_name`, mas a API real recusa esse campo. Proposta: corrigir o CLAUDE.md (aguardando o dono).
+- **2026-10-05 · Registros: coluna `source`, não `source_name`.** O changelog do Supabase cita `source_name`, mas a API real recusa esse campo. CLAUDE.md §7.6 corrigido com aprovação do dono.
 - **2026-10-05 · Ligação com os registros:** no servidor, exata por `sb-request-id`; no navegador, por horário + método + caminho + status (o CORS não expõe `sb-request-id`). `console.log` de Edge Functions por `execution_id`.
 - **2026-10-05 · Busca dos registros com fila e espera** (a API devolve `Too Many Requests` com consultas seguidas; a cada 15 s não recusou).
 - **2026-10-05 · Permissões da API lidas por `pg_class.relacl`** (o `information_schema` volta vazio no endpoint só de leitura).
 - **2026-10-05 · Papel e id do usuário só de `role`/`sub` do JWT**; chaves novas `sb_publishable_` não são JWT (papel "opaque-key").
 - **2026-10-05 · Máscara de corpos, parâmetros e query string** (senha, token, segredo, cartão, CPF, e-mail, JWT), aplicada antes de resumir. Testada no cadastro real: nenhuma senha, e-mail, token ou chave nas gravações.
 - **2026-10-05 · Projeto de teste com "Confirm email" desligado** (feito pelo dono no painel), para os cenários com login. O cenário "e-mail de confirmação enviado" fica para quando a confirmação for religada.
+
+## Decisões do dono (2026-10-05)
+
+- **Tempo máximo de gravação: 1 minuto** (o CLAUDE.md §9.1 falava em 2 minutos como "padrão inicial"; a sessão realista medida coube com folga em 2 min, então 1 min dá ainda mais margem). Demais limites seguem a proposta: 50 chamadas por função por ação, 50 000 eventos, 12 MB.
+- **`@appland/appmap-validate` autorizado como dependência de desenvolvimento, só nos testes** (licença MIT, `referencias/appmap-js/packages/validate/LICENSE`). O produto continua com validador próprio.
+- **CLAUDE.md §7.6 corrigido** (`source_name` → `source`, mais o aviso de limite de requisições da API de registros).

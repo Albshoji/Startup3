@@ -240,7 +240,7 @@ Processo oficial do Supabase: o Mapa é registrado como **OAuth App** e usa a **
 - Complemento sem conexão: migrações em `supabase/migrations` (muitos usuários criam tabelas pelo painel, então podem não existir).
 
 ### 7.6 Registros (logs) do Supabase
-- `GET /v1/projects/{ref}/analytics/endpoints/logs`, com SQL **ClickHouse** numa tabela única `logs`, filtrando a fonte por `source_name`. O endereço antigo `logs.all` **foi removido em 23/09/2026**.
+- `GET /v1/projects/{ref}/analytics/endpoints/logs`, com SQL **ClickHouse** numa tabela única `logs`, filtrando a fonte pela coluna `source` (a documentação do Supabase diz `source_name`, mas a API real recusa esse campo; verificado na Etapa 0) e lendo os campos em `log_attributes['…']`. O endereço antigo `logs.all` **foi removido em 23/09/2026**. A API recusa consultas seguidas (`Too Many Requests`): consultar com intervalo.
 - Fontes: autenticação, API (edge), Edge Functions (rede e `console.log`), banco, armazenamento, Realtime.
 - Janela do Start ao Stop, com margem. **Podem levar minutos para aparecer**: buscar em segunda fase, com novas tentativas.
 - Ligar cada registro ao pedido gravado por horário + endereço + status (e identificador de requisição, se existir nos dois lados; verificar).

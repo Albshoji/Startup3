@@ -116,7 +116,7 @@ Média: **240 bytes por evento** antes de comprimir; o gzip comprime ~25×.
 ### Limites padrão propostos
 | Limite | Valor proposto | Motivo |
 |---|---|---|
-| Tempo | **2 minutos** (como o CLAUDE.md) | Sessão realista coube com folga |
+| Tempo | **1 minuto** (decisão do dono; proposta original 2 min) | A sessão realista de 2 min coube com folga; 1 min dá mais margem |
 | Teto por função, por ação | **50 chamadas** (as seguintes só são contadas e registradas no `metadata`, como o `pruneFilter` do AppMap) | Mesmo princípio do corte do AppMap (remover os mais repetidos), aplicado durante a gravação; mantém cada ação completa |
 | Eventos | **50 000** | ~9× a sessão realista com teto; ~12 MB |
 | Tamanho | **12 MB** de JSON (~0,5 MB comprimido) | Próximo do limite de 10 MB em que o AppMap começa a cortar para abrir |
