@@ -34,8 +34,8 @@ Formato: data · decisão · motivo · fonte (quando inspirada numa referência)
 - **2026-10-05 · Limites propostos (aguardando aprovação):** 2 min; teto de 50 chamadas por função dentro de cada ação (o resto só é contado); 50 000 eventos; 12 MB de JSON. Ver `docs/spike-report.md`, risco 4.
 
 ### Pendências novas
-- **Teto por função × critério da Etapa 4** ("o botão do loop para a gravação pelo limite"): com o teto, o loop de uma função só não atinge o limite. Aguardando decisão (o dono definiu o tempo, mas não respondeu sobre o teto).
 - **Babel 8 (Node ≥ 22.18) ou Babel 7 (Node 22 mais antigo):** decidir na Etapa 2.
+- **[JURÍDICO]** continua pendente (ver topo).
 
 ## Etapa 0, Parte B (riscos 3, 5 e 6)
 
@@ -53,3 +53,13 @@ Formato: data · decisão · motivo · fonte (quando inspirada numa referência)
 - **Tempo máximo de gravação: 1 minuto** (o CLAUDE.md §9.1 falava em 2 minutos como "padrão inicial"; a sessão realista medida coube com folga em 2 min, então 1 min dá ainda mais margem). Demais limites seguem a proposta: 50 chamadas por função por ação, 50 000 eventos, 12 MB.
 - **`@appland/appmap-validate` autorizado como dependência de desenvolvimento, só nos testes** (licença MIT, `referencias/appmap-js/packages/validate/LICENSE`). O produto continua com validador próprio.
 - **CLAUDE.md §7.6 corrigido** (`source_name` → `source`, mais o aviso de limite de requisições da API de registros).
+- **Teto de 50 chamadas por função dentro de cada ação: mantido, ligado por padrão**, com a contagem do que foi agrupado visível nos diagramas ("+150 chamadas iguais") e configurável no `.mapa/config.json`. Nada além das repetições deixa de ser gravado; a divisão por ação do usuário só organiza a gravação (índice `interactions.json`), não descarta passos.
+- **Critério da Etapa 4 adaptado:** com o teto, o botão do loop não estoura o limite de tamanho. O teste da Etapa 4 passa a verificar (a) o teto agrupando as chamadas repetidas do loop, com a contagem, e (b) a parada automática pelo limite (1 minuto, ou eventos/MB com o teto desligado), salvando o que foi gravado.
+
+## Etapa 0: concluída (2026-10-05)
+
+| Critério | Situação |
+|---|---|
+| `docs/referencias.md` lista os arquivos-chave de cada repositório | ✅ |
+| `docs/appmap-mapping.md` completo, cita as fontes, revisado com o dono | ✅ (revisado pelo resumo em linguagem simples; dúvida sobre a divisão por ação esclarecida) |
+| `docs/spike-report.md` responde às 6 perguntas com evidência e propõe limites | ✅ (limites decididos: 1 min, 50 por função por ação, 50 000 eventos, 12 MB) |
