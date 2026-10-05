@@ -1,0 +1,9 @@
+referencias/
+node_modules/
+.env
+.env.*
+!.env.example
+.next/
+dist/
+.mapa/
+*.log
