@@ -1,7 +1,6 @@
 # Etapa 0, Parte B: relatório dos testes de risco
 
-> Situação: **riscos 1, 2, 4, 5 e 6 respondidos; risco 3 respondido para o usuário não logado.**
-> Falta só o risco 3 **com usuário logado** (papel `authenticated`), que depende de um usuário de teste confirmado.
+> Situação: **os 6 riscos estão respondidos com evidência.**
 > Projeto Supabase de teste: "Startup3 projetct" (us-east-1, Postgres 17), migração em
 > `examples/next16-supabase-demo/supabase/migrations/`, Edge Function `send-welcome` publicada.
 >
@@ -160,7 +159,22 @@ Pergunta para o dono do projeto: com o teto por função, o **botão do loop dei
 - **Servidor lê `sb-request-id`** na resposta (ligação exata com os registros); o navegador não consegue (CORS, ver risco 6).
 - Achado: o WebSocket do Realtime é aberto por um temporizador interno do `realtime-js`, então fica ligado à navegação e não ao `useEffect` que assinou o canal. Aceitável; a assinatura (`phx_join`) mostra o canal e a tabela.
 
-**Pendente:** os mesmos fluxos **logado** (papel `authenticated` + `sub`; inserção bem-sucedida; avatar aceito; evento do Realtime chegando; cadastro disparando `handle_new_user`; `auth_logs`). Bloqueio: o projeto exige confirmação de e-mail no cadastro, e a mudança dessa configuração pelo Claude Code foi barrada pelo controle de permissões (decisão de segurança que fica com o dono do projeto).
+### Com usuário logado (script `spikes/etapa0/app/check-auth.mjs`)
+O dono do projeto desligou "Confirm email" no projeto de teste; o cadastro foi feito pelo próprio app.
+
+| Cenário | Pedido gravado | Quem | Resultado | Cadeia |
+|---|---|---|---|---|
+| A, cadastro | `POST /auth/v1/signup` | `anon` | 200; corpo gravado `{"email":"[e-mail]","password":"[mascarado]",…}`; resposta com `access_token`/`refresh_token` `[mascarado]` | `submit → cadastrar` |
+| B, adicionar item | `POST /rest/v1/items` `{"nome":"Pão","preco":9.9}` | `authenticated` + id do usuário | 201, linha com `owner_id` | `clique → onClick@30 → adicionarItem` |
+| Realtime | quadro `postgres_changes` `INSERT` em `items` chegou na hora | — | contador da tela = 1 | — |
+| C, lista logado | `GET /rest/v1/items` (servidor e navegador) | `authenticated` + id | 200, `[{"id":2,"nome":"Pão",…}]` | `REQ / → Home → carregarItens` e `navegação → ListaCliente.useEffect@8` |
+| E, avatar | `GET /auth/v1/user` + `POST /storage/v1/object/avatars/<id>/…` | `authenticated` + id | 200, arquivo aceito | `clique → enviarAvatar` |
+| RPC | `POST /rest/v1/rpc/calcular_total` | `authenticated` + id | 200, `9.9` (só os itens do dono) | `clique → somarTotal` |
+| Saída | `POST /auth/v1/logout` | `authenticated` + id | 204 | `clique → sair` |
+
+- **Vazamentos:** cada gravação foi varrida procurando a senha usada, o e-mail usado, qualquer JWT (`eyJ….….`) e a chave `anon`: **nenhum encontrado** em nenhuma das 6 gravações.
+- **Máscara implementada no protótipo** (`mapa-proto/mask.js`): corpos de pedido e de resposta (JSON: chaves de senha/token/segredo/cartão/CPF → `[mascarado]`, e-mail → `[e-mail]`, JWT em qualquer texto → `[token]`), parâmetros de funções (pelo nome e pelo conteúdo) e query string. Excesso conhecido: `token_type: "bearer"` também é mascarado (inofensivo).
+- **Dentro do Supabase** (lido depois, só leitura): o gatilho `handle_new_user` criou o perfil **na mesma transação** do cadastro (4 ms); item e avatar estão no banco.
 
 ## Risco 5: leitura da estrutura pelo endpoint só de leitura
 
@@ -186,6 +200,9 @@ Pergunta para o dono do projeto: com o teto por função, o **botão do loop dei
 | **Atraso** | API: presente na 1ª consulta, **≤ 16 s** depois. Edge Function (chamada + 3 `console.log`): presente na 1ª consulta, **≤ 35 s** depois (consultas a cada 15 s; o atraso real pode ser menor) |
 | **Limite de requisições** | Consultas seguidas → `ThrottlerException: Too Many Requests`; a cada 15 s, nenhuma recusa. O site precisa de fila e espera entre consultas |
 | Erros detalhados do banco | `postgres_logs` traz "new row violates row-level security policy for table items/objects" com severidade e papel |
+| Login | `auth_logs`: `/signup` 200, `action: login` (id do usuário em `auth_event.actor_id`), `/user` 200, `/logout` 204, cada um com `request_id`. Também registra mudanças de configuração ("reloading api with new configuration") |
+| Arquivos | `storage_logs`: `POST /object/avatars/<id>/…` 200 e o evento `ObjectCreated:Post` com o caminho |
+| Não testado | "Foi enviado um e-mail de confirmação" (a confirmação de e-mail foi desligada no projeto de teste) |
 
 **Ligação registro ↔ pedido gravado** (script `match-logs.py`, 7 de 7 pedidos ligados):
 - **Servidor do Next:** **exata** pelo cabeçalho `sb-request-id` da resposta = `request_id` do registro (Edge Function: também `x-deno-execution-id` = `execution_id`).

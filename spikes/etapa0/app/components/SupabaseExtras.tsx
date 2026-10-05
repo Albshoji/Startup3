@@ -27,7 +27,9 @@ export default function SupabaseExtras() {
   async function enviarAvatar() {
     const supabase = criarClienteNavegador();
     const arquivo = new Blob(["avatar de teste"], { type: "text/plain" });
-    const { error } = await supabase.storage.from("avatars").upload(`anonimo/avatar-${Date.now()}.txt`, arquivo);
+    const { data: sessao } = await supabase.auth.getUser();
+    const pasta = sessao.user?.id ?? "anonimo";
+    const { error } = await supabase.storage.from("avatars").upload(`${pasta}/avatar-${Date.now()}.txt`, arquivo);
     setSaida(error ? "avatar recusado: " + error.message : "avatar enviado");
   }
 

@@ -1,0 +1,58 @@
+{
+  "events": 32,
+  "calls": 17,
+  "byLayer": {
+    "browser": 17
+  },
+  "jsonBytes": 7904,
+  "gzipBytes": 1398,
+  "fetches": [
+    {
+      "attribution": "exact",
+      "chain": "B:Browser.submit > B:Conta.cadastrar > fetch POST /auth/v1/signup"
+    }
+  ],
+  "topFunctions": [
+    [
+      "browser:Conta.Conta",
+      6
+    ],
+    [
+      "browser:Browser.type",
+      2
+    ],
+    [
+      "browser:Conta.Conta.onChange@32",
+      1
+    ],
+    [
+      "browser:Conta.Conta.onChange@33",
+      1
+    ],
+    [
+      "browser:Browser.click",
+      1
+    ],
+    [
+      "browser:Browser.submit",
+      1
+    ],
+    [
+      "browser:Conta.cadastrar",
+      1
+    ],
+    [
+      "browser:supabase-browser.criarClienteNavegador",
+      1
+    ],
+    [
+      "browser:Realtime.send",
+      1
+    ],
+    [
+      "browser:Realtime.receive",
+      1
+    ]
+  ],
+  "serverRequests": []
+}

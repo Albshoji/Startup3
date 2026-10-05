@@ -46,3 +46,5 @@ Formato: data · decisão · motivo · fonte (quando inspirada numa referência)
 - **2026-10-05 · Busca dos registros com fila e espera** (a API devolve `Too Many Requests` com consultas seguidas; a cada 15 s não recusou).
 - **2026-10-05 · Permissões da API lidas por `pg_class.relacl`** (o `information_schema` volta vazio no endpoint só de leitura).
 - **2026-10-05 · Papel e id do usuário só de `role`/`sub` do JWT**; chaves novas `sb_publishable_` não são JWT (papel "opaque-key").
+- **2026-10-05 · Máscara de corpos, parâmetros e query string** (senha, token, segredo, cartão, CPF, e-mail, JWT), aplicada antes de resumir. Testada no cadastro real: nenhuma senha, e-mail, token ou chave nas gravações.
+- **2026-10-05 · Projeto de teste com "Confirm email" desligado** (feito pelo dono no painel), para os cenários com login. O cenário "e-mail de confirmação enviado" fica para quando a confirmação for religada.

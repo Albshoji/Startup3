@@ -1,0 +1,38 @@
+{
+  "events": 13,
+  "calls": 7,
+  "byLayer": {
+    "browser": 7
+  },
+  "jsonBytes": 3275,
+  "gzipBytes": 948,
+  "fetches": [
+    {
+      "attribution": "exact",
+      "chain": "B:Browser.click > B:Conta.sair > fetch POST /auth/v1/logout"
+    }
+  ],
+  "topFunctions": [
+    [
+      "browser:Conta.Conta",
+      2
+    ],
+    [
+      "browser:Browser.click",
+      1
+    ],
+    [
+      "browser:Conta.sair",
+      1
+    ],
+    [
+      "browser:supabase-browser.criarClienteNavegador",
+      1
+    ],
+    [
+      "browser:Realtime.send",
+      1
+    ]
+  ],
+  "serverRequests": []
+}

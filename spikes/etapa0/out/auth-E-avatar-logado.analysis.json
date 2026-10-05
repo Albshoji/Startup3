@@ -1,0 +1,38 @@
+{
+  "events": 14,
+  "calls": 7,
+  "byLayer": {
+    "browser": 7
+  },
+  "jsonBytes": 3826,
+  "gzipBytes": 989,
+  "fetches": [
+    {
+      "attribution": "exact",
+      "chain": "B:Browser.click > B:SupabaseExtras.enviarAvatar > fetch GET /auth/v1/user"
+    },
+    {
+      "attribution": "exact",
+      "chain": "B:Browser.click > B:SupabaseExtras.enviarAvatar > fetch POST /storage/v1/object/avatars/db88ac4e-53a0-4d5e-b3c3-d591f76a9575/avatar-1791238957697.txt"
+    }
+  ],
+  "topFunctions": [
+    [
+      "browser:SupabaseExtras.SupabaseExtras",
+      2
+    ],
+    [
+      "browser:Browser.click",
+      1
+    ],
+    [
+      "browser:SupabaseExtras.enviarAvatar",
+      1
+    ],
+    [
+      "browser:supabase-browser.criarClienteNavegador",
+      1
+    ]
+  ],
+  "serverRequests": []
+}

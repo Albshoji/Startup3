@@ -1,0 +1,91 @@
+{
+  "events": 2517,
+  "calls": 1262,
+  "byLayer": {
+    "next-server": 421,
+    "browser": 841
+  },
+  "jsonBytes": 618935,
+  "gzipBytes": 30379,
+  "fetches": [
+    {
+      "chain": "REQ GET / > S:page.Home > S:page.carregarItens > fetch GET /rest/v1/items"
+    },
+    {
+      "chain": "B:Browser.navigate > fetch GET /realtime/v1/websocket"
+    },
+    {
+      "attribution": "exact",
+      "chain": "B:Browser.navigate > B:ListaCliente.ListaCliente.useEffect@8 > fetch GET /rest/v1/items"
+    },
+    {
+      "attribution": "exact",
+      "chain": "B:Browser.navigate > B:ListaCliente.ListaCliente.useEffect@8 > fetch GET /rest/v1/items"
+    }
+  ],
+  "topFunctions": [
+    [
+      "browser:ListaGrande.LinhaProduto",
+      400
+    ],
+    [
+      "browser:precos.formatarPreco",
+      400
+    ],
+    [
+      "next-server:precos.formatarPreco",
+      201
+    ],
+    [
+      "next-server:ListaGrande.LinhaProduto",
+      200
+    ],
+    [
+      "browser:ListaCliente.ListaCliente",
+      6
+    ],
+    [
+      "browser:supabase-browser.criarClienteNavegador",
+      4
+    ],
+    [
+      "browser:Realtime.receive",
+      4
+    ],
+    [
+      "next-server:supabase-server.getAll",
+      3
+    ],
+    [
+      "browser:Realtime.send",
+      3
+    ],
+    [
+      "browser:Conta.Conta",
+      2
+    ],
+    [
+      "browser:AddItem.AddItem",
+      2
+    ],
+    [
+      "browser:LoopButton.LoopButton",
+      2
+    ],
+    [
+      "browser:AsyncChain.AsyncChain",
+      2
+    ],
+    [
+      "browser:ErrorButton.ErrorButton",
+      2
+    ],
+    [
+      "browser:ListaGrande.ListaGrande",
+      2
+    ]
+  ],
+  "serverRequests": [
+    "REQ GET /"
+  ]
+}

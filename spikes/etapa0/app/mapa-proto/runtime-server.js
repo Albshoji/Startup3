@@ -2,6 +2,7 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import http from "node:http";
 import { summarize, classOf } from "./summarize.js";
+import { maskText, maskSummary } from "./mask.js";
 import { identityFromHeaders } from "./supabase-identity.js";
 
 function ok(v) { return { v }; }
@@ -20,7 +21,7 @@ function install() {
   const now = () => Date.now() / 1000;
   const emit = (e) => queue.push(e);
 
-  const param = (v, name) => ({ name, class: classOf(v), value: summarize(v) });
+  const param = (v, name) => ({ name, class: classOf(v), value: maskSummary(name, summarize(v)) });
 
   function r(thisArg, fn, args, meta) {
     const parent = als.getStore();
@@ -87,7 +88,7 @@ function install() {
       async (res) => {
         let body = "";
         try { body = await res.clone().text(); } catch {}
-        emit({ id: nextId++, event: "return", thread_id: thread, parent_id: id, elapsed: (performance.now() - t0) / 1000, http_client_response: { status_code: res.status, headers: { "sb-request-id": res.headers.get("sb-request-id") || undefined }, return_value: { class: "String", value: summarize(body) } } });
+        emit({ id: nextId++, event: "return", thread_id: thread, parent_id: id, elapsed: (performance.now() - t0) / 1000, http_client_response: { status_code: res.status, headers: { "sb-request-id": res.headers.get("sb-request-id") || undefined }, return_value: { class: "String", value: summarize(maskText(body)) } } });
       },
       (e) => emit({ id: nextId++, event: "return", thread_id: thread, parent_id: id, elapsed: (performance.now() - t0) / 1000, exceptions: [{ class: "TypeError", message: String(e) }] }),
     );

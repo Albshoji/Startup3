@@ -7,6 +7,7 @@ import ErrorButton from "@/components/ErrorButton";
 import ListaGrande from "@/components/ListaGrande";
 import ListaCliente from "@/components/ListaCliente";
 import SupabaseExtras from "@/components/SupabaseExtras";
+import Conta from "@/components/Conta";
 
 async function carregarItens() {
   const supabase = await criarClienteServidor();
@@ -19,6 +20,7 @@ export default async function Home() {
   return (
     <main style={{ padding: 24, fontFamily: "sans-serif" }}>
       <h1 id="titulo">Itens</h1>
+      <Conta />
       <ul id="lista-servidor">
         {itens.map((i: { id: number; nome: string; preco: number }) => (
           <li key={i.id}>

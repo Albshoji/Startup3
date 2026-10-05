@@ -1,0 +1,114 @@
+{
+  "email": "mapa.teste.<ts>@example.com",
+  "steps": {
+    "A-cadastro": {
+      "events": 32,
+      "leaks": {
+        "senha": false,
+        "email": false,
+        "jwt": false,
+        "anonKey": false
+      },
+      "lines": [
+        "[função cadastrar] parâmetros: [{\"name\":\"evento\",\"class\":\"SyntheticBaseEvent\",\"value\":\"[SyntheticBaseEvent]\"}]",
+        "[browser] POST /auth/v1/signup -> 200 | quem={\"role\":\"anon\"}",
+        "    corpo enviado: \"{\\\"email\\\":\\\"[e-mail]\\\",\\\"password\\\":\\\"[mascarado]\\\",\\\"data\\\":{},\\\"gotrue_meta_security\\\":{},\\\"code_challenge",
+        "    resposta: \"{\\\"access_token\\\":\\\"[mascarado]\\\",\\\"token_type\\\":\\\"[mascarado]\\\",\\\"expires_in\\\":3600,\\\"expires_at\\\":179124253",
+        "    cadeia: submit > cadastrar"
+      ]
+    },
+    "B-adicionar-logado": {
+      "events": 27,
+      "leaks": {
+        "senha": false,
+        "email": false,
+        "jwt": false,
+        "anonKey": false
+      },
+      "lines": [
+        "[browser] POST /rest/v1/items -> 201 | quem={\"role\":\"authenticated\",\"user_id\":\"db88ac4e-53a0-4d5e-b3c3-d591f76a9575\"}",
+        "    corpo enviado: \"{\\\"nome\\\":\\\"Pão\\\",\\\"preco\\\":9.9}\"",
+        "    resposta: \"[{\\\"id\\\":2,\\\"owner_id\\\":\\\"db88ac4e-53a0-4d5e-b3c3-d591f76a9575\\\",\\\"nome\\\":\\\"Pão\\\",\\\"preco\\\":9.9,\\\"created_at\\",
+        "    cadeia: click > AddItem.onClick@30 > adicionarItem",
+        "[ws receive] \"[null,null,\\\"realtime:itens-ao-vivo\\\",\\\"postgres_changes\\\",{\\\"data\\\":{\\\"table\\\":\\\"items\\\",\\\"type\\\":\\\"INSERT\\\""
+      ]
+    },
+    "C-lista-logado": {
+      "events": 2517,
+      "leaks": {
+        "senha": false,
+        "email": false,
+        "jwt": false,
+        "anonKey": false
+      },
+      "lines": [
+        "[next-server] GET /rest/v1/items -> 200 | quem={\"role\":\"authenticated\",\"user_id\":\"db88ac4e-53a0-4d5e-b3c3-d591f76a9575\"}",
+        "    resposta: \"[{\\\"id\\\":2,\\\"nome\\\":\\\"Pão\\\",\\\"preco\\\":9.9}]\"",
+        "    cadeia: / > Home > carregarItens",
+        "[browser] GET /rest/v1/items -> 200 | quem={\"role\":\"authenticated\",\"user_id\":\"db88ac4e-53a0-4d5e-b3c3-d591f76a9575\"}",
+        "    resposta: \"[{\\\"id\\\":2,\\\"nome\\\":\\\"Pão\\\"}]\"",
+        "    cadeia: navigate > ListaCliente.useEffect@8",
+        "[browser] GET /rest/v1/items -> 200 | quem={\"role\":\"authenticated\",\"user_id\":\"db88ac4e-53a0-4d5e-b3c3-d591f76a9575\"}",
+        "    resposta: \"[{\\\"id\\\":2,\\\"nome\\\":\\\"Pão\\\"}]\"",
+        "    cadeia: navigate > ListaCliente.useEffect@8",
+        "[ws receive] \"[\\\"6\\\",\\\"6\\\",\\\"realtime:itens-ao-vivo\\\",\\\"phx_reply\\\",{\\\"status\\\":\\\"ok\\\",\\\"response\\\":{\\\"postgres_changes\\\":[",
+        "[ws receive] \"[\\\"10\\\",\\\"10\\\",\\\"realtime:itens-ao-vivo\\\",\\\"phx_reply\\\",{\\\"status\\\":\\\"ok\\\",\\\"response\\\":{\\\"postgres_changes\\\""
+      ]
+    },
+    "E-avatar-logado": {
+      "events": 14,
+      "leaks": {
+        "senha": false,
+        "email": false,
+        "jwt": false,
+        "anonKey": false
+      },
+      "lines": [
+        "[browser] GET /auth/v1/user -> 200 | quem={\"role\":\"authenticated\",\"user_id\":\"db88ac4e-53a0-4d5e-b3c3-d591f76a9575\"}",
+        "    resposta: \"{\\\"id\\\":\\\"db88ac4e-53a0-4d5e-b3c3-d591f76a9575\\\",\\\"aud\\\":\\\"authenticated\\\",\\\"role\\\":\\\"authenticated\\\",\\\"email",
+        "    cadeia: click > enviarAvatar",
+        "[browser] POST /storage/v1/object/avatars/db88ac4e-53a0-4d5e-b3c3-d591f76a9575/avatar-1791238957697.txt -> 200 | quem={\"role\":\"authenticated\",\"user_id\":\"db88ac4e-53a0-4d5e-b3c3-d591f76a9575\"}",
+        "    resposta: \"{\\\"Key\\\":\\\"avatars/db88ac4e-53a0-4d5e-b3c3-d591f76a9575/avatar-1791238957697.txt\\\",\\\"Id\\\":\\\"3eeb5468-79c8-4\"…",
+        "    cadeia: click > enviarAvatar"
+      ]
+    },
+    "rpc-logado": {
+      "events": 12,
+      "leaks": {
+        "senha": false,
+        "email": false,
+        "jwt": false,
+        "anonKey": false
+      },
+      "lines": [
+        "[browser] POST /rest/v1/rpc/calcular_total -> 200 | quem={\"role\":\"authenticated\",\"user_id\":\"db88ac4e-53a0-4d5e-b3c3-d591f76a9575\"}",
+        "    corpo enviado: \"{}\"",
+        "    resposta: \"9.9\"",
+        "    cadeia: click > somarTotal"
+      ]
+    },
+    "sair": {
+      "events": 13,
+      "leaks": {
+        "senha": false,
+        "email": false,
+        "jwt": false,
+        "anonKey": false
+      },
+      "lines": [
+        "[browser] POST /auth/v1/logout -> 204 | quem={\"role\":\"authenticated\",\"user_id\":\"db88ac4e-53a0-4d5e-b3c3-d591f76a9575\"}",
+        "    resposta: \"\"",
+        "    cadeia: click > sair"
+      ]
+    }
+  },
+  "userId": "db88ac4e-53a0-4d5e-b3c3-d591f76a9575",
+  "userStatus": "cadastrado: <id>",
+  "realtimeEvents": "1",
+  "mensagem": "Adicionado Pão por R$ 9,90 (total R$ 9,90)",
+  "listaServidor": "Pão — R$ 9,90",
+  "listaCliente": "1 itens (cliente)",
+  "avatar": "avatar enviado",
+  "total": "total: 9.9",
+  "pageErrors": []
+}

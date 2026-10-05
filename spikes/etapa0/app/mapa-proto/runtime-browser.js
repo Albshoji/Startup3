@@ -1,4 +1,5 @@
 import { summarize, classOf } from "./summarize.js";
+import { maskText, maskSummary } from "./mask.js";
 import { identityFromHeaders } from "./supabase-identity.js";
 // SPIKE (Etapa 0) — browser recorder. Installs globalThis.__mapa once.
 const COLLECTOR = "http://localhost:47100";
@@ -37,7 +38,7 @@ function install() {
   const now = () => (performance.timeOrigin + performance.now()) / 1000;
   const emit = (e) => { queue.push(e); };
 
-  const param = (v, name) => ({ name, class: classOf(v), value: summarize(v) });
+  const param = (v, name) => ({ name, class: classOf(v), value: maskSummary(name, summarize(v)) });
 
   function r(thisArg, fn, args, meta) {
     if (!enabled) return fn.apply(thisArg, args);
@@ -201,8 +202,8 @@ function install() {
     stats[{ exact: "fetchExact", inferred: "fetchInferred", action: "fetchActionOnly", orphan: "fetchOrphan" }[attribution]] = (stats[{ exact: "fetchExact", inferred: "fetchInferred", action: "fetchActionOnly", orphan: "fetchOrphan" }[attribution]] || 0) + 1;
     const id = nextId++;
     const method = (init?.method || (typeof input === "object" && input.method) || "GET").toUpperCase();
-    const message = [...url.searchParams].map(([name, value]) => ({ name, class: "String", value: summarize(value) }));
-    if (init?.body && typeof init.body === "string") message.push({ name: "body", class: "String", kind: "body", value: summarize(init.body) });
+    const message = [...url.searchParams].map(([name, value]) => ({ name, class: "String", value: summarize(/token|key|secret|pass/i.test(name) ? "[mascarado]" : maskText(value)) }));
+    if (init?.body && typeof init.body === "string") message.push({ name: "body", class: "String", kind: "body", value: summarize(maskText(init.body)) });
     const headers = new Headers(init?.headers || (typeof input === "object" ? input.headers : undefined));
     if (url.origin === location.origin) headers.set("traceparent", `00-${session}-${id.toString(16).padStart(16, "0")}-01`);
     const supabase = url.hostname.endsWith(".supabase.co") ? { ...identityFromHeaders(headers) } : undefined;
@@ -215,7 +216,7 @@ function install() {
       async (res) => {
         let body = "";
         try { body = await res.clone().text(); } catch {}
-        emit({ id: nextId++, event: "return", thread_id: 1, parent_id: id, elapsed: (performance.now() - t0) / 1000, http_client_response: { status_code: res.status, return_value: { class: "String", value: summarize(body) } } });
+        emit({ id: nextId++, event: "return", thread_id: 1, parent_id: id, elapsed: (performance.now() - t0) / 1000, http_client_response: { status_code: res.status, return_value: { class: "String", value: summarize(maskText(body)) } } });
         if (interaction) touch(interaction, -1);
       },
       (e) => {
