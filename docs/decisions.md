@@ -37,3 +37,12 @@ Formato: data · decisão · motivo · fonte (quando inspirada numa referência)
 ### Pendências novas
 - **Teto por função × critério da Etapa 4** ("o botão do loop para a gravação pelo limite"): com o teto, o loop de uma função só não atinge o limite. Aguardando decisão.
 - **Babel 8 (Node ≥ 22.18) ou Babel 7 (Node 22 mais antigo):** decidir na Etapa 2.
+
+## Etapa 0, Parte B (riscos 3, 5 e 6)
+
+- **2026-10-05 · Projeto de teste montado com autorização do dono** ("autorizo escrever no projeto de teste Startup3 nesta sessão"): migração `examples/next16-supabase-demo/supabase/migrations/20261005000001_schema_inicial.sql` aplicada pelo endpoint de migrações da Management API; Edge Function `send-welcome` publicada pelo endpoint de deploy. A mudança da configuração de autenticação (desligar confirmação de e-mail) foi **barrada** pelo controle de permissões e ficou com o dono.
+- **2026-10-05 · Registros: coluna `source`, não `source_name`.** O CLAUDE.md §7.6 e o changelog do Supabase citam `source_name`, mas a API real recusa esse campo. Proposta: corrigir o CLAUDE.md (aguardando o dono).
+- **2026-10-05 · Ligação com os registros:** no servidor, exata por `sb-request-id`; no navegador, por horário + método + caminho + status (o CORS não expõe `sb-request-id`). `console.log` de Edge Functions por `execution_id`.
+- **2026-10-05 · Busca dos registros com fila e espera** (a API devolve `Too Many Requests` com consultas seguidas; a cada 15 s não recusou).
+- **2026-10-05 · Permissões da API lidas por `pg_class.relacl`** (o `information_schema` volta vazio no endpoint só de leitura).
+- **2026-10-05 · Papel e id do usuário só de `role`/`sub` do JWT**; chaves novas `sb_publishable_` não são JWT (papel "opaque-key").

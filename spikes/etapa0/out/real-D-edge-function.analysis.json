@@ -1,0 +1,34 @@
+{
+  "events": 12,
+  "calls": 6,
+  "byLayer": {
+    "browser": 6
+  },
+  "jsonBytes": 3107,
+  "gzipBytes": 901,
+  "fetches": [
+    {
+      "attribution": "exact",
+      "chain": "B:Browser.click > B:SupabaseExtras.chamarBoasVindas > fetch POST /functions/v1/send-welcome"
+    }
+  ],
+  "topFunctions": [
+    [
+      "browser:SupabaseExtras.SupabaseExtras",
+      2
+    ],
+    [
+      "browser:Browser.click",
+      1
+    ],
+    [
+      "browser:SupabaseExtras.chamarBoasVindas",
+      1
+    ],
+    [
+      "browser:supabase-browser.criarClienteNavegador",
+      1
+    ]
+  ],
+  "serverRequests": []
+}

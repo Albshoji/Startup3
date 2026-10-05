@@ -1,7 +1,9 @@
 # Etapa 0, Parte B: relatório dos testes de risco
 
-> Situação: **riscos 1, 2 e 4 testados** (sem credenciais). **Riscos 3, 5 e 6 pendentes**
-> (precisam do projeto Supabase de teste e do token da Management API).
+> Situação: **riscos 1, 2, 4, 5 e 6 respondidos; risco 3 respondido para o usuário não logado.**
+> Falta só o risco 3 **com usuário logado** (papel `authenticated`), que depende de um usuário de teste confirmado.
+> Projeto Supabase de teste: "Startup3 projetct" (us-east-1, Postgres 17), migração em
+> `examples/next16-supabase-demo/supabase/migrations/`, Edge Function `send-welcome` publicada.
 >
 > Data: 2026-10-05. Máquina: Linux x86_64, 8 núcleos, 18 GB, Node 24.19.0.
 > Versões fixadas: `next` 16.3.8, `react` 19.3.0, `@babel/core` 8.0.6, `@supabase/supabase-js` 2.117.2,
@@ -139,10 +141,53 @@ Pergunta para o dono do projeto: com o teto por função, o **botão do loop dei
 ---
 
 ## Risco 3: captura dos pedidos do `supabase-js` (navegador e servidor, corpo e resposta)
-**Parcial, sem Supabase real.** Contra o servidor falso, os pedidos REST e RPC foram capturados no navegador e no servidor, com método, URL, query string em `message`, corpo (navegador) e resposta. **Pendente:** Supabase real (Auth com sessão, Storage, Edge Function, Realtime/WebSocket) e o papel/id do usuário a partir do token.
+
+**Resposta: funciona** (testado contra o projeto real, usuário **não logado**; script `spikes/etapa0/app/check-real.mjs`).
+
+| Cenário | Pedido gravado | Quem (do token) | Resultado gravado | Cadeia |
+|---|---|---|---|---|
+| C, lista sem login (servidor) | `GET /rest/v1/items?select=id,nome,preco&order=id.asc` | `anon` | 200, `[]` | `REQ / → Home → carregarItens` |
+| C, lista sem login (navegador) | `GET /rest/v1/items?select=id,nome` | `anon` | 200, `[]` | `navegação → ListaCliente.useEffect@8` |
+| D, Edge Function | `POST /functions/v1/send-welcome` (corpo `{"nome":"Maria"}`) | `anon` | 200, `{"ok":true,"mensagem":"Bem-vindo, Maria!"}` | `clique → chamarBoasVindas` |
+| E, avatar sem login | `POST /storage/v1/object/avatars/...` | `anon` | 400 com `statusCode 403` "new row violates row-level security policy" | `clique → enviarAvatar` |
+| RPC | `POST /rest/v1/rpc/calcular_total` | `anon` | 200, `0` | `clique → somarTotal` |
+| B sem login | `POST /rest/v1/items` (corpo `{"nome":"Pão","preco":9.9}`) | `anon` | 401, código `42501` "new row violates row-level security policy for table items" | `clique → onClick@30 → adicionarItem` |
+| Realtime | `GET /realtime/v1/websocket` (101) + quadros `phx_join`, `phx_reply`, "Subscribed to PostgreSQL" | — | — | `navegação` |
+
+- **Papel e id do usuário:** lidos só do `Authorization: Bearer <JWT>` (campos `role` e `sub`); o token não é guardado. Chaves novas (`sb_publishable_…`) não são JWT: o leitor devolve `opaque-key`.
+- **Segredos:** o arquivo gravado foi varrido em cada cenário procurando a chave `anon` inteira, o final dela, `Bearer ey…` e `"access_token":"ey…"`: **nenhum vazamento**. O `access_token` dos quadros do Realtime é mascarado antes do resumo.
+- **Cenário C confirmado na prática:** a tabela tem dados permitidos por `grant`, mas a RLS devolve `[]` para `anon`. É exatamente a situação "vazio por regra de acesso, não tabela vazia".
+- **Servidor lê `sb-request-id`** na resposta (ligação exata com os registros); o navegador não consegue (CORS, ver risco 6).
+- Achado: o WebSocket do Realtime é aberto por um temporizador interno do `realtime-js`, então fica ligado à navegação e não ao `useEffect` que assinou o canal. Aceitável; a assinatura (`phx_join`) mostra o canal e a tabela.
+
+**Pendente:** os mesmos fluxos **logado** (papel `authenticated` + `sub`; inserção bem-sucedida; avatar aceito; evento do Realtime chegando; cadastro disparando `handle_new_user`; `auth_logs`). Bloqueio: o projeto exige confirmação de e-mail no cadastro, e a mudança dessa configuração pelo Claude Code foi barrada pelo controle de permissões (decisão de segurança que fica com o dono do projeto).
 
 ## Risco 5: leitura da estrutura pelo endpoint só de leitura
-**Pendente:** precisa do projeto de teste e do token da Management API.
 
-## Risco 6: registros (logs) da Edge Function
-**Pendente:** precisa do projeto de teste e do token da Management API.
+**Resposta: funciona.** Script `spikes/etapa0/supabase/structure.py` (só `POST /v1/projects/{ref}/database/query/read-only`); retrato salvo em `structure-snapshot.json` (8 KB).
+
+- **Escrita recusada:** `create table` no endpoint só de leitura → `400 cannot execute CREATE TABLE in a read-only transaction`.
+- Lido com sucesso: tabelas e colunas; RLS ligada por tabela; **as 10 políticas** (inclusive as 4 de `storage.objects`, com `USING`/`WITH CHECK`); chaves estrangeiras com **`on delete cascade`** para `auth.users`; o gatilho `on_auth_user_created` em `auth.users` **com o código de `handle_new_user`**; funções (`calcular_total`, `invoker`; `handle_new_user`, `definer`) com código; tabelas no Realtime; buckets (`avatars`, privado); webhooks do banco (consulta pronta, nenhum no projeto).
+- **Achado 1:** `information_schema.role_table_grants` volta **vazio** no endpoint só de leitura (o papel restrito não enxerga). Solução: ler `pg_class.relacl` com `aclexplode`.
+- **Achado 2:** `anon` e `authenticated` têm **todas** as permissões nas tabelas de `public` (padrão do Supabase); quem protege os dados é **só a RLS**. A suspeita do CLAUDE.md §11 ("tabelas do `public` podem não ser expostas") não se confirmou neste projeto, mas os `grant` ficam na migração por segurança.
+- **Achado 3:** `GET /rest/v1/` (raiz do OpenAPI) com a chave `anon` agora responde `UNAUTHORIZED_INVALID_API_KEY_TYPE`; a estrutura deve vir só dos catálogos (como planejado), não do OpenAPI do PostgREST.
+
+## Risco 6: registros (logs)
+
+**Resposta: funciona, com três correções em relação ao CLAUDE.md.**
+
+| Item | Resultado |
+|---|---|
+| `logs.all` | Removido de fato: `410` "The logs.all endpoint has been removed…" |
+| Novo endpoint | `GET /v1/projects/{ref}/analytics/endpoints/logs` com `iso_timestamp_start`, `iso_timestamp_end`, `sql` (ClickHouse), tabela única `logs` |
+| **Coluna da fonte** | **`source`**, e **não** `source_name` (que a documentação e o CLAUDE.md citam; a API responde `Field "source_name" does not exist`) |
+| Fontes vistas | `edge_logs` (API), `function_edge_logs` (chamada da Edge Function), `function_logs` (`console.log` e "booted"), `postgres_logs`, `auth_logs`, `storage_logs`, `realtime_logs`, `pgbouncer_logs` |
+| Campos | Mapa plano `log_attributes['…']`: `request_id`, `trace_id`, `request.method`, `request.path` (ou `request.url` nas funções), `response.status_code`, `execution_id`, `execution_time_ms`, `parsed.error_severity`, `parsed.user_name` |
+| **Atraso** | API: presente na 1ª consulta, **≤ 16 s** depois. Edge Function (chamada + 3 `console.log`): presente na 1ª consulta, **≤ 35 s** depois (consultas a cada 15 s; o atraso real pode ser menor) |
+| **Limite de requisições** | Consultas seguidas → `ThrottlerException: Too Many Requests`; a cada 15 s, nenhuma recusa. O site precisa de fila e espera entre consultas |
+| Erros detalhados do banco | `postgres_logs` traz "new row violates row-level security policy for table items/objects" com severidade e papel |
+
+**Ligação registro ↔ pedido gravado** (script `match-logs.py`, 7 de 7 pedidos ligados):
+- **Servidor do Next:** **exata** pelo cabeçalho `sb-request-id` da resposta = `request_id` do registro (Edge Function: também `x-deno-execution-id` = `execution_id`).
+- **Navegador:** o CORS do Supabase **não expõe** `sb-request-id` ao JavaScript (`access-control-expose-headers` só tem `X-Total-Count, Link, X-Supabase-Api-Version`). A ligação é por **horário + método + caminho + status**: diferença de relógio de 0,05 a 0,7 s; com pedidos idênticos repetidos há 2 a 3 candidatos e escolhe-se o mais próximo ainda não usado.
+- `console.log` da Edge Function → ligados à chamada pelo `execution_id`.

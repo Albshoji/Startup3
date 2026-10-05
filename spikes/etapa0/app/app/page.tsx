@@ -6,6 +6,7 @@ import AsyncChain from "@/components/AsyncChain";
 import ErrorButton from "@/components/ErrorButton";
 import ListaGrande from "@/components/ListaGrande";
 import ListaCliente from "@/components/ListaCliente";
+import SupabaseExtras from "@/components/SupabaseExtras";
 
 async function carregarItens() {
   const supabase = await criarClienteServidor();
@@ -31,6 +32,7 @@ export default async function Home() {
       <ErrorButton />
       <ListaGrande />
       <ListaCliente />
+      <SupabaseExtras />
     </main>
   );
 }

@@ -2,6 +2,7 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import http from "node:http";
 import { summarize, classOf } from "./summarize.js";
+import { identityFromHeaders } from "./supabase-identity.js";
 
 function ok(v) { return { v }; }
 function err(e) { return { e, failed: true }; }
@@ -78,14 +79,15 @@ function install() {
     const thread = parent ? parent.thread : 0;
     const id = nextId++;
     const method = (init?.method || (typeof input === "object" && input.method) || "GET").toUpperCase();
-    emit({ id, event: "call", thread_id: thread, layer: "next-server", timestamp: now(), parent_id: parent?.id, http_client_request: { request_method: method, url: url.origin + url.pathname }, message: [...url.searchParams].map(([name, value]) => ({ name, class: "String", value: summarize(value) })) });
+    const supabase = url.hostname.endsWith(".supabase.co") ? { ...identityFromHeaders(new Headers(init?.headers || (typeof input === "object" ? input.headers : undefined))) } : undefined;
+    emit({ id, event: "call", thread_id: thread, layer: "next-server", timestamp: now(), parent_id: parent?.id, supabase, http_client_request: { request_method: method, url: url.origin + url.pathname }, message: [...url.searchParams].map(([name, value]) => ({ name, class: "String", value: summarize(value) })) });
     const t0 = performance.now();
     const p = originalFetch.call(this, input, init);
     p.then(
       async (res) => {
         let body = "";
         try { body = await res.clone().text(); } catch {}
-        emit({ id: nextId++, event: "return", thread_id: thread, parent_id: id, elapsed: (performance.now() - t0) / 1000, http_client_response: { status_code: res.status, return_value: { class: "String", value: summarize(body) } } });
+        emit({ id: nextId++, event: "return", thread_id: thread, parent_id: id, elapsed: (performance.now() - t0) / 1000, http_client_response: { status_code: res.status, headers: { "sb-request-id": res.headers.get("sb-request-id") || undefined }, return_value: { class: "String", value: summarize(body) } } });
       },
       (e) => emit({ id: nextId++, event: "return", thread_id: thread, parent_id: id, elapsed: (performance.now() - t0) / 1000, exceptions: [{ class: "TypeError", message: String(e) }] }),
     );

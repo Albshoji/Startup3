@@ -1,4 +1,5 @@
 import { summarize, classOf } from "./summarize.js";
+import { identityFromHeaders } from "./supabase-identity.js";
 // SPIKE (Etapa 0) — browser recorder. Installs globalThis.__mapa once.
 const COLLECTOR = "http://localhost:47100";
 
@@ -204,7 +205,8 @@ function install() {
     if (init?.body && typeof init.body === "string") message.push({ name: "body", class: "String", kind: "body", value: summarize(init.body) });
     const headers = new Headers(init?.headers || (typeof input === "object" ? input.headers : undefined));
     if (url.origin === location.origin) headers.set("traceparent", `00-${session}-${id.toString(16).padStart(16, "0")}-01`);
-    emit({ id, event: "call", thread_id: 1, layer: "browser", timestamp: now(), parent_id: parent?.id, attribution, http_client_request: { request_method: method, url: url.origin + url.pathname, headers: { traceparent: headers.get("traceparent") || undefined } }, message });
+    const supabase = url.hostname.endsWith(".supabase.co") ? { ...identityFromHeaders(headers) } : undefined;
+    emit({ id, event: "call", thread_id: 1, layer: "browser", timestamp: now(), parent_id: parent?.id, attribution, supabase, http_client_request: { request_method: method, url: url.origin + url.pathname, headers: { traceparent: headers.get("traceparent") || undefined } }, message });
     const interaction = parent?.interaction;
     if (interaction) touch(interaction, +1);
     const t0 = performance.now();
@@ -222,6 +224,31 @@ function install() {
       },
     );
     return p;
+  };
+
+  // ---- WebSocket (Supabase Realtime) ----
+  const OriginalWS = window.WebSocket;
+  window.WebSocket = class MapaWebSocket extends OriginalWS {
+    constructor(wsUrl, protocols) {
+      super(wsUrl, protocols);
+      const u = new URL(String(wsUrl), location.href);
+      if (!enabled || u.port === "3100" || /webpack-hmr|turbopack/.test(u.pathname)) return;
+      const parent = current || lastOpenAction;
+      const id = nextId++;
+      const t0 = performance.now();
+      const params = [...u.searchParams].filter(([k]) => k !== "apikey").map(([name, value]) => ({ name, class: "String", value: summarize(value) }));
+      emit({ id, event: "call", thread_id: 1, layer: "browser", timestamp: now(), parent_id: parent?.id, labels: ["mapa.websocket"], http_client_request: { request_method: "GET", url: u.origin + u.pathname, headers: { Upgrade: "websocket" } }, message: params });
+      this.addEventListener("open", () => emit({ id: nextId++, event: "return", thread_id: 1, parent_id: id, elapsed: (performance.now() - t0) / 1000, http_client_response: { status_code: 101 } }));
+      const msg = (direction, data) => {
+        let text = typeof data === "string" ? data : "[binary]";
+        // Realtime frames carry access_token on join: mask it before summarizing
+        text = text.replace(/"(access_token|apikey)"\s*:\s*"[^"]*"/g, '"$1":"[mascarado]"');
+        emit({ id: nextId++, event: "call", thread_id: 1, layer: "browser", timestamp: now(), parent_id: id, defined_class: "Realtime", method_id: direction, static: true, labels: ["mapa.websocket"], message: [{ name: "frame", class: "String", value: summarize(text) }] });
+      };
+      const send = this.send.bind(this);
+      this.send = (data) => { msg("send", data); return send(data); };
+      this.addEventListener("message", (ev) => msg("receive", ev.data));
+    }
   };
 
   window.addEventListener("error", (ev) => emit({ id: nextId++, event: "call", thread_id: 1, layer: "browser", timestamp: now(), defined_class: "Browser", method_id: "error", static: true, labels: ["mapa.error"], parameters: [{ name: "message", class: "String", value: summarize(ev.message) }] }));

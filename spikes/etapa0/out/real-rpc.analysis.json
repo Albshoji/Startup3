@@ -1,0 +1,34 @@
+{
+  "events": 12,
+  "calls": 6,
+  "byLayer": {
+    "browser": 6
+  },
+  "jsonBytes": 2971,
+  "gzipBytes": 819,
+  "fetches": [
+    {
+      "attribution": "exact",
+      "chain": "B:Browser.click > B:SupabaseExtras.somarTotal > fetch POST /rest/v1/rpc/calcular_total"
+    }
+  ],
+  "topFunctions": [
+    [
+      "browser:SupabaseExtras.SupabaseExtras",
+      2
+    ],
+    [
+      "browser:Browser.click",
+      1
+    ],
+    [
+      "browser:SupabaseExtras.somarTotal",
+      1
+    ],
+    [
+      "browser:supabase-browser.criarClienteNavegador",
+      1
+    ]
+  ],
+  "serverRequests": []
+}

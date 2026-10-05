@@ -1,0 +1,61 @@
+{
+  "tabelas_colunas": [],
+  "rls_ativa": [
+    {
+      "schema": "storage",
+      "tabela": "buckets",
+      "rls_ligada": true,
+      "rls_forcada": false
+    },
+    {
+      "schema": "storage",
+      "tabela": "buckets_analytics",
+      "rls_ligada": true,
+      "rls_forcada": false
+    },
+    {
+      "schema": "storage",
+      "tabela": "buckets_vectors",
+      "rls_ligada": true,
+      "rls_forcada": false
+    },
+    {
+      "schema": "storage",
+      "tabela": "migrations",
+      "rls_ligada": true,
+      "rls_forcada": false
+    },
+    {
+      "schema": "storage",
+      "tabela": "objects",
+      "rls_ligada": true,
+      "rls_forcada": false
+    },
+    {
+      "schema": "storage",
+      "tabela": "s3_multipart_uploads",
+      "rls_ligada": true,
+      "rls_forcada": false
+    },
+    {
+      "schema": "storage",
+      "tabela": "s3_multipart_uploads_parts",
+      "rls_ligada": true,
+      "rls_forcada": false
+    },
+    {
+      "schema": "storage",
+      "tabela": "vector_indexes",
+      "rls_ligada": true,
+      "rls_forcada": false
+    }
+  ],
+  "politicas": [],
+  "chaves_estrangeiras": [],
+  "gatilhos": [],
+  "funcoes_rpc": [],
+  "realtime": [],
+  "webhooks": [],
+  "buckets": [],
+  "permissoes_api": []
+}

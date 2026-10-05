@@ -1,0 +1,322 @@
+{
+  "tabelas_colunas": [
+    {
+      "schema": "public",
+      "tabela": "items",
+      "colunas": [
+        {
+          "coluna": "id",
+          "tipo": "bigint",
+          "nulo": "NO",
+          "padrao": null
+        },
+        {
+          "coluna": "owner_id",
+          "tipo": "uuid",
+          "nulo": "NO",
+          "padrao": "auth.uid()"
+        },
+        {
+          "coluna": "nome",
+          "tipo": "text",
+          "nulo": "NO",
+          "padrao": null
+        },
+        {
+          "coluna": "preco",
+          "tipo": "numeric",
+          "nulo": "NO",
+          "padrao": "0"
+        },
+        {
+          "coluna": "created_at",
+          "tipo": "timestamp with time zone",
+          "nulo": "NO",
+          "padrao": "now()"
+        }
+      ]
+    },
+    {
+      "schema": "public",
+      "tabela": "profiles",
+      "colunas": [
+        {
+          "coluna": "id",
+          "tipo": "uuid",
+          "nulo": "NO",
+          "padrao": null
+        },
+        {
+          "coluna": "email",
+          "tipo": "text",
+          "nulo": "YES",
+          "padrao": null
+        },
+        {
+          "coluna": "nome",
+          "tipo": "text",
+          "nulo": "YES",
+          "padrao": null
+        },
+        {
+          "coluna": "created_at",
+          "tipo": "timestamp with time zone",
+          "nulo": "NO",
+          "padrao": "now()"
+        }
+      ]
+    }
+  ],
+  "rls_ativa": [
+    {
+      "schema": "public",
+      "tabela": "items",
+      "rls_ligada": true,
+      "rls_forcada": false
+    },
+    {
+      "schema": "public",
+      "tabela": "profiles",
+      "rls_ligada": true,
+      "rls_forcada": false
+    },
+    {
+      "schema": "storage",
+      "tabela": "buckets",
+      "rls_ligada": true,
+      "rls_forcada": false
+    },
+    {
+      "schema": "storage",
+      "tabela": "buckets_analytics",
+      "rls_ligada": true,
+      "rls_forcada": false
+    },
+    {
+      "schema": "storage",
+      "tabela": "buckets_vectors",
+      "rls_ligada": true,
+      "rls_forcada": false
+    },
+    {
+      "schema": "storage",
+      "tabela": "migrations",
+      "rls_ligada": true,
+      "rls_forcada": false
+    },
+    {
+      "schema": "storage",
+      "tabela": "objects",
+      "rls_ligada": true,
+      "rls_forcada": false
+    },
+    {
+      "schema": "storage",
+      "tabela": "s3_multipart_uploads",
+      "rls_ligada": true,
+      "rls_forcada": false
+    },
+    {
+      "schema": "storage",
+      "tabela": "s3_multipart_uploads_parts",
+      "rls_ligada": true,
+      "rls_forcada": false
+    },
+    {
+      "schema": "storage",
+      "tabela": "vector_indexes",
+      "rls_ligada": true,
+      "rls_forcada": false
+    }
+  ],
+  "politicas": [
+    {
+      "schema": "public",
+      "tabela": "items",
+      "nome": "itens: dono altera",
+      "operacao": "UPDATE",
+      "papeis": "{authenticated}",
+      "permissiva": "PERMISSIVE",
+      "usando": "(owner_id = ( SELECT auth.uid() AS uid))",
+      "verificando": null
+    },
+    {
+      "schema": "public",
+      "tabela": "items",
+      "nome": "itens: dono apaga",
+      "operacao": "DELETE",
+      "papeis": "{authenticated}",
+      "permissiva": "PERMISSIVE",
+      "usando": "(owner_id = ( SELECT auth.uid() AS uid))",
+      "verificando": null
+    },
+    {
+      "schema": "public",
+      "tabela": "items",
+      "nome": "itens: dono cria",
+      "operacao": "INSERT",
+      "papeis": "{authenticated}",
+      "permissiva": "PERMISSIVE",
+      "usando": null,
+      "verificando": "(owner_id = ( SELECT auth.uid() AS uid))"
+    },
+    {
+      "schema": "public",
+      "tabela": "items",
+      "nome": "itens: dono le",
+      "operacao": "SELECT",
+      "papeis": "{authenticated}",
+      "permissiva": "PERMISSIVE",
+      "usando": "(owner_id = ( SELECT auth.uid() AS uid))",
+      "verificando": null
+    },
+    {
+      "schema": "public",
+      "tabela": "profiles",
+      "nome": "perfil: dono altera",
+      "operacao": "UPDATE",
+      "papeis": "{authenticated}",
+      "permissiva": "PERMISSIVE",
+      "usando": "(id = ( SELECT auth.uid() AS uid))",
+      "verificando": null
+    },
+    {
+      "schema": "public",
+      "tabela": "profiles",
+      "nome": "perfil: dono le",
+      "operacao": "SELECT",
+      "papeis": "{authenticated}",
+      "permissiva": "PERMISSIVE",
+      "usando": "(id = ( SELECT auth.uid() AS uid))",
+      "verificando": null
+    },
+    {
+      "schema": "storage",
+      "tabela": "objects",
+      "nome": "avatars: dono altera",
+      "operacao": "UPDATE",
+      "papeis": "{authenticated}",
+      "permissiva": "PERMISSIVE",
+      "usando": "((bucket_id = 'avatars'::text) AND ((storage.foldername(name))[1] = (( SELECT auth.uid() AS uid))::text))",
+      "verificando": null
+    },
+    {
+      "schema": "storage",
+      "tabela": "objects",
+      "nome": "avatars: dono apaga",
+      "operacao": "DELETE",
+      "papeis": "{authenticated}",
+      "permissiva": "PERMISSIVE",
+      "usando": "((bucket_id = 'avatars'::text) AND ((storage.foldername(name))[1] = (( SELECT auth.uid() AS uid))::text))",
+      "verificando": null
+    },
+    {
+      "schema": "storage",
+      "tabela": "objects",
+      "nome": "avatars: dono envia",
+      "operacao": "INSERT",
+      "papeis": "{authenticated}",
+      "permissiva": "PERMISSIVE",
+      "usando": null,
+      "verificando": "((bucket_id = 'avatars'::text) AND ((storage.foldername(name))[1] = (( SELECT auth.uid() AS uid))::text))"
+    },
+    {
+      "schema": "storage",
+      "tabela": "objects",
+      "nome": "avatars: dono le",
+      "operacao": "SELECT",
+      "papeis": "{authenticated}",
+      "permissiva": "PERMISSIVE",
+      "usando": "((bucket_id = 'avatars'::text) AND ((storage.foldername(name))[1] = (( SELECT auth.uid() AS uid))::text))",
+      "verificando": null
+    }
+  ],
+  "chaves_estrangeiras": [
+    {
+      "nome": "items_owner_id_fkey",
+      "tabela": "items",
+      "schema": "public",
+      "referencia": "users",
+      "schema_referencia": "auth",
+      "ao_apagar": "cascade",
+      "definicao": "FOREIGN KEY (owner_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+    },
+    {
+      "nome": "profiles_id_fkey",
+      "tabela": "profiles",
+      "schema": "public",
+      "referencia": "users",
+      "schema_referencia": "auth",
+      "ao_apagar": "cascade",
+      "definicao": "FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE"
+    }
+  ],
+  "gatilhos": [
+    {
+      "nome": "on_auth_user_created",
+      "schema": "auth",
+      "tabela": "users",
+      "funcao": "public.handle_new_user",
+      "definicao": "CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION handle_new_user()",
+      "codigo_funcao": "\nbegin\n  insert into public.profiles (id, email) values (new.id, new.email);\n  return new;\nend;\n"
+    }
+  ],
+  "funcoes_rpc": [
+    {
+      "schema": "public",
+      "nome": "calcular_total",
+      "argumentos": "",
+      "retorno": "numeric",
+      "linguagem": "sql",
+      "seguranca": "invoker",
+      "codigo": "\n  select coalesce(sum(preco), 0) from public.items;\n"
+    },
+    {
+      "schema": "public",
+      "nome": "handle_new_user",
+      "argumentos": "",
+      "retorno": "trigger",
+      "linguagem": "plpgsql",
+      "seguranca": "definer",
+      "codigo": "\nbegin\n  insert into public.profiles (id, email) values (new.id, new.email);\n  return new;\nend;\n"
+    }
+  ],
+  "realtime": [
+    {
+      "schema": "public",
+      "tabela": "items"
+    }
+  ],
+  "webhooks": [],
+  "buckets": [
+    {
+      "id": "avatars",
+      "nome": "avatars",
+      "publico": false,
+      "limite_bytes": null,
+      "tipos": null
+    }
+  ],
+  "permissoes_api": [
+    {
+      "tabela": "items",
+      "papel": "anon",
+      "permissoes": "DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE"
+    },
+    {
+      "tabela": "items",
+      "papel": "authenticated",
+      "permissoes": "DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE"
+    },
+    {
+      "tabela": "profiles",
+      "papel": "anon",
+      "permissoes": "DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE"
+    },
+    {
+      "tabela": "profiles",
+      "papel": "authenticated",
+      "permissoes": "DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE"
+    }
+  ]
+}
