@@ -1,0 +1,34 @@
+{
+  "events": 9,
+  "calls": 5,
+  "byLayer": {
+    "browser": 5
+  },
+  "jsonBytes": 2515,
+  "gzipBytes": 850,
+  "fetches": [
+    {
+      "attribution": "action",
+      "chain": "B:Browser.click > fetch POST /__nextjs_original-stack-frames"
+    }
+  ],
+  "topFunctions": [
+    [
+      "browser:Browser.click",
+      1
+    ],
+    [
+      "browser:ErrorButton.ErrorButton.onClick@9",
+      1
+    ],
+    [
+      "browser:ErrorButton.quebrar",
+      1
+    ],
+    [
+      "browser:Browser.error",
+      1
+    ]
+  ],
+  "serverRequests": []
+}

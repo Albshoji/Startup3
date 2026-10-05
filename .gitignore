@@ -7,3 +7,10 @@ node_modules/
 dist/
 .mapa/
 *.log
+spikes/**/out/*.appmap.json
+spikes/**/out/*.appmap.json.gz
+spikes/**/*.log
+spikes/**/next-env.d.ts
+spikes/**/AGENTS.md
+spikes/**/CLAUDE.md
+spikes/**/tsconfig.tsbuildinfo

@@ -1,0 +1,53 @@
+{
+  "label": "webpack-com-mapa",
+  "loadMs": 1178,
+  "scenarioBms": 65,
+  "loop10kMs": 16,
+  "keystrokeMs": 47,
+  "sessionActions": 10,
+  "session": {
+    "events": 30406,
+    "calls": 15203,
+    "byLayer": {
+      "browser": 14663,
+      "next-server": 540
+    },
+    "mb": 7.3,
+    "gzMb": 0.282,
+    "top": [
+      [
+        "browser:precos.formatarPreco",
+        7248
+      ],
+      [
+        "browser:ListaGrande.LinhaProduto",
+        7244
+      ],
+      [
+        "next-server:precos.formatarPreco",
+        285
+      ],
+      [
+        "next-server:ListaGrande.LinhaProduto",
+        200
+      ],
+      [
+        "browser:ListaGrande.ListaGrande",
+        38
+      ],
+      [
+        "browser:ListaGrande.filtrar",
+        38
+      ],
+      [
+        "browser:AddItem.AddItem",
+        24
+      ],
+      [
+        "browser:ListaGrande.ListaGrande.onChange@31",
+        18
+      ]
+    ]
+  },
+  "memoryMb": 81
+}

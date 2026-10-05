@@ -1,0 +1,56 @@
+{
+  "events": 28,
+  "calls": 14,
+  "byLayer": {
+    "next-server": 9,
+    "browser": 5
+  },
+  "jsonBytes": 6492,
+  "gzipBytes": 1467,
+  "fetches": [
+    {
+      "chain": "B:Browser.click > B:AddItem.AddItem.onClick@35 > fetch POST / > REQ POST / > S:actions.alterarItem > fetch PATCH /rest/v1/items"
+    },
+    {
+      "attribution": "inferred",
+      "chain": "B:Browser.click > B:AddItem.AddItem.onClick@35 > fetch POST /"
+    }
+  ],
+  "topFunctions": [
+    [
+      "next-server:supabase-server.getAll",
+      3
+    ],
+    [
+      "browser:AddItem.AddItem",
+      2
+    ],
+    [
+      "next-server:proxy.proxy",
+      1
+    ],
+    [
+      "next-server:proxy.marcarVisita",
+      1
+    ],
+    [
+      "next-server:actions.alterarItem",
+      1
+    ],
+    [
+      "next-server:supabase-server.criarClienteServidor",
+      1
+    ],
+    [
+      "browser:Browser.click",
+      1
+    ],
+    [
+      "browser:AddItem.AddItem.onClick@35",
+      1
+    ]
+  ],
+  "serverRequests": [
+    "B:Browser.click > B:AddItem.AddItem.onClick@35 > fetch POST / > REQ POST /"
+  ]
+}

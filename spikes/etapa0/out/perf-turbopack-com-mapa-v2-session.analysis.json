@@ -1,0 +1,240 @@
+{
+  "events": 112788,
+  "calls": 56394,
+  "byLayer": {
+    "browser": 53408,
+    "next-server": 2986
+  },
+  "jsonBytes": 27195193,
+  "gzipBytes": 1051846,
+  "fetches": [
+    {
+      "attribution": "exact",
+      "chain": "B:Browser.click > B:AddItem.AddItem.onClick@30 > B:AddItem.adicionarItem > fetch POST /rest/v1/items"
+    },
+    {
+      "chain": "B:Browser.click > B:AsyncChain.AsyncChain.onClick@26 > B:AsyncChain.passo1 > B:AsyncChain.passo2 > fetch GET /api/hello > REQ GET /api/hello > S:route.GET > fetch POST /rest/v1/rpc/calcular_total"
+    },
+    {
+      "attribution": "exact",
+      "chain": "B:Browser.click > B:AsyncChain.AsyncChain.onClick@26 > B:AsyncChain.passo1 > B:AsyncChain.passo2 > fetch GET /api/hello"
+    },
+    {
+      "chain": "B:Browser.click > B:AddItem.AddItem.onClick@35 > fetch POST / > REQ POST / > S:actions.alterarItem > fetch PATCH /rest/v1/items"
+    },
+    {
+      "attribution": "inferred",
+      "chain": "B:Browser.click > B:AddItem.AddItem.onClick@35 > fetch POST /"
+    },
+    {
+      "chain": "REQ GET / > S:page.Home > S:page.carregarItens > fetch GET /rest/v1/items"
+    },
+    {
+      "attribution": "exact",
+      "chain": "B:Browser.click > B:AddItem.AddItem.onClick@30 > B:AddItem.adicionarItem > fetch POST /rest/v1/items"
+    },
+    {
+      "attribution": "exact",
+      "chain": "B:Browser.click > B:AsyncChain.AsyncChain.onClick@26 > B:AsyncChain.passo1 > B:AsyncChain.passo2 > fetch GET /api/hello"
+    },
+    {
+      "chain": "B:Browser.click > B:AsyncChain.AsyncChain.onClick@26 > B:AsyncChain.passo1 > B:AsyncChain.passo2 > fetch GET /api/hello > REQ GET /api/hello > S:route.GET > fetch POST /rest/v1/rpc/calcular_total"
+    },
+    {
+      "attribution": "inferred",
+      "chain": "B:Browser.click > B:AddItem.AddItem.onClick@35 > fetch POST /"
+    },
+    {
+      "chain": "B:Browser.click > B:AddItem.AddItem.onClick@35 > fetch POST / > REQ POST / > S:actions.alterarItem > fetch PATCH /rest/v1/items"
+    },
+    {
+      "chain": "REQ GET / > S:page.Home > S:page.carregarItens > fetch GET /rest/v1/items"
+    },
+    {
+      "attribution": "exact",
+      "chain": "B:Browser.click > B:AddItem.AddItem.onClick@30 > B:AddItem.adicionarItem > fetch POST /rest/v1/items"
+    },
+    {
+      "attribution": "exact",
+      "chain": "B:Browser.click > B:AsyncChain.AsyncChain.onClick@26 > B:AsyncChain.passo1 > B:AsyncChain.passo2 > fetch GET /api/hello"
+    },
+    {
+      "chain": "B:Browser.click > B:AsyncChain.AsyncChain.onClick@26 > B:AsyncChain.passo1 > B:AsyncChain.passo2 > fetch GET /api/hello > REQ GET /api/hello > S:route.GET > fetch POST /rest/v1/rpc/calcular_total"
+    },
+    {
+      "attribution": "inferred",
+      "chain": "B:Browser.click > B:AddItem.AddItem.onClick@35 > fetch POST /"
+    },
+    {
+      "chain": "B:Browser.click > B:AddItem.AddItem.onClick@35 > fetch POST / > REQ POST / > S:actions.alterarItem > fetch PATCH /rest/v1/items"
+    },
+    {
+      "chain": "REQ GET / > S:page.Home > S:page.carregarItens > fetch GET /rest/v1/items"
+    },
+    {
+      "attribution": "exact",
+      "chain": "B:Browser.click > B:AddItem.AddItem.onClick@30 > B:AddItem.adicionarItem > fetch POST /rest/v1/items"
+    },
+    {
+      "chain": "B:Browser.click > B:AsyncChain.AsyncChain.onClick@26 > B:AsyncChain.passo1 > B:AsyncChain.passo2 > fetch GET /api/hello > REQ GET /api/hello > S:route.GET > fetch POST /rest/v1/rpc/calcular_total"
+    },
+    {
+      "attribution": "exact",
+      "chain": "B:Browser.click > B:AsyncChain.AsyncChain.onClick@26 > B:AsyncChain.passo1 > B:AsyncChain.passo2 > fetch GET /api/hello"
+    },
+    {
+      "chain": "B:Browser.click > B:AddItem.AddItem.onClick@35 > fetch POST / > REQ POST / > S:actions.alterarItem > fetch PATCH /rest/v1/items"
+    },
+    {
+      "attribution": "inferred",
+      "chain": "B:Browser.click > B:AddItem.AddItem.onClick@35 > fetch POST /"
+    },
+    {
+      "chain": "REQ GET / > S:page.Home > S:page.carregarItens > fetch GET /rest/v1/items"
+    },
+    {
+      "attribution": "exact",
+      "chain": "B:Browser.click > B:AddItem.AddItem.onClick@30 > B:AddItem.adicionarItem > fetch POST /rest/v1/items"
+    },
+    {
+      "chain": "B:Browser.click > B:AsyncChain.AsyncChain.onClick@26 > B:AsyncChain.passo1 > B:AsyncChain.passo2 > fetch GET /api/hello > REQ GET /api/hello > S:route.GET > fetch POST /rest/v1/rpc/calcular_total"
+    },
+    {
+      "attribution": "exact",
+      "chain": "B:Browser.click > B:AsyncChain.AsyncChain.onClick@26 > B:AsyncChain.passo1 > B:AsyncChain.passo2 > fetch GET /api/hello"
+    },
+    {
+      "chain": "B:Browser.click > B:AddItem.AddItem.onClick@35 > fetch POST / > REQ POST / > S:actions.alterarItem > fetch PATCH /rest/v1/items"
+    },
+    {
+      "attribution": "inferred",
+      "chain": "B:Browser.click > B:AddItem.AddItem.onClick@35 > fetch POST /"
+    },
+    {
+      "chain": "REQ GET / > S:page.Home > S:page.carregarItens > fetch GET /rest/v1/items"
+    },
+    {
+      "attribution": "exact",
+      "chain": "B:Browser.click > B:AddItem.AddItem.onClick@30 > B:AddItem.adicionarItem > fetch POST /rest/v1/items"
+    },
+    {
+      "chain": "B:Browser.click > B:AsyncChain.AsyncChain.onClick@26 > B:AsyncChain.passo1 > B:AsyncChain.passo2 > fetch GET /api/hello > REQ GET /api/hello > S:route.GET > fetch POST /rest/v1/rpc/calcular_total"
+    },
+    {
+      "attribution": "exact",
+      "chain": "B:Browser.click > B:AsyncChain.AsyncChain.onClick@26 > B:AsyncChain.passo1 > B:AsyncChain.passo2 > fetch GET /api/hello"
+    },
+    {
+      "chain": "B:Browser.click > B:AddItem.AddItem.onClick@35 > fetch POST / > REQ POST / > S:actions.alterarItem > fetch PATCH /rest/v1/items"
+    },
+    {
+      "attribution": "inferred",
+      "chain": "B:Browser.click > B:AddItem.AddItem.onClick@35 > fetch POST /"
+    },
+    {
+      "chain": "REQ GET / > S:page.Home > S:page.carregarItens > fetch GET /rest/v1/items"
+    },
+    {
+      "attribution": "exact",
+      "chain": "B:Browser.click > B:AddItem.AddItem.onClick@30 > B:AddItem.adicionarItem > fetch POST /rest/v1/items"
+    },
+    {
+      "attribution": "exact",
+      "chain": "B:Browser.click > B:AsyncChain.AsyncChain.onClick@26 > B:AsyncChain.passo1 > B:AsyncChain.passo2 > fetch GET /api/hello"
+    },
+    {
+      "chain": "B:Browser.click > B:AsyncChain.AsyncChain.onClick@26 > B:AsyncChain.passo1 > B:AsyncChain.passo2 > fetch GET /api/hello > REQ GET /api/hello > S:route.GET > fetch POST /rest/v1/rpc/calcular_total"
+    },
+    {
+      "attribution": "inferred",
+      "chain": "B:Browser.click > B:AddItem.AddItem.onClick@35 > fetch POST /"
+    },
+    {
+      "chain": "B:Browser.click > B:AddItem.AddItem.onClick@35 > fetch POST / > REQ POST / > S:actions.alterarItem > fetch PATCH /rest/v1/items"
+    }
+  ],
+  "topFunctions": [
+    [
+      "browser:precos.formatarPreco",
+      26368
+    ],
+    [
+      "browser:ListaGrande.LinhaProduto",
+      26354
+    ],
+    [
+      "next-server:precos.formatarPreco",
+      1551
+    ],
+    [
+      "next-server:ListaGrande.LinhaProduto",
+      1200
+    ],
+    [
+      "browser:ListaGrande.ListaGrande",
+      138
+    ],
+    [
+      "browser:ListaGrande.filtrar",
+      138
+    ],
+    [
+      "browser:AddItem.AddItem",
+      124
+    ],
+    [
+      "browser:ListaGrande.ListaGrande.onChange@31",
+      63
+    ],
+    [
+      "next-server:supabase-server.getAll",
+      60
+    ],
+    [
+      "browser:AddItem.AddItem.onChange@28",
+      42
+    ],
+    [
+      "browser:AsyncChain.AsyncChain",
+      26
+    ],
+    [
+      "browser:Browser.click",
+      21
+    ],
+    [
+      "next-server:proxy.proxy",
+      20
+    ],
+    [
+      "next-server:proxy.marcarVisita",
+      20
+    ],
+    [
+      "next-server:supabase-server.criarClienteServidor",
+      20
+    ]
+  ],
+  "serverRequests": [
+    "B:Browser.click > B:AsyncChain.AsyncChain.onClick@26 > B:AsyncChain.passo1 > B:AsyncChain.passo2 > fetch GET /api/hello > REQ GET /api/hello",
+    "B:Browser.click > B:AddItem.AddItem.onClick@35 > fetch POST / > REQ POST /",
+    "REQ GET /",
+    "B:Browser.click > B:AsyncChain.AsyncChain.onClick@26 > B:AsyncChain.passo1 > B:AsyncChain.passo2 > fetch GET /api/hello > REQ GET /api/hello",
+    "B:Browser.click > B:AddItem.AddItem.onClick@35 > fetch POST / > REQ POST /",
+    "REQ GET /",
+    "B:Browser.click > B:AsyncChain.AsyncChain.onClick@26 > B:AsyncChain.passo1 > B:AsyncChain.passo2 > fetch GET /api/hello > REQ GET /api/hello",
+    "B:Browser.click > B:AddItem.AddItem.onClick@35 > fetch POST / > REQ POST /",
+    "REQ GET /",
+    "B:Browser.click > B:AsyncChain.AsyncChain.onClick@26 > B:AsyncChain.passo1 > B:AsyncChain.passo2 > fetch GET /api/hello > REQ GET /api/hello",
+    "B:Browser.click > B:AddItem.AddItem.onClick@35 > fetch POST / > REQ POST /",
+    "REQ GET /",
+    "B:Browser.click > B:AsyncChain.AsyncChain.onClick@26 > B:AsyncChain.passo1 > B:AsyncChain.passo2 > fetch GET /api/hello > REQ GET /api/hello",
+    "B:Browser.click > B:AddItem.AddItem.onClick@35 > fetch POST / > REQ POST /",
+    "REQ GET /",
+    "B:Browser.click > B:AsyncChain.AsyncChain.onClick@26 > B:AsyncChain.passo1 > B:AsyncChain.passo2 > fetch GET /api/hello > REQ GET /api/hello",
+    "B:Browser.click > B:AddItem.AddItem.onClick@35 > fetch POST / > REQ POST /",
+    "REQ GET /",
+    "B:Browser.click > B:AsyncChain.AsyncChain.onClick@26 > B:AsyncChain.passo1 > B:AsyncChain.passo2 > fetch GET /api/hello > REQ GET /api/hello",
+    "B:Browser.click > B:AddItem.AddItem.onClick@35 > fetch POST / > REQ POST /"
+  ]
+}

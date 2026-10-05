@@ -1,0 +1,50 @@
+{
+  "events": 22,
+  "calls": 11,
+  "byLayer": {
+    "browser": 11
+  },
+  "jsonBytes": 5000,
+  "gzipBytes": 1090,
+  "fetches": [
+    {
+      "attribution": "exact",
+      "chain": "B:Browser.click > fetch POST /rest/v1/items"
+    }
+  ],
+  "topFunctions": [
+    [
+      "browser:precos.formatarPreco",
+      2
+    ],
+    [
+      "browser:AddItem.AddItem",
+      2
+    ],
+    [
+      "browser:Browser.click",
+      1
+    ],
+    [
+      "browser:AddItem.AddItem.onClick@30",
+      1
+    ],
+    [
+      "browser:AddItem.adicionarItem",
+      1
+    ],
+    [
+      "browser:supabase-browser.criarClienteNavegador",
+      1
+    ],
+    [
+      "browser:Carrinho.adicionar",
+      1
+    ],
+    [
+      "browser:Carrinho.total",
+      1
+    ]
+  ],
+  "serverRequests": []
+}

@@ -1,0 +1,17 @@
+{
+  "label": "turbopack-sem-mapa",
+  "loadMs": 653,
+  "scenarioBms": 83,
+  "loop10kMs": 0,
+  "keystrokeMs": 33,
+  "sessionActions": 41,
+  "session": {
+    "events": 0,
+    "calls": 0,
+    "byLayer": {},
+    "mb": 0,
+    "gzMb": 0,
+    "top": []
+  },
+  "memoryMb": 18
+}

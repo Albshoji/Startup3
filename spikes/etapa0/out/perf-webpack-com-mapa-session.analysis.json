@@ -1,0 +1,120 @@
+{
+  "events": 30406,
+  "calls": 15203,
+  "byLayer": {
+    "browser": 14663,
+    "next-server": 540
+  },
+  "jsonBytes": 7301220,
+  "gzipBytes": 282151,
+  "fetches": [
+    {
+      "attribution": "inferred",
+      "chain": "B:Browser.click > B:AddItem.AddItem.onClick@30 > B:AddItem.adicionarItem > fetch POST /rest/v1/items"
+    },
+    {
+      "attribution": "exact",
+      "chain": "B:Browser.click > B:AsyncChain.AsyncChain.onClick@26 > B:AsyncChain.passo1 > B:AsyncChain.passo2 > fetch GET /api/hello"
+    },
+    {
+      "chain": "B:Browser.click > B:AsyncChain.AsyncChain.onClick@26 > B:AsyncChain.passo1 > B:AsyncChain.passo2 > fetch GET /api/hello > REQ GET /api/hello > S:route.GET > fetch POST /rest/v1/rpc/calcular_total"
+    },
+    {
+      "attribution": "inferred",
+      "chain": "B:Browser.click > B:AddItem.AddItem.onClick@35 > fetch POST /"
+    },
+    {
+      "chain": "B:Browser.click > B:AddItem.AddItem.onClick@35 > fetch POST / > REQ POST / > S:actions.alterarItem > fetch PATCH /rest/v1/items"
+    },
+    {
+      "chain": "REQ GET / > S:page.Home > S:page.carregarItens > fetch GET /rest/v1/items"
+    },
+    {
+      "attribution": "inferred",
+      "chain": "B:Browser.click > B:AddItem.AddItem.onClick@30 > B:AddItem.adicionarItem > fetch POST /rest/v1/items"
+    },
+    {
+      "attribution": "exact",
+      "chain": "B:Browser.click > B:AsyncChain.AsyncChain.onClick@26 > B:AsyncChain.passo1 > B:AsyncChain.passo2 > fetch GET /api/hello"
+    },
+    {
+      "chain": "B:Browser.click > B:AsyncChain.AsyncChain.onClick@26 > B:AsyncChain.passo1 > B:AsyncChain.passo2 > fetch GET /api/hello > REQ GET /api/hello > S:route.GET > fetch POST /rest/v1/rpc/calcular_total"
+    },
+    {
+      "attribution": "inferred",
+      "chain": "B:Browser.click > B:AddItem.AddItem.onClick@35 > fetch POST /"
+    },
+    {
+      "chain": "B:Browser.click > B:AddItem.AddItem.onClick@35 > fetch POST / > REQ POST / > S:actions.alterarItem > fetch PATCH /rest/v1/items"
+    }
+  ],
+  "topFunctions": [
+    [
+      "browser:precos.formatarPreco",
+      7248
+    ],
+    [
+      "browser:ListaGrande.LinhaProduto",
+      7244
+    ],
+    [
+      "next-server:precos.formatarPreco",
+      285
+    ],
+    [
+      "next-server:ListaGrande.LinhaProduto",
+      200
+    ],
+    [
+      "browser:ListaGrande.ListaGrande",
+      38
+    ],
+    [
+      "browser:ListaGrande.filtrar",
+      38
+    ],
+    [
+      "browser:AddItem.AddItem",
+      24
+    ],
+    [
+      "browser:ListaGrande.ListaGrande.onChange@31",
+      18
+    ],
+    [
+      "next-server:supabase-server.getAll",
+      15
+    ],
+    [
+      "browser:AddItem.AddItem.onChange@28",
+      7
+    ],
+    [
+      "browser:Browser.click",
+      6
+    ],
+    [
+      "browser:AsyncChain.AsyncChain",
+      6
+    ],
+    [
+      "next-server:proxy.proxy",
+      5
+    ],
+    [
+      "next-server:proxy.marcarVisita",
+      5
+    ],
+    [
+      "next-server:supabase-server.criarClienteServidor",
+      5
+    ]
+  ],
+  "serverRequests": [
+    "B:Browser.click > B:AsyncChain.AsyncChain.onClick@26 > B:AsyncChain.passo1 > B:AsyncChain.passo2 > fetch GET /api/hello > REQ GET /api/hello",
+    "B:Browser.click > B:AddItem.AddItem.onClick@35 > fetch POST / > REQ POST /",
+    "REQ GET /",
+    "B:Browser.click > B:AsyncChain.AsyncChain.onClick@26 > B:AsyncChain.passo1 > B:AsyncChain.passo2 > fetch GET /api/hello > REQ GET /api/hello",
+    "B:Browser.click > B:AddItem.AddItem.onClick@35 > fetch POST / > REQ POST /"
+  ]
+}

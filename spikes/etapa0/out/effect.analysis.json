@@ -1,0 +1,94 @@
+{
+  "events": 3330,
+  "calls": 1665,
+  "byLayer": {
+    "next-server": 840,
+    "browser": 825
+  },
+  "jsonBytes": 812395,
+  "gzipBytes": 40488,
+  "fetches": [
+    {
+      "chain": "S:page.Home > S:page.carregarItens > fetch GET /rest/v1/items"
+    },
+    {
+      "chain": "REQ GET / > S:page.Home > S:page.carregarItens > fetch GET /rest/v1/items"
+    },
+    {
+      "chain": "fetch GET /-/package/next/dist-tags"
+    },
+    {
+      "attribution": "exact",
+      "chain": "B:Browser.navigate > B:ListaCliente.ListaCliente.useEffect@8 > fetch GET /rest/v1/items"
+    },
+    {
+      "attribution": "exact",
+      "chain": "B:Browser.navigate > B:ListaCliente.ListaCliente.useEffect@8 > fetch GET /rest/v1/items"
+    }
+  ],
+  "topFunctions": [
+    [
+      "next-server:precos.formatarPreco",
+      406
+    ],
+    [
+      "next-server:ListaGrande.LinhaProduto",
+      400
+    ],
+    [
+      "browser:ListaGrande.LinhaProduto",
+      400
+    ],
+    [
+      "browser:precos.formatarPreco",
+      400
+    ],
+    [
+      "next-server:supabase-server.getAll",
+      6
+    ],
+    [
+      "browser:ListaCliente.ListaCliente",
+      6
+    ],
+    [
+      "next-server:layout.RootLayout",
+      2
+    ],
+    [
+      "next-server:page.Home",
+      2
+    ],
+    [
+      "next-server:page.carregarItens",
+      2
+    ],
+    [
+      "next-server:supabase-server.criarClienteServidor",
+      2
+    ],
+    [
+      "next-server:AddItem.AddItem",
+      2
+    ],
+    [
+      "next-server:LoopButton.LoopButton",
+      2
+    ],
+    [
+      "next-server:AsyncChain.AsyncChain",
+      2
+    ],
+    [
+      "next-server:ErrorButton.ErrorButton",
+      2
+    ],
+    [
+      "next-server:ListaGrande.ListaGrande",
+      2
+    ]
+  ],
+  "serverRequests": [
+    "REQ GET /"
+  ]
+}

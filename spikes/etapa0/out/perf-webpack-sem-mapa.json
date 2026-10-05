@@ -1,0 +1,17 @@
+{
+  "label": "webpack-sem-mapa",
+  "loadMs": 1177,
+  "scenarioBms": 79,
+  "loop10kMs": 0,
+  "keystrokeMs": 33,
+  "sessionActions": 11,
+  "session": {
+    "events": 0,
+    "calls": 0,
+    "byLayer": {},
+    "mb": 0,
+    "gzMb": 0,
+    "top": []
+  },
+  "memoryMb": 81
+}

@@ -21,3 +21,19 @@ Formato: data · decisão · motivo · fonte (quando inspirada numa referência)
 - **2026-10-05 · Eventos sintéticos do Supabase (gatilhos, cascatas, RLS) numa cópia derivada** (`recording.enriched.appmap.json`), já que `eventUpdates` só substitui eventos existentes. O arquivo bruto original não muda.
 - **2026-10-05 · Sequência começa recolhida na profundidade 1** (AppMap: 3). Motivo: público leigo. Fonte: `appmap-js/packages/components/src/components/DiagramSequence.vue`.
 - **2026-10-05 · Config em JSON** (`.mapa/config.json`) com a mesma semântica do `appmap.yml`. Fonte: `appmap-node/src/config.ts`, `src/PackageMatcher.ts`.
+
+## Etapa 0, Parte B (riscos 1, 2 e 4)
+
+- **2026-10-05 · Protótipo descartável em `spikes/etapa0/`.** Serve só de evidência; o código do produto será escrito do zero nas Etapas 1–4. Gravações grandes (`*.appmap.json*`) ficam fora do Git.
+- **2026-10-05 · Turbopack: duas regras** (`browser` / `not browser`, ambas `not foreign`) em `*.{js,jsx,ts,tsx,mjs,cjs}`; **webpack: `enforce: "pre"`** para receber o código original. Evidência: `docs/spike-report.md`, risco 1.
+- **2026-10-05 · Server actions sem `this`/`arguments`:** envoltório com `...args` em código `"use server"` (o Next recusa compilar de outro jeito).
+- **2026-10-05 · Marcação de `await` também em `node_modules/@supabase/`** (só marcação, sem gravar funções), via condição `path` do Turbopack; inferência pela "função suspensa mais recente da mesma ação" como reserva. Motivo: `fetchWithAuth` do `supabase-js` faz `await` antes do `fetch`.
+- **2026-10-05 · Callbacks de hooks do React (`useEffect`, `useCallback`, `useMemo`…) são instrumentados**, com nome `Componente.hook@linha`. Motivo: sem isso o padrão `useEffect + supabase.then` fica órfão.
+- **2026-10-05 · Ações do usuário:** `click`, `submit`, `type` (agrupado por campo, intervalo < 1 s), `navigate` (carga, `pushState`, `popstate`). Re-renderizações sem pai vão para a ação aberta mais recente, como "inferidas".
+- **2026-10-05 · Um identificador por carga de página/aba**, usado como trace-id do `traceparent` e para não misturar ids entre recargas.
+- **2026-10-05 · Resumo de valores sem efeitos colaterais:** nunca acessar thenables nem getters (o Next 16 acusa erro ao ler `params` de forma síncrona).
+- **2026-10-05 · Limites propostos (aguardando aprovação):** 2 min; teto de 50 chamadas por função dentro de cada ação (o resto só é contado); 50 000 eventos; 12 MB de JSON. Ver `docs/spike-report.md`, risco 4.
+
+### Pendências novas
+- **Teto por função × critério da Etapa 4** ("o botão do loop para a gravação pelo limite"): com o teto, o loop de uma função só não atinge o limite. Aguardando decisão.
+- **Babel 8 (Node ≥ 22.18) ou Babel 7 (Node 22 mais antigo):** decidir na Etapa 2.

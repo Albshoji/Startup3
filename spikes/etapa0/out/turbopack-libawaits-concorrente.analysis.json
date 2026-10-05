@@ -1,0 +1,88 @@
+{
+  "events": 54,
+  "calls": 27,
+  "byLayer": {
+    "next-server": 10,
+    "browser": 17
+  },
+  "jsonBytes": 11885,
+  "gzipBytes": 2019,
+  "fetches": [
+    {
+      "chain": "B:Browser.click > B:AsyncChain.AsyncChain.onClick@26 > B:AsyncChain.passo1 > B:AsyncChain.passo2 > fetch GET /api/hello > REQ GET /api/hello > S:route.GET > fetch POST /rest/v1/rpc/calcular_total"
+    },
+    {
+      "attribution": "exact",
+      "chain": "B:Browser.click > B:AsyncChain.AsyncChain.onClick@26 > B:AsyncChain.passo1 > B:AsyncChain.passo2 > fetch GET /api/hello"
+    },
+    {
+      "attribution": "exact",
+      "chain": "B:Browser.click > B:AddItem.AddItem.onClick@30 > B:AddItem.adicionarItem > fetch POST /rest/v1/items"
+    }
+  ],
+  "topFunctions": [
+    [
+      "next-server:supabase-server.getAll",
+      3
+    ],
+    [
+      "browser:Browser.click",
+      2
+    ],
+    [
+      "browser:precos.formatarPreco",
+      2
+    ],
+    [
+      "browser:AddItem.AddItem",
+      2
+    ],
+    [
+      "next-server:proxy.proxy",
+      1
+    ],
+    [
+      "next-server:proxy.marcarVisita",
+      1
+    ],
+    [
+      "next-server:route.GET",
+      1
+    ],
+    [
+      "next-server:supabase-server.criarClienteServidor",
+      1
+    ],
+    [
+      "next-server:route.dobrar",
+      1
+    ],
+    [
+      "browser:AsyncChain.AsyncChain.onClick@26",
+      1
+    ],
+    [
+      "browser:AsyncChain.passo1",
+      1
+    ],
+    [
+      "browser:AsyncChain.passo2",
+      1
+    ],
+    [
+      "browser:AddItem.AddItem.onClick@30",
+      1
+    ],
+    [
+      "browser:AddItem.adicionarItem",
+      1
+    ],
+    [
+      "browser:supabase-browser.criarClienteNavegador",
+      1
+    ]
+  ],
+  "serverRequests": [
+    "B:Browser.click > B:AsyncChain.AsyncChain.onClick@26 > B:AsyncChain.passo1 > B:AsyncChain.passo2 > fetch GET /api/hello > REQ GET /api/hello"
+  ]
+}

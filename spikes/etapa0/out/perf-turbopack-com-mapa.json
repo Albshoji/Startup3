@@ -1,0 +1,53 @@
+{
+  "label": "turbopack-com-mapa",
+  "loadMs": 691,
+  "scenarioBms": 71,
+  "loop10kMs": 22,
+  "keystrokeMs": 50,
+  "sessionActions": 40,
+  "session": {
+    "events": 112522,
+    "calls": 56261,
+    "byLayer": {
+      "browser": 53389,
+      "next-server": 2872
+    },
+    "mb": 27.08,
+    "gzMb": 1.057,
+    "top": [
+      [
+        "browser:precos.formatarPreco",
+        26368
+      ],
+      [
+        "browser:ListaGrande.LinhaProduto",
+        26354
+      ],
+      [
+        "next-server:precos.formatarPreco",
+        1437
+      ],
+      [
+        "next-server:ListaGrande.LinhaProduto",
+        1200
+      ],
+      [
+        "browser:ListaGrande.ListaGrande",
+        138
+      ],
+      [
+        "browser:ListaGrande.filtrar",
+        138
+      ],
+      [
+        "browser:AddItem.AddItem",
+        124
+      ],
+      [
+        "browser:ListaGrande.ListaGrande.onChange@31",
+        63
+      ]
+    ]
+  },
+  "memoryMb": 26
+}

@@ -1,0 +1,76 @@
+{
+  "events": 38,
+  "calls": 19,
+  "byLayer": {
+    "browser": 9,
+    "next-server": 10
+  },
+  "jsonBytes": 8610,
+  "gzipBytes": 1639,
+  "fetches": [
+    {
+      "attribution": "exact",
+      "chain": "B:Browser.click > B:AsyncChain.AsyncChain.onClick@26 > B:AsyncChain.passo1 > B:AsyncChain.passo2 > fetch GET /api/hello"
+    },
+    {
+      "attribution": "inferred",
+      "chain": "B:Browser.click > B:AsyncChain.AsyncChain.onClick@26 > B:AsyncChain.passo1 > B:AsyncChain.passo2 > fetch GET /_next/static/webpack/9dbe06d5f2abd201.webpack.hot-update.json"
+    },
+    {
+      "chain": "B:Browser.click > B:AsyncChain.AsyncChain.onClick@26 > B:AsyncChain.passo1 > B:AsyncChain.passo2 > fetch GET /api/hello > REQ GET /api/hello > S:route.GET > fetch POST /rest/v1/rpc/calcular_total"
+    }
+  ],
+  "topFunctions": [
+    [
+      "next-server:supabase-server.getAll",
+      3
+    ],
+    [
+      "browser:AsyncChain.AsyncChain",
+      2
+    ],
+    [
+      "browser:Browser.click",
+      1
+    ],
+    [
+      "browser:AsyncChain.AsyncChain.onClick@26",
+      1
+    ],
+    [
+      "browser:AsyncChain.passo1",
+      1
+    ],
+    [
+      "browser:AsyncChain.passo2",
+      1
+    ],
+    [
+      "next-server:proxy.proxy",
+      1
+    ],
+    [
+      "next-server:proxy.marcarVisita",
+      1
+    ],
+    [
+      "next-server:route.GET",
+      1
+    ],
+    [
+      "next-server:supabase-server.criarClienteServidor",
+      1
+    ],
+    [
+      "browser:AsyncChain.passo3",
+      1
+    ],
+    [
+      "next-server:route.dobrar",
+      1
+    ]
+  ],
+  "serverRequests": [
+    "B:Browser.click > B:AsyncChain.AsyncChain.onClick@26 > B:AsyncChain.passo1 > B:AsyncChain.passo2 > fetch GET /api/hello > REQ GET /api/hello"
+  ]
+}

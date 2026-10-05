@@ -1,0 +1,12 @@
+import { chromium } from "playwright";
+const C = "http://localhost:47100";
+await fetch(`${C}/reset`);
+const browser = await chromium.launch();
+const page = await browser.newPage();
+await page.goto("http://localhost:3100", { waitUntil: "networkidle" });
+await page.waitForFunction(() => /\d+ itens/.test(document.querySelector("#lista-cliente")?.textContent || ""));
+await new Promise((r) => setTimeout(r, 1500));
+const a = await (await fetch(`${C}/dump?name=effect`)).json();
+for (const f of a.fetches) console.log(`[${f.attribution}] ${f.chain}`);
+console.log(await page.evaluate(() => window.__mapaStats));
+await browser.close();

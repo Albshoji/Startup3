@@ -1,0 +1,29 @@
+{
+  "events": 20008,
+  "calls": 10004,
+  "byLayer": {
+    "browser": 10004
+  },
+  "jsonBytes": 4426023,
+  "gzipBytes": 223259,
+  "fetches": [],
+  "topFunctions": [
+    [
+      "browser:precos.somar",
+      10000
+    ],
+    [
+      "browser:LoopButton.LoopButton",
+      2
+    ],
+    [
+      "browser:Browser.click",
+      1
+    ],
+    [
+      "browser:LoopButton.rodarLoop",
+      1
+    ]
+  ],
+  "serverRequests": []
+}
