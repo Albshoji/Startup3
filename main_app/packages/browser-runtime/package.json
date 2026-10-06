@@ -13,11 +13,14 @@
     }
   },
   "sideEffects": true,
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "test": "node --test test/"
   },
   "dependencies": {
-    "@mapa/format": "workspace:*"
+    "@mapa/format": "workspace:*",
+    "@mapa/supabase": "workspace:*"
   }
 }

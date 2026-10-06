@@ -67,7 +67,9 @@ async function transform(this: LoaderContext, source: string, inputMap: unknown)
   if (exists) this.addDependency?.(configFile);
 
   const relPath = relative(root, file).split(sep).join("/");
-  if (!new format.ConfigMatcher(config).matchFile(relPath)) return { code: source, map: inputMap };
+  if (options.awaitsOnly) {
+    if (!/\bawait\b/.test(source)) return { code: source, map: inputMap };
+  } else if (!new format.ConfigMatcher(config).matchFile(relPath)) return { code: source, map: inputMap };
 
   const started = process.hrtime.bigint();
   const ext = extname(file);
@@ -83,11 +85,11 @@ async function transform(this: LoaderContext, source: string, inputMap: unknown)
     sourceMaps: true,
     inputSourceMap: (inputMap as never) || undefined,
     parserOpts: { plugins: [...(typescript ? (["typescript"] as const) : []), ...(jsx ? (["jsx"] as const) : [])] },
-    plugins: [[plugin.default as never, { layer: options.layer, root, config, runtimeImport: importSpecifier(file, RUNTIMES[options.layer]) }]],
+    plugins: [[plugin.default as never, { layer: options.layer, root, config, awaitsOnly: options.awaitsOnly === true, runtimeImport: importSpecifier(file, RUNTIMES[options.layer]) }]],
   });
   if (LOG) {
     const ms = Number(process.hrtime.bigint() - started) / 1e6;
-    (await import("node:fs")).appendFileSync(LOG, `${options.layer}\t${relPath}\t${ms.toFixed(1)}\n`);
+    (await import("node:fs")).appendFileSync(LOG, `${options.layer}${options.awaitsOnly ? "+awaits" : ""}\t${relPath}\t${ms.toFixed(1)}\n`);
   }
   if (!result?.code) return { code: source, map: inputMap };
   return { code: result.code, map: result.map ?? undefined };

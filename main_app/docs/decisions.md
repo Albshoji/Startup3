@@ -116,3 +116,39 @@ Formato: data · decisão · motivo · fonte (quando inspirada numa referência)
 | Exclusões respeitadas | Com `exclude: ["lib/supabase-browser", "formatarPreco", "esperar"]` e um rótulo por nome: 0 ocorrências das excluídas, rótulo aplicado; valeu após reiniciar mantendo o cache do Next; aviso ao mudar o arquivo |
 | `next build` sem `MAPA=1` idêntico | 3 builds (sem `withMapa`, com `withMapa`, sem de novo): os arquivos que diferem entre "sem" e "com" são exatamente os mesmos que diferem entre dois builds iguais sem o Mapa (identificador do build e chaves das server actions, sorteados pelo Next); nenhuma ocorrência de `__mapa`/`@mapa` no build |
 | Testes automáticos | 45 passando (`corepack pnpm test`): plugin (transformação e comportamento preservado: `this`, `arguments`, `super`, valores padrão, exceções, server actions, TypeScript), gravação da pilha, linearização validada pelo validador do AppMap, coletor, `withMapa` e loader |
+
+## Etapa 3
+
+- **2026-10-06 · Novo pacote `@mapa/supabase`** (sem APIs do Node, roda no navegador e no servidor): tradução dos pedidos (PostgREST, Auth, Storage, Functions, Realtime, GraphQL) com forma SQL legível **derivada**, papel/id do usuário só de `role`/`sub` do token (ou da chave; chaves novas `sb_publishable_` = `anon`), e leitura da estrutura dos quadros do Realtime. Reconhece `*.supabase.co`/`.in` e a URL configurada no app (`NEXT_PUBLIC_SUPABASE_URL`, para domínios próprios).
+- **2026-10-06 · Valores com no máximo 100 caracteres, cortados depois de mascarar.** O esquema do AppMap exige `parameter.value` ≤ 100 (achado ao validar). O resumo é feito com folga, mascarado e só então cortado, para nunca deixar meio segredo visível. A máscara também pega tokens cortados no meio (cabeçalho + início do conteúdo), `Bearer …` e chaves `sb_publishable_`/`sb_secret_`.
+- **2026-10-06 · Pedido HTTP sem status → 599 + `error`/`incomplete`.** O esquema exige status 100–599 em toda resposta; o `appmap-node` simplesmente não grava resposta quando o pedido falha (`src/hooks/http.ts`), o que deixaria o arquivo inválido para nós. Corrige o `status_code: 0` da Etapa 2.
+- **2026-10-06 · Chamadas sintéticas com `path` `mapa:browser`/`mapa:console`/`mapa:realtime`.** O validador exige toda chamada de função no `classMap` com o mesmo caminho; sem arquivo, isso era impossível (achado ao validar).
+- **2026-10-06 · `object_id` em toda exceção** (exigido pelo esquema), o mesmo para o mesmo erro, como no AppMap; renumerado por fonte no coletor.
+- **2026-10-06 · Ligação navegador → servidor:** `traceparent` com trace-id = id da aba (16 bytes) e parent-id = id do evento do `fetch`, **só para a mesma origem** (verificado: nenhum pedido ao Supabase recebeu o cabeçalho). O coletor transforma em `remote_parent_id` (id final). O documento de uma página não pode levar o cabeçalho: a requisição que serviu a página é ligada ao carregamento por caminho + horário, marcada como inferida.
+- **2026-10-06 · Gravação provisória no carregamento da página.** O gravador do navegador só sabe se há gravação depois de consultar o coletor; nesse meio tempo o `useEffect` e a assinatura do Realtime já rodaram (achado rodando o cenário C). Agora ele grava desde o carregamento e descarta tudo se o coletor disser que não há gravação. A ação "carregar" começa no início da navegação (`performance.timeOrigin`).
+- **2026-10-06 · WebSockets sempre observados.** Conexões abertas antes do Start (o Realtime abre no carregamento) também têm os quadros gravados durante a gravação (achado: a mensagem INSERT do cenário B não aparecia). Quadros de "heartbeat" (`topic: phoenix`) ficam de fora.
+- **2026-10-06 · Clique no botão de envio + `submit` = uma ação só** (achado no cenário A: "Cadastrar" virava duas ações).
+- **2026-10-06 · `console` só dentro de uma função gravada** (navegador e servidor), com rótulo `log`. Motivo (achado rodando): mensagens do Next ("[Fast Refresh] rebuilding") entravam como se fossem do app.
+- **2026-10-06 · Marcação de `await` dentro de `node_modules/@supabase/`** no navegador (decidida na Etapa 0), por uma terceira regra do Turbopack (`browser` + `foreign` + caminho) e uma regra extra no webpack. Só marca `await`; nenhuma função da biblioteca é gravada.
+- **2026-10-06 · Não gravamos:** pedidos de *prefetch* do Next (`next-router-prefetch: 1`), arquivos internos (`/_next/static`, `/_next/image`, HMR, `/__nextjs*`), o corpo das respostas do servidor do Next (HTML/RSC em fluxo; o AppMap grava até 10 000 caracteres, mas aqui é volumoso e pouco útil), corpos de resposta que não são texto/JSON ou maiores que 256 KB.
+- **2026-10-06 · O `sb-request-id` fica só nos cabeçalhos da resposta.** Uma primeira versão o copiava para o evento de chamada depois de ele já ter sido enviado ao coletor, e às vezes ele se perdia (achado rodando).
+- **2026-10-06 · Rótulos por comentário** (`// @label x`, `// @labels a b`) acima da função, como o `appmap-node` (`src/hooks/util/CommentLabelExtractor.ts`). Faltava desde a Etapa 2.
+- **2026-10-06 · App de teste:** `Conta` (cadastro, login, saída), `ListaCliente` (lista e Realtime no navegador), `SupabaseExtras` (Edge Function, avatar, `calcular_total`, rota `/api/total`), `ErrorButton`, `LoopButton`, rota `app/api/total/route.ts`.
+
+### Etapa 3: concluída (2026-10-06)
+
+Roteiro automatizado no Chromium, um cenário por gravação, nos modos Turbopack e webpack (resultados iguais):
+
+| Cenário | O que foi gravado |
+|---|---|
+| A — Cadastro | ações `type` (e-mail, senha, sem os valores) → `click "Cadastrar"` → `Conta.cadastrar` → `POST /auth/v1/signup` traduzido como `auth.signup`, papel `anon`, rótulos `security.authentication`, `access.public`; tokens da resposta mascarados |
+| B — Adicionar item (logado) | `click` → `onClick@32` → `adicionarItem` → `formatarPreco` → `POST /rest/v1/items` = `insert into items (nome, preco)`, papel `authenticated` + id do usuário, 201 → `Carrinho.adicionar` → `total`; mensagem do Realtime `postgres_changes INSERT items` ligada ao clique (inferida) |
+| C — Lista deslogado | carregamento da página: no servidor `REQ GET /` (ligada ao carregamento) → `Home` → `carregarItens` → `select id,nome,preco from items order by id asc`, papel `anon`, resposta `[]`; no navegador `ListaCliente.useEffect` → `select id,nome from items` (`anon`, `[]`) + conexão Realtime (`anon`) e assinatura de `items` |
+| D — Edge Function | `click` → `chamarBoasVindas` → `functions.invoke send-welcome` (papel `authenticated`), 200 `{"ok":true,"mensagem":"Bem-vindo, Maria!"}` |
+| E — Avatar | `click` → `enviarAvatar` → `auth.get_user` → `storage.upload` no bucket `avatars` (papel `authenticated`), 200 |
+| Extras | server action: `POST /` do navegador → `REQ POST /` com `remote_parent_id` → `alterarItem` → `update items set nome = … where id = 1` (204); rota: `GET /api/total` → `route.GET` (`mapa.route-handler`) → `rpc calcular_total` → `console.log` (`log`); erro proposital: `onClick@9` → `quebrar` THROW + `Browser.error` (`mapa.error`) |
+
+- **Nenhum pedido ao Supabase recebeu `traceparent`** (conferido em cada pedido de rede de verdade pelo Playwright); os pedidos à mesma origem (`POST /`, `GET /api/total`) receberam.
+- **Todas as 12 gravações válidas** no validador do AppMap; nenhum valor acima de 100 caracteres.
+- **Nenhum segredo** nas gravações: senha, e-mail, chave do Supabase (inteira e o final), qualquer JWT, qualquer `Bearer`.
+- **62 testes automáticos** passando.

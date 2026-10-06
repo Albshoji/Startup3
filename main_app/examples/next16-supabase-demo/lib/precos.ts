@@ -19,3 +19,5 @@ export class Carrinho {
     return this.itens.reduce((soma, preco) => soma + preco, 0);
   }
 }
+
+export const somar = (a: number, b: number) => a + b;

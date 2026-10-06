@@ -5,5 +5,5 @@
     "outDir": "dist"
   },
   "include": ["src"],
-  "references": [{ "path": "../format" }]
+  "references": [{ "path": "../format" }, { "path": "../supabase" }]
 }

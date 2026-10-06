@@ -2,7 +2,7 @@ import { mkdir, writeFile, readFile, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { promisify } from "node:util";
 import { gzip } from "node:zlib";
-import type { AppMap, Interaction } from "@mapa/format";
+import { buildInteractions, type AppMap } from "@mapa/format";
 
 const gzipAsync = promisify(gzip);
 
@@ -33,7 +33,7 @@ export async function writeRecording(projectRoot: string, appmap: AppMap, starte
   const file = join(directory, "recording.appmap.json.gz");
   await writeFile(file, compressed);
 
-  const interactions: Interaction[] = [];
+  const interactions = buildInteractions(appmap.events);
   await writeFile(join(directory, "interactions.json"), JSON.stringify(interactions, null, 2));
 
   return {

@@ -1,6 +1,12 @@
 import { criarClienteServidor } from "@/lib/supabase-server";
+import { formatarPreco } from "@/lib/precos";
+import Conta from "@/components/Conta";
 import AddItem from "@/components/AddItem";
 import AsyncChain from "@/components/AsyncChain";
+import ListaCliente from "@/components/ListaCliente";
+import SupabaseExtras from "@/components/SupabaseExtras";
+import ErrorButton from "@/components/ErrorButton";
+import LoopButton from "@/components/LoopButton";
 
 async function carregarItens() {
   const supabase = await criarClienteServidor();
@@ -13,17 +19,22 @@ export default async function Home() {
   return (
     <main>
       <h1>Itens</h1>
-      {erro && <p id="erro">Erro: {erro}</p>}
+      {erro && <p id="erro-lista">Erro: {erro}</p>}
       <p id="quantidade">{itens.length} itens visíveis</p>
-      <ul>
+      <ul id="lista-servidor">
         {itens.map((item) => (
           <li key={item.id}>
-            {item.nome}: R$ {item.preco}
+            {item.nome}: {formatarPreco(item.preco)}
           </li>
         ))}
       </ul>
+      <Conta />
       <AddItem />
+      <ListaCliente />
+      <SupabaseExtras />
       <AsyncChain />
+      <ErrorButton />
+      <LoopButton />
     </main>
   );
 }

@@ -12,6 +12,8 @@ import type { LoaderOptions } from "./types";
 const LOADER = require.resolve("./loader");
 const TURBOPACK_GLOB = "*.{js,jsx,ts,tsx,mjs,cjs}";
 const WEBPACK_TEST = /\.(js|jsx|ts|tsx|mjs|cjs)$/;
+/** supabase-js awaits internally before calling fetch; its awaits are marked so the stack survives. */
+const SUPABASE_LIBRARIES = /node_modules[\\/](\.pnpm[\\/][^\\/]+[\\/]node_modules[\\/])?@supabase[\\/]/;
 
 type AnyConfig = Record<string, any>;
 type ConfigFunction<T> = (...args: any[]) => T | Promise<T>;
@@ -42,6 +44,7 @@ function applyMapa<T extends AnyConfig>(nextConfig: T): T {
   const ours = [
     { condition: { all: ["browser", { not: "foreign" }] }, loaders: [{ loader: LOADER, options: options("browser") }] },
     { condition: { all: [{ not: "browser" }, "node", { not: "foreign" }] }, loaders: [{ loader: LOADER, options: options("server") }] },
+    { condition: { all: ["browser", "foreign", { path: SUPABASE_LIBRARIES }] }, loaders: [{ loader: LOADER, options: { ...options("browser"), awaitsOnly: true } }] },
   ];
   const existing = rules[TURBOPACK_GLOB];
   rules[TURBOPACK_GLOB] = existing ? [...ours, ...(Array.isArray(existing) ? existing : [existing])] : ours;
@@ -66,6 +69,9 @@ function applyMapa<T extends AnyConfig>(nextConfig: T): T {
         enforce: "pre",
         use: [{ loader: LOADER, options: options(context.isServer ? "server" : "browser") }],
       });
+      if (!context.isServer) {
+        config.module.rules.push({ test: WEBPACK_TEST, include: SUPABASE_LIBRARIES, enforce: "pre", use: [{ loader: LOADER, options: { ...options("browser"), awaitsOnly: true } }] });
+      }
       return config;
     },
   };

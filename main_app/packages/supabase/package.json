@@ -1,8 +1,8 @@
 {
-  "name": "@mapa/server-runtime",
+  "name": "@mapa/supabase",
   "version": "0.0.0",
   "private": true,
-  "description": "Mapa recorder for the Next.js server: records annotated functions with AsyncLocalStorage.",
+  "description": "Translates requests to Supabase (PostgREST, Auth, Storage, Functions, Realtime) into the equivalent operation.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -12,15 +12,11 @@
       "default": "./dist/index.js"
     }
   },
-  "sideEffects": true,
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "test": "node --test test/"
   },
   "dependencies": {
-    "@mapa/format": "workspace:*",
-    "@mapa/supabase": "workspace:*"
+    "@mapa/format": "workspace:*"
   }
 }

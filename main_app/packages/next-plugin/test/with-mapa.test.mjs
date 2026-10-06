@@ -40,17 +40,21 @@ test("with MAPA=1 registers browser and Node-server rules, keeps user config and
     assert.equal(out.reactStrictMode, true);
     assert.deepEqual(out.env, { A: "1", MAPA_COLLECTOR_URL: "http://127.0.0.1:47100" });
     const rules = out.turbopack.rules["*.{js,jsx,ts,tsx,mjs,cjs}"];
-    assert.equal(rules.length, 3);
+    assert.equal(rules.length, 4);
     assert.deepEqual(rules[0].condition, { all: ["browser", { not: "foreign" }] });
     assert.deepEqual(rules[1].condition, { all: [{ not: "browser" }, "node", { not: "foreign" }] });
     assert.equal(rules[0].loaders[0].options.layer, "browser");
     assert.match(rules[0].loaders[0].options.fingerprint, /^[0-9a-f]{16}$/);
     assert.equal(rules[1].loaders[0].options.layer, "server");
-    assert.equal(rules[2], userRule);
+    assert.equal(rules[2].loaders[0].options.awaitsOnly, true, "supabase-js: only await marks");
+    assert.equal(rules[2].condition.all[2].path.test("node_modules/.pnpm/@supabase+auth-js@2/node_modules/@supabase/auth-js/x.js"), true);
+    assert.equal(rules[3], userRule);
     assert.ok(out.turbopack.rules["*.svg"]);
 
     const webpackConfig = (isServer, nextRuntime) => out.webpack({ module: { rules: [] } }, { isServer, nextRuntime });
     assert.equal(webpackConfig(false).module.rules[0].use[0].options.layer, "browser");
+    assert.equal(webpackConfig(false).module.rules[1].use[0].options.awaitsOnly, true);
+    assert.equal(webpackConfig(true, "nodejs").module.rules.length, 1);
     assert.equal(webpackConfig(true, "nodejs").module.rules[0].use[0].options.layer, "server");
     assert.equal(webpackConfig(true, "edge").module.rules.length, 0, "edge runtime is skipped");
 

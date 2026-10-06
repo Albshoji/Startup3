@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
-import { buildAppMap, buildClassMap, linearize } from "../dist/index.js";
+import { buildAppMap, buildClassMap, buildInteractions, linearize } from "../dist/index.js";
 
 const require = createRequire(import.meta.url);
 const { validate } = require("@appland/appmap-validate");
@@ -71,4 +71,65 @@ test("classMap groups functions by folder and class, without duplicates", () => 
       ],
     },
   ]);
+});
+
+test("browser fetch → server request: remote link resolved to final ids; interactions count both sides", () => {
+  const tab = "browser-" + "a".repeat(32);
+  const browser = [
+    { id: 1, event: "call", thread_id: 1, timestamp: 10, defined_class: "Browser", method_id: "click", path: "mapa:browser", static: true, labels: ["mapa.user-action"], parameters: [{ name: "target", class: "Element", value: 'button#adicionar "Adicionar"' }] },
+    { id: 2, event: "call", thread_id: 1, timestamp: 10.1, parent_id: 1, http_client_request: { request_method: "POST", url: "http://localhost:3000/" }, message: [] },
+    { id: 3, event: "return", thread_id: 1, parent_id: 2, elapsed: 0.2, http_client_response: { status_code: 200 } },
+    { id: 4, event: "return", thread_id: 1, parent_id: 1, elapsed: 0.3 },
+  ];
+  const server = [
+    { id: 1, event: "call", thread_id: 5, timestamp: 10.15, remote_parent: { source: tab, id: 2 }, http_server_request: { request_method: "POST", path_info: "/" }, message: [] },
+    { id: 2, event: "call", thread_id: 5, timestamp: 10.16, parent_id: 1, defined_class: "actions", method_id: "alterarItem", path: "app/actions.ts", lineno: 5, static: true },
+    { id: 3, event: "return", thread_id: 5, parent_id: 2, elapsed: 0.01 },
+    { id: 4, event: "return", thread_id: 5, parent_id: 1, elapsed: 0.05, http_server_response: { status_code: 200 } },
+  ];
+  const { events } = linearize([{ source: tab, events: browser }, { source: "server-1", events: server }]);
+  const request = events.find((e) => e.http_server_request);
+  const fetchCall = events.find((e) => e.http_client_request);
+  assert.equal(request.remote_parent_id, fetchCall.id);
+  assert.ok(!("remote_parent" in request));
+  assert.doesNotThrow(() => validate({ ...buildAppMap(metadata, events, buildClassMap(events)), version: "1.13.1" }));
+  const [interaction] = buildInteractions(events);
+  assert.deepEqual(interaction, { event_id: 1, kind: "click", target: 'button#adicionar "Adicionar"', started_at: 10, ended_at: 10.3, event_count: 8 });
+});
+
+test("an unfinished HTTP call gets a valid status (599) and is marked incomplete", () => {
+  const { events } = linearize([{ source: "s", events: [{ id: 1, event: "call", thread_id: 1, timestamp: 1, http_client_request: { request_method: "GET", url: "https://x.supabase.co/rest/v1/items" }, message: [] }] }], 2);
+  assert.deepEqual(events[1].http_client_response, { status_code: 599 });
+  assert.equal(events[1].incomplete, true);
+  assert.doesNotThrow(() => validate({ ...buildAppMap(metadata, events), version: "1.13.1" }));
+});
+
+test("the server request that served a page load is tied to the browser's load action (inferred)", () => {
+  const tab = "browser-" + "b".repeat(32);
+  const browser = [
+    { id: 1, event: "call", thread_id: 1, timestamp: 100, defined_class: "Browser", method_id: "navigate", path: "mapa:browser", static: true, labels: ["mapa.user-action"], parameters: [{ name: "target", class: "Location", value: "carregar /?x=1" }, { name: "url", class: "String", value: "/?x=1" }] },
+    { id: 2, event: "return", thread_id: 1, parent_id: 1, elapsed: 1 },
+  ];
+  const server = [
+    { id: 1, event: "call", thread_id: 1, timestamp: 100.05, http_server_request: { request_method: "GET", path_info: "/", headers: { accept: "text/html,*/*" } }, message: [] },
+    { id: 2, event: "return", thread_id: 1, parent_id: 1, http_server_response: { status_code: 200 } },
+    { id: 3, event: "call", thread_id: 2, timestamp: 100.06, http_server_request: { request_method: "GET", path_info: "/favicon.svg", headers: { accept: "image/*" } }, message: [] },
+    { id: 4, event: "return", thread_id: 2, parent_id: 3, http_server_response: { status_code: 200 } },
+  ];
+  const { events } = linearize([{ source: tab, events: browser }, { source: "server-1", events: server }]);
+  const [page, image] = events.filter((e) => e.http_server_request);
+  assert.equal(page.remote_parent_id, 1);
+  assert.equal(page.attribution, "inferred");
+  assert.equal(image.remote_parent_id, undefined);
+  assert.equal(buildInteractions(events)[0].event_count, 4);
+});
+
+test("exception object ids are renumbered per source (same error keeps one id, sources never collide)", () => {
+  const err = (id, parent, object_id) => ({ id, event: "return", thread_id: 1, parent_id: parent, exceptions: [{ class: "Error", message: "x", object_id }] });
+  const { events } = linearize([
+    { source: "a", events: [call(1, undefined, "f", 1), call(2, 1, "g", 2), err(3, 2, 1), err(4, 1, 1)] },
+    { source: "b", events: [call(1, undefined, "h", 3), err(2, 1, 1)] },
+  ]);
+  const ids = events.filter((e) => e.exceptions).map((e) => e.exceptions[0].object_id);
+  assert.deepEqual(ids, [1, 1, 2]);
 });

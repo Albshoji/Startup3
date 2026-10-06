@@ -1,7 +1,7 @@
 # Status do projeto Mapa
 
 > Atualizado a cada avanço. Detalhes das decisões em `docs/decisions.md`.
-> Última atualização: **2026-10-06** (Etapa 2)
+> Última atualização: **2026-10-06** (Etapa 3)
 
 ## Visão geral das etapas
 
@@ -10,8 +10,8 @@
 | 0 | Estudo do AppMap e testes de risco | ✅ Concluída (2026-10-05) |
 | 1 | Estrutura, CLI e coletor | ✅ Concluída (2026-10-06) |
 | 2 | `withMapa`, plugin e `.mapa/config.json` | ✅ Concluída (2026-10-06) |
-| 3 | Gravadores de navegador e servidor | ⏭️ Próxima |
-| 4 | Start/Stop, limites e arquivo bruto | ⬜ |
+| 3 | Gravadores de navegador e servidor | ✅ Concluída (2026-10-06) |
+| 4 | Start/Stop, limites e arquivo bruto | ⏭️ Próxima |
 | 5 | Plataforma: contas, login e envio | ⬜ |
 | 6 | "Conectar Supabase" e estrutura | ⬜ |
 | 7 | Processamento: refino, Supabase e registros | ⬜ |
@@ -29,13 +29,15 @@
 - `.mapa/config.json` (opcional) escolhe o que gravar, com as mesmas regras do `appmap.yml` do AppMap. Mudanças valem ao reiniciar o `mapa dev` (ele avisa).
 - O arquivo gerado é **válido no formato AppMap**, com o mapa de código (`classMap`).
 - Sem o Mapa ligado, o app e o `next build` ficam idênticos aos de um projeto sem o Mapa.
-- Ainda **não** são gravados: cliques e outras ações do usuário, pedidos ao Supabase, requisições recebidas pelo servidor, WebSocket (Etapa 3).
+- **Ações do usuário** (clique, envio de formulário, digitação, navegação, carregamento da página), **pedidos ao Supabase** traduzidos para a operação equivalente (ler/criar/alterar/apagar linhas, login, arquivos, Edge Functions) com o papel e o id de quem pediu, **requisições ao servidor do Next** ligadas ao clique que as causou, **tempo real** (Realtime), **erros** e `console`.
+- Senhas, e-mails, tokens e chaves são mascarados antes de sair do navegador ou do servidor.
+- `interactions.json` lista as ações do usuário de cada gravação.
 - Projeto Supabase de teste montado (tabelas, regras de acesso, gatilho, bucket, Realtime, Edge Function).
 - Protótipo da Etapa 0 (`spikes/etapa0/`) provou: gravação de funções no navegador e no servidor, pilha `async`, pedidos ao Supabase com quem pediu, máscara de senhas/tokens, ligação com os registros do Supabase.
 
 ## Como retomar
 
-**Ponto exato onde parou:** Etapa 2 concluída. Nada em andamento. O próximo passo é **começar a Etapa 3** (abaixo).
+**Ponto exato onde parou:** Etapa 3 concluída. Nada em andamento. O próximo passo é **começar a Etapa 4** (abaixo).
 
 **Atenção:** desde 2026-10-06 o projeto fica na pasta **`main_app/`** (o repositório Git é a pasta de cima, `Startup3/`). Todos os comandos abaixo são rodados dentro de `main_app/`.
 
@@ -53,16 +55,16 @@
 
 **Onde está cada coisa:**
 - `packages/format` (formato, resumo de valores, máscara, regras do `config.json`, montagem do arquivo), `packages/collector` (coletor), `packages/cli` (comando `mapa`).
-- `packages/babel-plugin` (anota as funções), `packages/next-plugin` (`withMapa` e loader), `packages/browser-runtime` e `packages/server-runtime` (gravadores).
+- `packages/babel-plugin` (anota as funções), `packages/next-plugin` (`withMapa` e loader), `packages/browser-runtime` e `packages/server-runtime` (gravadores), `packages/supabase` (tradução dos pedidos ao Supabase).
+- Roteiro de verificação dos cenários A–E (Etapa 3): cada cenário vira uma gravação; o app de teste usa o projeto Supabase de teste com "Confirm email" desligado (cada execução cria um usuário `mapa.teste.<hora>@example.com`).
 - `examples/next16-supabase-demo` (app de teste) e `examples/next16-supabase-demo/supabase/` (migração e Edge Function do projeto de teste).
 - `spikes/etapa0/` (protótipo descartável da Etapa 0: referência para as Etapas 2 a 4, especialmente `app/mapa-proto/`).
 - `docs/`: `status.md` (este), `decisions.md`, `appmap-mapping.md`, `spike-report.md`, `format.md`, `referencias.md`.
 
 ## Próximo passo
 
-**Etapa 3:** gravadores de navegador e servidor: ações do usuário (clique, envio, navegação, erros), `fetch`/XHR, WebSocket (Realtime), requisições recebidas pelo servidor, `traceparent` só na mesma origem, papel/id do usuário do Supabase, tradução dos pedidos ao Supabase e rótulos.
-Pronto quando: os cenários A a E registram os pedidos ao Supabase traduzidos e rotulados, o papel/id de cada pedido, as mensagens do Realtime e o erro proposital; nenhum pedido ao Supabase recebe `traceparent`.
-Observação: os cenários com login (A, B com sucesso, E) vão precisar de cadastro/login no app de teste.
+**Etapa 4:** Start/Stop pelo botão flutuante no navegador (e pelos comandos), limites com parada automática (tempo, eventos, MB, teto de 50 chamadas por função por ação), mascaramento e encurtamento finais, compressão, `npx mapa stats`, várias abas.
+Pronto quando: Start → cenário B → Stop gera `recording.appmap.json.gz` válido, com a cadeia completa; o botão do loop mostra o teto agrupando as chamadas repetidas (com a contagem) e a parada automática pelo limite salva o que foi gravado; senha, token completo e `apikey` não aparecem no arquivo; `mapa stats` lista as funções mais chamadas.
 
 ## Pendências e decisões em aberto
 
@@ -85,3 +87,4 @@ Observação: os cenários com login (A, B com sucesso, E) vão precisar de cada
 | 2026-10-06 | Etapa 1 concluída: monorepo, CLI `mapa`, coletor | `f75cd0a` |
 | 2026-10-06 | Projeto movido para `main_app/` | `e46e083` |
 | 2026-10-06 | Etapa 2 concluída: `withMapa`, plugin Babel, gravadores de funções, `.mapa/config.json` | `f3ac7e6` |
+| 2026-10-06 | Etapa 3 concluída: ações do usuário, pedidos ao Supabase traduzidos, requisições ao servidor, Realtime, erros | (este commit) |

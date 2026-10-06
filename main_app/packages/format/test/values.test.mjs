@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { summarize, classOf, maskSummary, isSecretName } from "../dist/index.js";
+import { summarize, classOf, maskSummary, isSecretName, maskText, parameterValue, textValue } from "../dist/index.js";
 
 test("summarize keeps values short and readable", () => {
   assert.equal(summarize("Pão"), '"Pão"');
@@ -42,4 +42,26 @@ test("maskSummary hides secrets, tokens and personal data", () => {
   assert.equal(isSecretName("apiKey"), true);
   assert.equal(isSecretName("telefone", ["Telefone"]), true);
   assert.equal(isSecretName("nome"), false);
+});
+
+test("parameter values never exceed the 100 characters of the AppMap schema, even after masking", () => {
+  assert.ok(parameterValue("x", "a".repeat(500)).length <= 100);
+  assert.ok(parameterValue("x", { a: "b".repeat(90), c: 1 }).length <= 100);
+  assert.ok(textValue("x".repeat(10000)).length <= 100);
+});
+
+test("a token cut in the middle by summarizing is still masked", () => {
+  const token = "eyJhbGciOiJIUzI1NiJ9." + "eyJzdWIiOiIxMjM0NTY3ODkwIiwiZW1haWwiOiJtYXJpYUBleGVtcGxvLmNvbSJ9".repeat(3) + ".assinatura";
+  const value = parameterValue("dados", { nome: "Maria", t: token });
+  assert.ok(!value.includes("eyJzdWIi"), value);
+  assert.match(value, /\[token\]/);
+});
+
+test("maskText walks JSON bodies; bearer and new API keys are masked in free text", () => {
+  assert.equal(
+    maskText(JSON.stringify({ email: "a@b.com", password: "segredo", dados: { access_token: "x", nome: "Pão" } })),
+    JSON.stringify({ email: "[e-mail]", password: "[mascarado]", dados: { access_token: "[mascarado]", nome: "Pão" } }),
+  );
+  assert.equal(maskText("Authorization: Bearer abc.def"), "Authorization: \"[mascarado]\" [token]");
+  assert.equal(maskText("chave sb_publishable_AbC123 e Bearer qwe"), "chave [chave] e Bearer [token]");
 });

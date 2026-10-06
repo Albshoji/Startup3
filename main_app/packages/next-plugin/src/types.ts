@@ -7,4 +7,6 @@ export interface LoaderOptions {
    * restarts, keyed by loader options: a new fingerprint makes it transform them again.
    */
   fingerprint?: string;
+  /** Library files: only mark awaits (see @mapa/babel-plugin `awaitsOnly`). */
+  awaitsOnly?: boolean;
 }

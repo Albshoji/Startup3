@@ -6,7 +6,7 @@ import mapaBabelPlugin from "../dist/index.js";
 
 const ROOT = "/projeto";
 
-async function transform(code, { file = "components/AddItem.tsx", layer = "browser", config, runtimeImport } = {}) {
+async function transform(code, { file = "components/AddItem.tsx", layer = "browser", config, runtimeImport, awaitsOnly } = {}) {
   const ext = file.split(".").pop();
   const result = await transformAsync(code, {
     filename: `${ROOT}/${file}`,
@@ -14,7 +14,7 @@ async function transform(code, { file = "components/AddItem.tsx", layer = "brows
     configFile: false,
     sourceType: "unambiguous",
     parserOpts: { plugins: [...(ext.startsWith("ts") ? ["typescript"] : []), ...(ext === "ts" ? [] : ["jsx"])] },
-    plugins: [[mapaBabelPlugin, { layer, root: ROOT, config, runtimeImport }]],
+    plugins: [[mapaBabelPlugin, { layer, root: ROOT, config, runtimeImport, awaitsOnly }]],
   });
   return result.code;
 }
@@ -285,4 +285,30 @@ test("browser: a continuation that ends does not leak its frame into later work"
 test("React components without parameters record their props as `props`", async () => {
   const out = await transform("export default function Lista() { return <ul />; }", { file: "components/Lista.tsx" });
   assert.match(out, /params: \["props"\]/);
+});
+
+test("awaitsOnly (supabase-js in node_modules): marks awaits, records no function", async () => {
+  const code = "export async function fetchWithAuth(u) { const t = await getAccessToken(); return fetch(u, t); }";
+  const out = await transform(code, { file: "node_modules/@supabase/supabase-js/dist/x.js", awaitsOnly: true, runtimeImport: "/rt/browser.js" });
+  assert.match(out, /__mapa\.bf/);
+  assert.ok(!out.includes("__mapa.r("));
+  assert.ok(!out.includes("__mapaFns"));
+  assert.match(out, /^import "\/rt\/browser.js";/);
+});
+
+test("labels from comments above the function (// @label, // @labels)", async () => {
+  const out = await transform(
+    `// @label security.authentication
+export async function entrar() {}
+/** @labels log audit */
+const registrar = () => {};
+class Api {
+  // @label dao.materialize
+  listar() {}
+}`,
+    { file: "lib/auth.ts" },
+  );
+  assert.match(out, /id: "entrar"[\s\S]*?labels: \["security.authentication"\]/);
+  assert.match(out, /id: "registrar"[\s\S]*?labels: \["log", "audit"\]/);
+  assert.match(out, /id: "listar"[\s\S]*?labels: \["dao.materialize"\]/);
 });

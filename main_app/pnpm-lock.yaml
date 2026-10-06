@@ -225,6 +225,9 @@ importers:
       '@mapa/format':
         specifier: workspace:*
         version: link:../format
+      '@mapa/supabase':
+        specifier: workspace:*
+        version: link:../supabase
 
   packages/cli:
     dependencies:
@@ -270,6 +273,15 @@ importers:
         version: link:../server-runtime
 
   packages/server-runtime:
+    dependencies:
+      '@mapa/format':
+        specifier: workspace:*
+        version: link:../format
+      '@mapa/supabase':
+        specifier: workspace:*
+        version: link:../supabase
+
+  packages/supabase:
     dependencies:
       '@mapa/format':
         specifier: workspace:*

@@ -26,6 +26,11 @@ export interface MapaBabelOptions {
   /** Module the annotated file imports to install the recorder. Omitted in unit tests. */
   runtimeImport?: string;
   config?: MapaConfig;
+  /**
+   * Library code (supabase-js): only mark the awaits, so the browser stack survives the library's
+   * own awaits before `fetch` (docs/spike-report.md, risk 2). No function is recorded.
+   */
+  awaitsOnly?: boolean;
 }
 
 const SKIP = Symbol("mapa.generated");
@@ -56,6 +61,16 @@ export default function mapaBabelPlugin(api: PluginAPI, options: MapaBabelOption
       Program(programPath, state) {
         const filename = state.filename;
         if (!filename) return;
+        if (options.awaitsOnly) {
+          if (options.layer === "browser" && markAwaits(programPath) > 0 && options.runtimeImport) {
+            programPath.node.body.unshift(
+              programPath.node.sourceType === "script"
+                ? t.expressionStatement(t.callExpression(t.identifier("require"), [t.stringLiteral(options.runtimeImport)]))
+                : t.importDeclaration([], t.stringLiteral(options.runtimeImport)),
+            );
+          }
+          return;
+        }
         const relPath = relative(options.root, filename).split(sep).join("/");
         const pkg = matcher.matchFile(relPath);
         if (!pkg) return;
@@ -83,7 +98,7 @@ export default function mapaBabelPlugin(api: PluginAPI, options: MapaBabelOption
 
             const bodyDirectives = t.isBlockStatement(node.body) ? node.body.directives.map((d) => d.value.value) : [];
             const serverForm = fileServerForm || bodyDirectives.some((d) => SERVER_DIRECTIVES.has(d));
-            const labels = [...info.labels, ...ConfigMatcher.labelsFor(pkg, info.name, info.klass)];
+            const labels = [...info.labels, ...ConfigMatcher.labelsFor(pkg, info.name, info.klass), ...commentLabels(fnPath)];
             if ((fileUseServer || bodyDirectives.includes("use server")) && node.async) labels.push("mapa.server-action");
             if (isRouteFile && ROUTE_METHODS.has(info.name) && !fnPath.getFunctionParent()) labels.push("mapa.route-handler");
 
@@ -260,6 +275,21 @@ export default function mapaBabelPlugin(api: PluginAPI, options: MapaBabelOption
     // Named function expression passed somewhere: foo(function salvar() {...})
     if (t.isFunctionExpression(node) && node.id) return fn(node.id.name);
     return undefined; // other anonymous callbacks (map, then...) are not recorded, as in AppMap
+  }
+
+  /** `// @label x` or `// @labels a b` right above the function, as in appmap-node's CommentLabelExtractor. */
+  function commentLabels(fnPath: FunctionPath): string[] {
+    const nodes: BabelTypes.Node[] = [fnPath.node];
+    const statement = fnPath.getStatementParent();
+    if (statement && statement.node !== fnPath.node) nodes.push(statement.node);
+    if (fnPath.parentPath?.isObjectProperty() || fnPath.parentPath?.isClassProperty()) nodes.push(fnPath.parentPath.node);
+    const labels: string[] = [];
+    for (const node of nodes) {
+      for (const comment of node.leadingComments ?? []) {
+        for (const match of comment.value.matchAll(/@labels?\s+([\w.:\- \t]+)/g)) labels.push(...match[1]!.trim().split(/\s+/));
+      }
+    }
+    return labels;
   }
 
   function className(classPath: NodePath | null | undefined): string | undefined {

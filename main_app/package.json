@@ -6,9 +6,9 @@
     "node": ">=22"
   },
   "scripts": {
-    "build": "tsc -b packages/format packages/babel-plugin packages/browser-runtime packages/server-runtime packages/next-plugin packages/collector packages/cli",
-    "clean": "tsc -b --clean packages/format packages/babel-plugin packages/browser-runtime packages/server-runtime packages/next-plugin packages/collector packages/cli",
-    "test": "tsc -b packages/format packages/babel-plugin packages/browser-runtime packages/server-runtime packages/next-plugin packages/collector packages/cli && node --test \"packages/*/test/*.test.mjs\""
+    "build": "tsc -b packages/format packages/supabase packages/babel-plugin packages/browser-runtime packages/server-runtime packages/next-plugin packages/collector packages/cli",
+    "clean": "tsc -b --clean packages/format packages/supabase packages/babel-plugin packages/browser-runtime packages/server-runtime packages/next-plugin packages/collector packages/cli",
+    "test": "tsc -b packages/format packages/supabase packages/babel-plugin packages/browser-runtime packages/server-runtime packages/next-plugin packages/collector packages/cli && node --test \"packages/*/test/*.test.mjs\""
   },
   "devDependencies": {
     "@types/node": "24.19.1",
