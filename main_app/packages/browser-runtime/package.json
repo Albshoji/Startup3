@@ -1,0 +1,23 @@
+{
+  "name": "@mapa/browser-runtime",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Mapa recorder for the browser: records annotated functions with a logical async stack.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "sideEffects": true,
+  "files": ["dist"],
+  "scripts": {
+    "test": "node --test test/"
+  },
+  "dependencies": {
+    "@mapa/format": "workspace:*"
+  }
+}

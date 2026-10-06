@@ -71,6 +71,18 @@ export function nodeMajor(version = process.version): number {
   return Number(version.replace(/^v/, "").split(".")[0]);
 }
 
+/**
+ * The Babel 8 used by the loader needs Node ^22.18 or >=24.11 (docs/decisions.md, Etapa 2).
+ * Returns the minimum version to show the user, or undefined when the running Node is fine.
+ */
+export function missingNodeRequirement(version = process.version): string | undefined {
+  const [major = 0, minor = 0] = version.replace(/^v/, "").split(".").map(Number);
+  if (major === 22 && minor < 18) return "22.18";
+  if (major === 24 && minor < 11) return "24.11";
+  if (major < 22 || major === 23) return "22.18";
+  return undefined;
+}
+
 /** Version of an installed dependency of the project, if any. */
 export function installedVersion(root: string, name: string): string | undefined {
   try {

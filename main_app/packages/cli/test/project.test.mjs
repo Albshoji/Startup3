@@ -4,7 +4,7 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { detectBundler, findNextProject, MapaError } from "../dist/project.js";
+import { detectBundler, findNextProject, MapaError, missingNodeRequirement } from "../dist/project.js";
 
 test("Next 16 uses Turbopack unless --webpack; Next 15 uses webpack unless --turbopack", () => {
   assert.equal(detectBundler(16, []), "turbopack");
@@ -28,4 +28,13 @@ test("outside a Next project it explains what to do, in Portuguese", async () =>
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
+});
+
+test("Node versions too old for Babel 8 are reported with the minimum version", () => {
+  assert.equal(missingNodeRequirement("v22.17.1"), "22.18");
+  assert.equal(missingNodeRequirement("v22.18.0"), undefined);
+  assert.equal(missingNodeRequirement("v24.10.0"), "24.11");
+  assert.equal(missingNodeRequirement("v24.19.0"), undefined);
+  assert.equal(missingNodeRequirement("v20.19.0"), "22.18");
+  assert.equal(missingNodeRequirement("v26.0.0"), undefined);
 });

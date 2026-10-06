@@ -173,7 +173,7 @@
 - A gravação no formato final continua compatível com a reconstrução pela ordem: o coletor **reordena** cada `thread_id` por árvore de pais antes de escrever.
 
 ### Onde é diferente e por quê
-- `parent_id` explícito no `call` (extensão; a especificação só tem `parent_id` no return): duas fontes concorrentes e um navegador sem `AsyncLocalStorage` tornam a ordem implícita frágil. O arquivo continua válido no formato base porque a ordem final também é reconstruída.
+- `parent_id` explícito no `call` **só no transporte** gravador → coletor: duas fontes concorrentes e um navegador sem `AsyncLocalStorage` tornam a ordem implícita frágil. O esquema do AppMap proíbe `parent_id` no `call`, então o coletor reconstrói a ordem, renumera e remove o campo antes de escrever (Etapa 2; `docs/format.md`).
 
 ---
 

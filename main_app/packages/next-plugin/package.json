@@ -1,0 +1,27 @@
+{
+  "name": "@mapa/next-plugin",
+  "version": "0.0.0",
+  "private": true,
+  "description": "withMapa(nextConfig): registers the Mapa Babel loader for the browser and the server. Does nothing without MAPA=1.",
+  "type": "commonjs",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./loader": "./dist/loader.js"
+  },
+  "files": ["dist"],
+  "scripts": {
+    "test": "node --test test/"
+  },
+  "dependencies": {
+    "@babel/core": "8.0.6",
+    "@mapa/babel-plugin": "workspace:*",
+    "@mapa/browser-runtime": "workspace:*",
+    "@mapa/format": "workspace:*",
+    "@mapa/server-runtime": "workspace:*"
+  }
+}

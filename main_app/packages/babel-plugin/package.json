@@ -1,0 +1,27 @@
+{
+  "name": "@mapa/babel-plugin",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Babel plugin that annotates the user's functions so Mapa can record calls and returns (the AppMap agent equivalent).",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "test": "node --test test/"
+  },
+  "dependencies": {
+    "@mapa/format": "workspace:*"
+  },
+  "devDependencies": {
+    "@babel/core": "8.0.6"
+  }
+}

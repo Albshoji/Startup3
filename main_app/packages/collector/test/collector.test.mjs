@@ -23,7 +23,7 @@ const metadata = () => ({
 
 async function withCollector(options, fn) {
   const root = await mkdtemp(join(tmpdir(), "mapa-collector-"));
-  const collector = await startCollector({ projectRoot: root, metadata, port: 0, ...options });
+  const collector = await startCollector({ projectRoot: root, metadata, port: 0, drainMs: 0, ...options });
   try {
     await fn(collector, root);
   } finally {
@@ -77,7 +77,7 @@ test("stops by itself at the time limit and keeps what was recorded", async () =
     assert.ok(messages.some((m) => m.includes("limite de 0.3 segundos")), messages.join("\n"));
     const savedLine = messages.find((m) => m.startsWith("Gravação salva em "));
     assert.ok(savedLine);
-    const appmap = await readAppMap(join(savedLine.replace("Gravação salva em ", ""), "recording.appmap.json.gz"));
+    const appmap = await readAppMap(join(savedLine.replace("Gravação salva em ", "").replace(/ \(\d+ eventos\)\.$/, ""), "recording.appmap.json.gz"));
     assert.equal(appmap.metadata.mapa.stopped_by, "time-limit");
     assert.doesNotThrow(() => validateAppMap(appmap));
   });
@@ -85,7 +85,7 @@ test("stops by itself at the time limit and keeps what was recorded", async () =
 
 test("closing the collector during a recording saves it", async () => {
   const root = await mkdtemp(join(tmpdir(), "mapa-collector-"));
-  const collector = await startCollector({ projectRoot: root, metadata, port: 0 });
+  const collector = await startCollector({ projectRoot: root, metadata, port: 0, drainMs: 0 });
   collector.start();
   await collector.close();
   const { readdir } = await import("node:fs/promises");
@@ -104,5 +104,71 @@ test("refuses requests whose Host header is not local", async () => {
     });
     assert.equal(status, 403);
     assert.equal(collector.status().enabled, false);
+  });
+});
+
+const sendEvents = (collector, source, events, headers = {}) =>
+  fetch(`${collector.url}/events?source=${source}`, { method: "POST", body: JSON.stringify(events), headers: { "content-type": "text/plain", ...headers } });
+
+const fnCall = (id, parent_id, method_id, timestamp, thread_id = 1) => ({
+  id, event: "call", thread_id, timestamp, parent_id, defined_class: "AddItem", method_id, path: "components/AddItem.tsx", lineno: 10 + id, static: true,
+});
+const fnReturn = (id, parent_id, thread_id = 1) => ({ id, event: "return", thread_id, parent_id, elapsed: 0.01 });
+
+test("events from browser tabs and server are joined into one valid AppMap with a classMap", async () => {
+  await withCollector({}, async (collector) => {
+    assert.equal((await sendEvents(collector, "browser-a", [fnCall(1, undefined, "ignorado", 1)])).status, 204, "accepted but ignored when not recording");
+    collector.start("cenario");
+    await sendEvents(collector, "browser-a", [fnCall(1, undefined, "adicionarItem", 1), fnCall(2, 1, "formatarPreco", 2)]);
+    await sendEvents(collector, "server-1", [fnCall(1, undefined, "alterarItem", 1.5, 3), fnReturn(2, 1, 3)]);
+    await sendEvents(collector, "browser-a", [fnReturn(3, 2), fnReturn(4, 1)]);
+    const saved = await collector.stop();
+    const appmap = await readAppMap(saved.file);
+    assert.doesNotThrow(() => validateAppMap(appmap));
+    assert.deepEqual(appmap.events.map((e) => e.method_id ?? `/${e.parent_id}`), ["adicionarItem", "formatarPreco", "/2", "/1", "alterarItem", "/5"]);
+    assert.equal(appmap.classMap[0].name, "components");
+    assert.equal(saved.event_count, 6);
+  });
+});
+
+test("Stop waits for the last batches still on their way (drain)", async () => {
+  await withCollector({ drainMs: 300 }, async (collector) => {
+    collector.start();
+    const stopping = collector.stop();
+    await sendEvents(collector, "browser-a", [fnCall(1, undefined, "tarde", 1), fnReturn(2, 1)]);
+    const appmap = await readAppMap((await stopping).file);
+    assert.equal(appmap.events.length, 2);
+  });
+});
+
+test("unfinished calls get a synthetic return and are counted", async () => {
+  await withCollector({}, async (collector) => {
+    collector.start();
+    await sendEvents(collector, "browser-a", [fnCall(1, undefined, "esperando", Date.now() / 1000)]);
+    const appmap = await readAppMap((await collector.stop()).file);
+    assert.equal(appmap.metadata.mapa.incomplete_calls, 1);
+    assert.equal(appmap.events[1].incomplete, true);
+    assert.doesNotThrow(() => validateAppMap(appmap));
+  });
+});
+
+test("stops at the event limit and keeps what was recorded", async () => {
+  const messages = [];
+  await withCollector({ limits: { maxEvents: 3 }, log: (m) => messages.push(m) }, async (collector) => {
+    collector.start();
+    await sendEvents(collector, "s", [fnCall(1, undefined, "a", 1), fnReturn(2, 1), fnCall(3, undefined, "b", 2), fnReturn(4, 3)]);
+    await new Promise((r) => setTimeout(r, 200));
+    assert.equal(collector.status().enabled, false);
+    assert.ok(messages.some((m) => m.includes("limite de 3 eventos")));
+    assert.ok(messages.some((m) => m.startsWith("Gravação salva em ")));
+  });
+});
+
+test("CORS only for local origins; other sites are refused", async () => {
+  await withCollector({}, async (collector) => {
+    const ok = await fetch(`${collector.url}/record`, { headers: { origin: "http://localhost:3000" } });
+    assert.equal(ok.headers.get("access-control-allow-origin"), "http://localhost:3000");
+    const evil = await sendEvents(collector, "x", [], { origin: "https://evil.example" });
+    assert.equal(evil.status, 403);
   });
 });

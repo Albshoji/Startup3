@@ -49,16 +49,57 @@ Campos do formato base que o Mapa preenche:
 | `stopped_by` | `user` (Stop), `time-limit`, `event-limit`, `size-limit`, `shutdown` (o `mapa dev` foi fechado) |
 | `limits` | limites em vigor: `maxSeconds`, `maxEvents`, `maxMegabytes`, `maxCallsPerFunctionPerAction` |
 
-## Extensões dos eventos (a implementar nas Etapas 2 a 4)
+## Extensões dos eventos
 
 | Campo | Onde | Significado |
 |---|---|---|
-| `timestamp` | todo evento | já existe no formato base (opcional); o Mapa **sempre** preenche |
+| `timestamp` | todo evento | já existe no formato base (opcional); o Mapa **sempre** preenche (época, em segundos) |
 | `layer` | `call` | `browser`, `next-server` ou `supabase` |
-| `parent_id` | `call` | id da chamada que estava no topo da pilha (no formato base só existe no `return`) |
-| `attribution` | `call` | `inferred` quando a ligação com o pai foi inferida (não observada) |
-| `labels` | `call` | rótulos do AppMap e rótulos `mapa.*` (`mapa.user-action`, `mapa.websocket`, `mapa.react-component`, `mapa.react-hook`, `mapa.event-handler`, `mapa.server-action`) |
-| `supabase` | `call` com `http_client_request` para o Supabase | tradução do pedido (serviço, operação, tabela, filtros), `role` e `user_id` do token, grau de certeza |
+| `attribution` | `call` | `inferred` quando a ligação com o pai foi inferida, não observada (Etapa 3) |
+| `labels` | `call` | rótulos do AppMap e rótulos `mapa.*`: `mapa.react-component`, `mapa.react-hook`, `mapa.event-handler`, `mapa.server-action`, `mapa.route-handler` (Etapa 2); `mapa.user-action`, `mapa.websocket` (Etapa 3) |
+| `incomplete` | `return` | `true` quando a chamada ainda não tinha terminado no Stop: o coletor cria um `return` sintético (`elapsed` até o Stop; `status_code: 0` em pedidos HTTP) |
+| `supabase` | `call` com `http_client_request` para o Supabase | tradução do pedido (serviço, operação, tabela, filtros), `role` e `user_id` do token, grau de certeza (Etapa 3) |
+
+`metadata.mapa.incomplete_calls`: quantas chamadas receberam um `return` sintético.
+
+### `parent_id` só no transporte (decisão da Etapa 2)
+
+O esquema do AppMap **proíbe** `parent_id` em eventos `call`
+(`definitions/call/properties/parent_id: false` no `@appland/appmap-validate`). Por isso:
+
+1. os gravadores mandam ao coletor cada `call` **com** `parent_id` (o pai lógico, observado pelo
+   `AsyncLocalStorage` no servidor e pela marcação de `await` no navegador), numerando os eventos
+   por fonte (cada aba e o servidor contam por conta própria);
+2. no Stop, o coletor monta a árvore pelos `parent_id`, escreve cada subárvore de forma contígua
+   (raízes em ordem de `timestamp`, filhos em ordem de chamada), **renumera** os ids (o validador
+   exige ids crescentes e ordem FIFO por `thread_id`) e **remove** o `parent_id` dos `call`
+   (`packages/format/src/linearize.ts`).
+
+O arquivo final é lido como qualquer AppMap: a árvore sai da ordem dos eventos em cada thread.
+
+### `thread_id`
+
+Atribuído pelo coletor, na ordem em que cada linha de execução aparece: uma por aba do navegador;
+no servidor, cada chamada sem pai (por exemplo, o começo de uma requisição) abre uma linha nova e
+seus filhos ficam nela.
+
+### Campos que o esquema proíbe (atenção para a Etapa 3)
+
+`elapsed` em `call`; `return_value`/`exceptions` em eventos com `http_client_response` ou
+`http_server_response` (o corpo da resposta vai **dentro** de `http_client_response.return_value`);
+`defined_class`/`method_id` em eventos com `http_client_request`/`http_server_request`.
+
+## Protocolo gravador → coletor
+
+- `GET /record`: os gravadores consultam a cada 1 s se há gravação (sem gravação, as funções rodam
+  sem registrar nada).
+- `POST /events?source=<fonte>`: lote de eventos brutos (JSON, `content-type: text/plain` para não
+  disparar *preflight* de CORS). Fontes: `browser-<id da aba>`, `server-<pid>`. Fora de uma
+  gravação, o lote é ignorado.
+- CORS só para origens locais (`localhost`, `127.0.0.1`, `::1`); outras origens recebem 403.
+- No Stop, o coletor ainda aceita lotes por 1 s (os gravadores enviam a cada 0,3–0,5 s).
+- Contrato do código anotado com o gravador: `packages/format/src/protocol.ts`
+  (`globalThis.__mapa.r/cur/bf/af/rs` e a tabela `__mapaFns` de cada arquivo).
 
 Ações do usuário: `call` sintético com `defined_class: "Browser"`, `method_id`
 `click | submit | type | navigate`, `labels: ["mapa.user-action"]`, parâmetro `target` com a
@@ -71,4 +112,4 @@ WebSocket (Realtime): conexão como `http_client_request` `GET` com `Upgrade: we
 ## `interactions.json`
 
 Lista de `Interaction` (`packages/format/src/types.ts`): `event_id`, `kind`, `target`,
-`started_at`, `ended_at`, `event_count`. Na Etapa 1 é sempre `[]`.
+`started_at`, `ended_at`, `event_count`. Até a Etapa 3 é sempre `[]` (as ações do usuário entram na Etapa 3).

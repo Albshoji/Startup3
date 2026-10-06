@@ -31,6 +31,8 @@ export interface MapaRecordingInfo {
   stopped_at?: string;
   stopped_by?: StopReason;
   limits?: RecordingLimits;
+  /** Calls that had not returned at Stop (they get a synthetic return with `incomplete: true`). */
+  incomplete_calls?: number;
 }
 
 export type StopReason = "user" | "time-limit" | "event-limit" | "size-limit" | "shutdown";
@@ -99,7 +101,10 @@ export interface CallEvent extends BaseEvent {
   sql_query?: { database_type: string; sql: string };
   /** Mapa extensions (docs/format.md). */
   layer?: "browser" | "next-server" | "supabase";
+  /** Transport only (recorder → collector): the AppMap schema forbids it in the final file. */
   parent_id?: number;
+  /** `inferred` when the link to the parent was inferred instead of observed. */
+  attribution?: "inferred";
 }
 
 export interface ReturnEvent extends BaseEvent {
@@ -110,6 +115,8 @@ export interface ReturnEvent extends BaseEvent {
   exceptions?: Exception[];
   http_server_response?: { status_code: number; headers?: Record<string, string>; return_value?: Parameter };
   http_client_response?: { status_code: number; headers?: Record<string, string>; return_value?: Parameter };
+  /** Mapa extension: the call had not returned when the recording stopped (synthetic return). */
+  incomplete?: boolean;
 }
 
 export type Event = CallEvent | ReturnEvent;

@@ -1,4 +1,6 @@
 import { criarClienteServidor } from "@/lib/supabase-server";
+import AddItem from "@/components/AddItem";
+import AsyncChain from "@/components/AsyncChain";
 
 async function carregarItens() {
   const supabase = await criarClienteServidor();
@@ -20,6 +22,8 @@ export default async function Home() {
           </li>
         ))}
       </ul>
+      <AddItem />
+      <AsyncChain />
     </main>
   );
 }
