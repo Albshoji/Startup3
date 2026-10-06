@@ -7,6 +7,8 @@ import {
   EVENTS_PATH,
   linearize,
   RECORD_PATH,
+  sweepEvents,
+  VALUE_MAX_LENGTH,
   type Event,
   type Metadata,
   type RecordingLimits,
@@ -36,7 +38,13 @@ export interface RecordingStatus {
   elapsed_seconds?: number;
   remaining_seconds?: number;
   event_count?: number;
+  /** Size of the raw events received so far (JSON bytes). */
+  bytes?: number;
   limits: RecordingLimits;
+  /** True between Stop and the file being written. */
+  saving?: boolean;
+  /** The last recording saved by this collector (shown by the floating button after a Stop). */
+  last?: { stopped_by: StopReason; event_count: number; directory: string; stopped_at: string };
 }
 
 interface ActiveRecording {
@@ -45,6 +53,9 @@ interface ActiveRecording {
   /** Raw events per source (each browser tab and the Next server number their events on their own). */
   sources: Map<string, Event[]>;
   eventCount: number;
+  bytes: number;
+  /** The limit that was reached (events after it are refused). */
+  limitHit?: "event-limit" | "size-limit";
   timer: NodeJS.Timeout;
 }
 
@@ -76,9 +87,10 @@ export async function startCollector(options: CollectorOptions): Promise<Collect
   /** Recording being stopped: still accepts the last batches during the drain. */
   let draining: ActiveRecording | undefined;
   let stopping: Promise<SavedRecording | undefined> | undefined;
+  let last: RecordingStatus["last"];
 
   function status(): RecordingStatus {
-    if (!active) return { enabled: false, limits };
+    if (!active) return { enabled: false, limits, ...(stopping ? { saving: true } : {}), ...(last ? { last } : {}) };
     const elapsed = (Date.now() - active.startedAt.getTime()) / 1000;
     return {
       enabled: true,
@@ -86,6 +98,7 @@ export async function startCollector(options: CollectorOptions): Promise<Collect
       elapsed_seconds: Math.round(elapsed),
       remaining_seconds: Math.max(0, Math.round(limits.maxSeconds - elapsed)),
       event_count: active.eventCount,
+      bytes: Math.round(active.bytes),
       limits,
     };
   }
@@ -97,7 +110,7 @@ export async function startCollector(options: CollectorOptions): Promise<Collect
       void stop("time-limit");
     }, limits.maxSeconds * 1000);
     timer.unref();
-    active = { name, startedAt: new Date(), sources: new Map(), eventCount: 0, timer };
+    active = { name, startedAt: new Date(), sources: new Map(), eventCount: 0, bytes: 0, timer };
     log(`Gravação iniciada (para sozinha em ${limits.maxSeconds} segundos).`);
     return status();
   }
@@ -124,9 +137,13 @@ export async function startCollector(options: CollectorOptions): Promise<Collect
     draining = undefined;
     const sources = [...recording.sources].map(([source, events]) => ({ source, events }));
     const { events, incomplete } = linearize(sources, stoppedAt.getTime() / 1000);
+    sweepEvents(events);
+    const base = options.metadata();
     const metadata: Metadata = {
-      ...options.metadata(),
+      ...base,
       ...(recording.name ? { name: recording.name } : {}),
+      // Every captured value was cut to the length the AppMap spec recommends.
+      trimmed: { version: base.client.version ?? "0.0.0", max_length: VALUE_MAX_LENGTH },
       mapa: {
         started_at: recording.startedAt.toISOString(),
         stopped_at: stoppedAt.toISOString(),
@@ -137,23 +154,42 @@ export async function startCollector(options: CollectorOptions): Promise<Collect
     };
     const saving = writeRecording(options.projectRoot, buildAppMap(metadata, events, buildClassMap(events)), recording.startedAt, recording.name);
     const saved = await saving;
+    last = { stopped_by: reason, event_count: saved.event_count, directory: saved.directory, stopped_at: stoppedAt.toISOString() };
     log(`Gravação salva em ${saved.directory} (${saved.event_count} eventos).`);
     return saved;
   }
 
-  function receive(source: string, batch: unknown) {
+  function receive(source: string, batch: unknown, bytes: number) {
     const recording = active ?? draining;
     if (!recording || !Array.isArray(batch)) return;
     const list = recording.sources.get(source) ?? [];
     recording.sources.set(source, list);
+    // Limits are strict: a big batch (e.g. a synchronous loop) is cut where the limit is reached.
+    // Calls cut without their return get a synthetic one when the file is written.
+    const bytesPerEvent = batch.length ? bytes / batch.length : 0;
     for (const event of batch) {
+      if (recording.eventCount >= limits.maxEvents) {
+        recording.limitHit = "event-limit";
+        break;
+      }
+      if (recording.bytes + bytesPerEvent > limits.maxMegabytes * 1_000_000) {
+        recording.limitHit = "size-limit";
+        break;
+      }
       if (!isRawEvent(event)) continue;
       list.push(event);
       recording.eventCount++;
+      recording.bytes += bytesPerEvent;
     }
-    if (active === recording && recording.eventCount >= limits.maxEvents) {
+    if (active !== recording) return;
+    if (!recording.limitHit && recording.eventCount >= limits.maxEvents) recording.limitHit = "event-limit";
+    if (!recording.limitHit && recording.bytes >= limits.maxMegabytes * 1_000_000) recording.limitHit = "size-limit";
+    if (recording.limitHit === "event-limit") {
       log(`Gravação parada: atingiu o limite de ${limits.maxEvents} eventos. O que foi gravado foi salvo.`);
       void stop("event-limit");
+    } else if (recording.limitHit === "size-limit") {
+      log(`Gravação parada: atingiu o limite de ${limits.maxMegabytes} MB. O que foi gravado foi salvo.`);
+      void stop("size-limit");
     }
   }
 
@@ -176,7 +212,7 @@ export async function startCollector(options: CollectorOptions): Promise<Collect
       res.setHeader("vary", "origin");
     }
     if (req.method === "OPTIONS") {
-      res.setHeader("access-control-allow-methods", "GET, POST");
+      res.setHeader("access-control-allow-methods", "GET, POST, DELETE");
       res.setHeader("access-control-allow-headers", "content-type");
       res.writeHead(204).end();
       return;
@@ -186,7 +222,8 @@ export async function startCollector(options: CollectorOptions): Promise<Collect
     if (url.pathname === "/health") return sendJson(res, 200, { ok: true });
     if (url.pathname === EVENTS_PATH && req.method === "POST") {
       const source = url.searchParams.get("source") ?? "unknown";
-      receive(source.slice(0, 80), await readBody(req, MAX_EVENTS_BODY_BYTES));
+      const { value, bytes } = await readBodyWithSize(req, MAX_EVENTS_BODY_BYTES);
+      receive(source.slice(0, 80), value, bytes);
       res.writeHead(204).end();
       return;
     }
@@ -280,6 +317,10 @@ const MAX_BODY_BYTES = 64 * 1024;
 const MAX_EVENTS_BODY_BYTES = 16 * 1024 * 1024;
 
 async function readBody(req: http.IncomingMessage, maxBytes: number): Promise<unknown> {
+  return (await readBodyWithSize(req, maxBytes)).value;
+}
+
+async function readBodyWithSize(req: http.IncomingMessage, maxBytes: number): Promise<{ value: unknown; bytes: number }> {
   let size = 0;
   const chunks: Buffer[] = [];
   for await (const chunk of req) {
@@ -287,11 +328,11 @@ async function readBody(req: http.IncomingMessage, maxBytes: number): Promise<un
     if (size > maxBytes) throw new Error("request body too large");
     chunks.push(chunk as Buffer);
   }
-  if (size === 0) return undefined;
+  if (size === 0) return { value: undefined, bytes: 0 };
   try {
-    return JSON.parse(Buffer.concat(chunks).toString("utf8")) as unknown;
+    return { value: JSON.parse(Buffer.concat(chunks).toString("utf8")) as unknown, bytes: size };
   } catch {
-    return undefined;
+    return { value: undefined, bytes: size };
   }
 }
 

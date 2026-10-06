@@ -152,6 +152,19 @@ test("unfinished calls get a synthetic return and are counted", async () => {
   });
 });
 
+test("event limit is strict: a big batch is cut at the limit; cut calls get a synthetic return", async () => {
+  await withCollector({ limits: { maxEvents: 3 } }, async (collector) => {
+    collector.start();
+    await sendEvents(collector, "s", [fnCall(1, undefined, "a", 1), fnCall(2, 1, "b", 2), fnReturn(3, 2), fnReturn(4, 1), fnCall(5, undefined, "c", 3), fnReturn(6, 5)]);
+    await new Promise((r) => setTimeout(r, 200));
+    const status = collector.status();
+    assert.equal(status.last.stopped_by, "event-limit");
+    const appmap = await readAppMap(join(status.last.directory, "recording.appmap.json.gz"));
+    assert.deepEqual(appmap.events.map((e) => e.method_id ?? (e.incomplete ? "incompleto" : "ret")), ["a", "b", "ret", "incompleto"]);
+    assert.doesNotThrow(() => validateAppMap(appmap));
+  });
+});
+
 test("stops at the event limit and keeps what was recorded", async () => {
   const messages = [];
   await withCollector({ limits: { maxEvents: 3 }, log: (m) => messages.push(m) }, async (collector) => {
@@ -170,5 +183,41 @@ test("CORS only for local origins; other sites are refused", async () => {
     assert.equal(ok.headers.get("access-control-allow-origin"), "http://localhost:3000");
     const evil = await sendEvents(collector, "x", [], { origin: "https://evil.example" });
     assert.equal(evil.status, 403);
+  });
+});
+
+test("size limit (MB) is strict: stops and keeps what fit; status reports bytes and the last recording", async () => {
+  await withCollector({ limits: { maxMegabytes: 0.0012 } }, async (collector) => {
+    collector.start();
+    await sendEvents(collector, "s", [fnCall(1, undefined, "a".repeat(600), 1), fnReturn(2, 1)]);
+    assert.ok(collector.status().bytes > 600);
+    await sendEvents(collector, "s", [fnCall(3, undefined, "b".repeat(600), 2), fnReturn(4, 3)]);
+    await new Promise((r) => setTimeout(r, 200));
+    const status = collector.status();
+    assert.equal(status.enabled, false);
+    assert.equal(status.last.stopped_by, "size-limit");
+    assert.equal(status.last.event_count, 2, "only the first pair fit");
+    const appmap = await readAppMap(join(status.last.directory, "recording.appmap.json.gz"));
+    assert.doesNotThrow(() => validateAppMap(appmap));
+  });
+});
+
+test("the saved file is marked as trimmed to 100 characters and passes the final sweep", async () => {
+  await withCollector({}, async (collector) => {
+    collector.start();
+    const call = { ...fnCall(1, undefined, "f", 1), parameters: [{ name: "senha", class: "String", value: "segredo" }] };
+    await sendEvents(collector, "s", [call, fnReturn(2, 1)]);
+    const appmap = await readAppMap((await collector.stop()).file);
+    assert.equal(appmap.metadata.trimmed.max_length, 100);
+    assert.equal(appmap.events[0].parameters[0].value, "[mascarado]");
+    assert.doesNotThrow(() => validateAppMap(appmap));
+  });
+});
+
+test("the browser can start and stop (CORS preflight allows POST and DELETE from the app)", async () => {
+  await withCollector({}, async (collector) => {
+    const preflight = await fetch(`${collector.url}/record`, { method: "OPTIONS", headers: { origin: "http://localhost:3000", "access-control-request-method": "DELETE" } });
+    assert.equal(preflight.status, 204);
+    assert.match(preflight.headers.get("access-control-allow-methods"), /DELETE/);
   });
 });

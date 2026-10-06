@@ -6,3 +6,6 @@ export * from "./mask.js";
 export * from "./config.js";
 export * from "./linearize.js";
 export * from "./protocol.js";
+export * from "./finalize.js";
+export * from "./cap.js";
+export * from "./stats.js";

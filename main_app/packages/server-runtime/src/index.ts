@@ -10,7 +10,11 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import http from "node:http";
 import {
+  CallCap,
   classOf,
+  consoleMeta,
+  DEFAULT_LIMITS,
+  omittedCall,
   EVENTS_PATH,
   NO_STATUS,
   parameterValue,
@@ -30,6 +34,12 @@ interface Frame {
   id: number;
   thread: number;
   pkg: number;
+  /** Ceiling of calls per function for this request (or root call). */
+  cap: CallCap;
+  /** An omitted call (beyond the ceiling): what it calls is omitted too. */
+  skipped?: boolean;
+  /** For an omitted frame: id of the nearest recorded ancestor. */
+  anchorId?: number;
 }
 
 const FLUSH_MS = 300;
@@ -59,8 +69,28 @@ function install(collector: string | undefined): MapaRuntime {
   let nextId = 1;
   let nextThread = 1;
   let queue: Event[] = [];
+  let capMax = DEFAULT_LIMITS.maxCallsPerFunctionPerAction;
 
   const now = () => Date.now() / 1000;
+  const anchorIdOf = (frame: Frame | undefined) => (frame ? (frame.skipped ? frame.anchorId : frame.id) : undefined);
+
+  /** Applies the ceiling to a synthetic call (console) made inside `frame`. */
+  function withinCap(frame: Frame, meta: FunctionMeta): boolean {
+    if (frame.skipped) {
+      frame.cap.noteOmitted(meta, frame.anchorId, now());
+      return false;
+    }
+    return frame.cap.admit(meta, frame.id, now());
+  }
+
+  /** One `Mapa.omitted` call per function that went over the ceiling. */
+  function reportOmitted(cap: CallCap, thread: number) {
+    for (const summary of cap.take()) {
+      const call = omittedCall(summary, { id: nextId++, thread_id: thread, layer: "next-server" });
+      emit(call);
+      emit({ id: nextId++, event: "return", thread_id: thread, parent_id: call.id, elapsed: 0, return_value: { class: "Number", value: String(summary.omitted) } });
+    }
+  }
   const param = (value: unknown, name?: string): Parameter => ({
     ...(name !== undefined ? { name } : {}),
     class: classOf(value),
@@ -93,7 +123,8 @@ function install(collector: string | undefined): MapaRuntime {
     const parent = als.getStore();
     const thread = parent ? parent.thread : nextThread++;
     const call = { id: nextId++, event: "call", thread_id: thread, timestamp: now(), layer: "next-server", ...extra } as CallEvent;
-    if (parent) call.parent_id = parent.id;
+    const parentId = anchorIdOf(parent);
+    if (parentId !== undefined) call.parent_id = parentId;
     return { call, thread };
   }
 
@@ -106,7 +137,16 @@ function install(collector: string | undefined): MapaRuntime {
   function r<T>(thisArg: unknown, fn: (...args: unknown[]) => T, args: ArrayLike<unknown>, meta: FunctionMeta): T {
     if (!recording || !meta) return fn.apply(thisArg, Array.from(args));
     const parent = als.getStore();
-    if (meta.shallow && parent && parent.pkg === meta.pkg) return fn.apply(thisArg, Array.from(args));
+    if (meta.shallow && parent && !parent.skipped && parent.pkg === meta.pkg) return fn.apply(thisArg, Array.from(args));
+
+    // Ceiling of calls per function within the request: beyond it, only counted.
+    const cap = parent?.cap ?? new CallCap(capMax);
+    const anchorId = anchorIdOf(parent);
+    if (parent?.skipped) cap.noteOmitted(meta, anchorId, now());
+    if (parent?.skipped || !cap.admit(meta, anchorId, now())) {
+      const frame: Frame = { id: -1, thread: parent!.thread, pkg: meta.pkg, cap, skipped: true, ...(anchorId !== undefined ? { anchorId } : {}) };
+      return als.run(frame, () => fn.apply(thisArg, Array.from(args)));
+    }
 
     const { call, thread } = callBase({
       defined_class: meta.klass,
@@ -120,11 +160,14 @@ function install(collector: string | undefined): MapaRuntime {
     emit(call);
 
     const started = performance.now();
-    const done = (fields: Partial<ReturnEvent>) => emit(returnOf(call.id, thread, started, fields));
+    const done = (fields: Partial<ReturnEvent>) => {
+      emit(returnOf(call.id, thread, started, fields));
+      if (!parent) reportOmitted(cap, thread); // a root call owns its ceiling
+    };
 
     let result: T;
     try {
-      result = als.run({ id: call.id, thread, pkg: meta.pkg }, () => fn.apply(thisArg, Array.from(args)));
+      result = als.run({ id: call.id, thread, pkg: meta.pkg, cap }, () => fn.apply(thisArg, Array.from(args)));
     } catch (e) {
       done({ exceptions: exception(e) });
       throw e;
@@ -170,7 +213,9 @@ function install(collector: string | undefined): MapaRuntime {
     emit(call);
 
     const started = performance.now();
+    const cap = new CallCap(capMax);
     res.once("close", () => {
+      reportOmitted(cap, thread);
       const contentType = res.getHeader("content-type");
       emit(
         returnOf(call.id, thread, started, {
@@ -179,7 +224,7 @@ function install(collector: string | undefined): MapaRuntime {
         }),
       );
     });
-    return als.run({ id: call.id, thread, pkg: -1 }, () => originalEmit.call(this, event, ...args));
+    return als.run({ id: call.id, thread, pkg: -1, cap }, () => originalEmit.call(this, event, ...args));
   } as typeof http.Server.prototype.emit;
 
   // ---- outgoing requests (fetch → http_client_request) ----
@@ -245,8 +290,10 @@ function install(collector: string | undefined): MapaRuntime {
 
   for (const level of ["log", "info", "warn", "error", "debug"] as const) {
     const original = console[level];
+    const meta = consoleMeta(level);
     console[level] = function (...args: unknown[]) {
-      if (recording && als.getStore()) {
+      const frame = als.getStore();
+      if (recording && frame && withinCap(frame, meta)) {
         const { call, thread } = callBase({ defined_class: "console", method_id: level, path: SYNTHETIC_PATHS.console, static: true, labels: ["log"], parameters: args.slice(0, 5).map((a, i) => param(a, `arg${i}`)) });
         emit(call);
         emit(returnOf(call.id, thread, performance.now(), { return_value: param(undefined) }));
@@ -285,8 +332,9 @@ function install(collector: string | undefined): MapaRuntime {
 
   async function checkStatus() {
     try {
-      const status = JSON.parse(await request("GET", RECORD_PATH)) as { enabled?: boolean };
+      const status = JSON.parse(await request("GET", RECORD_PATH)) as { enabled?: boolean; limits?: { maxCallsPerFunctionPerAction?: number } };
       const enabled = status.enabled === true;
+      if (status.limits?.maxCallsPerFunctionPerAction) capMax = status.limits.maxCallsPerFunctionPerAction;
       if (enabled !== recording) {
         if (!enabled) flush();
         recording = enabled;

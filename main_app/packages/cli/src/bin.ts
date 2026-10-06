@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { dev } from "./dev.js";
 import { record } from "./record.js";
+import { stats } from "./stats.js";
 import { MapaError } from "./project.js";
 import { MAPA_VERSION } from "./version.js";
 
@@ -11,6 +12,8 @@ Uso:
   npx mapa record start [nome]        começa a gravar
   npx mapa record stop                para e salva em .mapa/recordings/
   npx mapa record status              mostra se está gravando
+  npx mapa stats [gravação]           funções mais chamadas e sugestões de exclusão
+                                      (--limit N, --json, --aplicar)
 `;
 
 async function main(argv: string[]): Promise<number> {
@@ -20,6 +23,8 @@ async function main(argv: string[]): Promise<number> {
       return dev(args);
     case "record":
       return record(args);
+    case "stats":
+      return stats(args);
     case "--version":
     case "-v":
       console.log(MAPA_VERSION);

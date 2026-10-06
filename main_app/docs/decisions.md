@@ -152,3 +152,25 @@ Roteiro automatizado no Chromium, um cenário por gravação, nos modos Turbopac
 - **Todas as 12 gravações válidas** no validador do AppMap; nenhum valor acima de 100 caracteres.
 - **Nenhum segredo** nas gravações: senha, e-mail, chave do Supabase (inteira e o final), qualquer JWT, qualquer `Bearer`.
 - **62 testes automáticos** passando.
+
+## Etapa 4
+
+- **2026-10-06 · Botão flutuante** (`packages/browser-runtime/src/ui.ts`): Shadow DOM, marcado `data-mapa-ui` (cliques nele nunca viram ações), montado depois do `load` (a hidratação do React nunca o vê). Mostra "Gravar", "Gravando · resta m:ss" com barra do limite de tamanho (o maior entre eventos e MB), "Parar", "Salvando…" e um aviso ao terminar ("Gravação salva…" ou "Parou sozinha: chegou ao tempo máximo… O que foi gravado foi salvo"). Usa a mesma API de gravação remota do `mapa record`. Achado rodando: o aviso se perdia quando o botão consultava o estado durante o salvamento; o coletor passou a informar `saving` e o botão lembra que uma gravação terminou.
+- **2026-10-06 · Teto de 50 chamadas por função dentro de cada ação** (decisão do dono na Etapa 0), em `packages/format/src/cap.ts`, aplicado no navegador (por ação; fora de ações, por chamada raiz) e no servidor (por requisição). O que passa do teto, e tudo o que essas chamadas chamam, só é contado; no fim da ação entra um `Mapa.omitted` com a contagem. **Pedidos de rede dentro de chamadas omitidas continuam gravados** (são o sinal de consultas repetidas em laço). O `console` também respeita o teto. Configurável em `limits.maxCallsPerFunctionPerAction`; "desligar" = um número muito alto.
+- **2026-10-06 · Limites estritos.** Achado rodando: o loop síncrono mandou 20 mil eventos num lote só e a gravação parou com 20 008 eventos para um limite de 5 000. Agora o coletor corta o lote no ponto do limite (5 002 = 5 000 + 2 retornos sintéticos) e o gravador do navegador não acumula na memória mais eventos que o limite. O limite de MB usa o tamanho médio por evento do lote.
+- **2026-10-06 · Varredura final antes de escrever** (`finalize.ts`): máscara e corte de novo em todos os valores, filtros do Supabase e cabeçalhos (os secretos são removidos). Rede de segurança para um gravador antigo ou com defeito; a máscara principal continua na captura.
+- **2026-10-06 · `metadata.trimmed`** preenchido (100 caracteres); `metadata.sanitized` **não**: na especificação ele significa que *todo* valor foi trocado por um código.
+- **2026-10-06 · `npx mapa stats`** (`packages/cli/src/stats.ts`, cálculo em `packages/format/src/stats.ts`): mesmo método do `appmap stats` (`referencias/appmap-js/packages/cli/src/cmds/stats`: contagem e tamanho estimado por função, mais chamadas primeiro, 10 por padrão, sem contar HTTP/SQL), mais as chamadas omitidas pelo teto. Sugere excluir funções com mais de 75 chamadas (o exemplo do guia de refino do AppMap) e, com confirmação (ou `--aplicar`), as acrescenta ao `exclude` do pacote certo no `.mapa/config.json`, pelo nome (função solta) ou `Classe.metodo`.
+- **2026-10-06 · Várias abas:** cada aba é uma fonte e uma thread; todas veem a mesma gravação pelo estado do coletor (em até 1 s); qualquer aba pode parar.
+
+### Etapa 4: concluída (2026-10-06)
+
+| Critério | Evidência (Chromium automatizado, app de teste, projeto Supabase de teste) |
+|---|---|
+| Start → cenário B → Stop gera arquivo válido com a cadeia completa | Pelo botão flutuante: `click "Adicionar item"` → `onClick@32` → `adicionarItem` → `formatarPreco` → `insert into items` (usuário logado, 201) → `Carrinho.adicionar` → `total`; aviso "Gravação salva (24 eventos)"; validador: válido |
+| Botão do loop: teto agrupa as repetições, com a contagem | 50 chamadas de `precos.somar` gravadas + `Mapa.omitted (omitted_calls=9950)` dentro de `rodarLoop`; gravação de 138 eventos (sem o teto: 20 008) |
+| Parada automática pelo limite salva o que foi gravado | Teto desligado e limite de 5 000 eventos: parou com 5 002 eventos (`event-limit`), aviso "Parou sozinha…"; limite padrão de 1 minuto: parou sozinha (`time-limit`), arquivo salvo; limite de MB testado no coletor |
+| Senha, token completo e `apikey` não aparecem | Todas as gravações da etapa varridas: senha usada, senha padrão do campo, e-mail, chave do Supabase (inteira e o final), qualquer JWT, `Bearer` e `apikey`: nenhum |
+| `mapa stats` lista as funções mais chamadas | `1. precos.somar (lib/precos.ts:23) — 50 gravadas + 9950 omitidas`; sugestão "somar"; `--aplicar` escreveu o `exclude` |
+| Várias abas | Start na aba 1, a aba 2 mostrou "Gravando"; ações nas duas (threads t1 e t2), Stop pela aba 2 |
+| Testes automáticos | 69 passando |

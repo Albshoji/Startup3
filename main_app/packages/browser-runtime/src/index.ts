@@ -10,8 +10,12 @@
 // browser (docs/appmap-mapping.md §5 and §8): user actions (click, submit, typing, navigation),
 // fetch/XHR, WebSocket (Supabase Realtime), uncaught errors and console output.
 import {
+  CallCap,
   classOf,
   clipValue,
+  consoleMeta,
+  DEFAULT_LIMITS,
+  omittedCall,
   EVENTS_PATH,
   maskSummary,
   NO_STATUS,
@@ -27,6 +31,7 @@ import {
   type ReturnEvent,
 } from "@mapa/format";
 import { isSupabaseUrl, parseRealtimeFrame, translateSupabaseRequest } from "@mapa/supabase";
+import { mountUi, type CollectorStatus, type Ui } from "./ui.js";
 
 declare const process: { env: Record<string, string | undefined> };
 
@@ -37,6 +42,12 @@ interface Frame {
   pkg: number;
   /** The user action this frame belongs to. */
   action: Action | null;
+  /** Ceiling of calls per function for this action (or this root call, outside actions). */
+  cap?: CallCap;
+  /** An omitted call (beyond the ceiling): what it calls is omitted too. */
+  skipped?: boolean;
+  /** For an omitted frame: id of the nearest recorded ancestor. */
+  anchorId?: number;
 }
 
 interface Action {
@@ -46,6 +57,7 @@ interface Action {
   lastActivity: number;
   pending: number;
   timer: ReturnType<typeof setTimeout> | undefined;
+  cap: CallCap;
 }
 
 interface Box {
@@ -121,6 +133,7 @@ function install(collector: string | undefined): MapaRuntime {
   const openActions: Action[] = [];
   /** Changes whenever a recording starts, stops or is dropped: frames of another epoch were never sent. */
   let epoch = 0;
+  let capMax = DEFAULT_LIMITS.maxCallsPerFunctionPerAction;
 
   const now = () => (performance.timeOrigin + performance.now()) / 1000;
   const param = (value: unknown, name?: string): Parameter => ({
@@ -146,8 +159,10 @@ function install(collector: string | undefined): MapaRuntime {
     const { class: errorClass, message } = exception(e)[0]!;
     return { class: errorClass, message };
   };
+  // Memory guard: never hold more than the recording may keep (the collector stops at its limit).
+  let queueLimit = DEFAULT_LIMITS.maxEvents;
   const emit = (event: Event) => {
-    if (recording) queue.push(event);
+    if (recording && queue.length < queueLimit) queue.push(event);
   };
   /** A text shown as is (descriptions, paths): masked and cut, without JSON quoting. */
   const plain = (name: string, text: string) => clipValue(maskSummary(name, text));
@@ -170,11 +185,34 @@ function install(collector: string | undefined): MapaRuntime {
     return { frame: null, inferred: false };
   }
 
+  /** Id to hang a new event on: an omitted frame was never recorded, so use its nearest recorded ancestor. */
+  const anchorIdOf = (frame: Frame | null) => (frame ? (frame.skipped ? frame.anchorId : frame.id) : undefined);
+
   function callBase(placement: Placement, extra: Partial<CallEvent>): CallEvent {
     const call = { id: nextId++, event: "call", thread_id: BROWSER_THREAD, timestamp: now(), layer: "browser", ...extra } as CallEvent;
-    if (placement.frame) call.parent_id = placement.frame.id;
+    const parentId = anchorIdOf(placement.frame);
+    if (parentId !== undefined) call.parent_id = parentId;
     if (placement.inferred) call.attribution = "inferred";
     return call;
+  }
+
+  /** Applies the ceiling to a synthetic call (console) made inside `frame`. */
+  function withinCap(frame: Frame, meta: FunctionMeta): boolean {
+    if (!frame.cap) return true;
+    if (frame.skipped) {
+      frame.cap.noteOmitted(meta, frame.anchorId, now());
+      return false;
+    }
+    return frame.cap.admit(meta, frame.id, now());
+  }
+
+  /** One `Mapa.omitted` call per function that went over the ceiling. */
+  function reportOmitted(cap: CallCap) {
+    for (const summary of cap.take()) {
+      const call = omittedCall(summary, { id: nextId++, thread_id: BROWSER_THREAD, layer: "browser" });
+      emit(call);
+      emit({ id: nextId++, event: "return", thread_id: BROWSER_THREAD, parent_id: call.id, elapsed: 0, return_value: { class: "Number", value: String(summary.omitted) } });
+    }
   }
 
   function returnOf(callId: number, started: number, fields: Partial<ReturnEvent>): ReturnEvent {
@@ -188,7 +226,22 @@ function install(collector: string | undefined): MapaRuntime {
     const placement = place();
     const parent = placement.frame;
     // AppMap `shallow`: a call from a package to itself is not recorded (only the entry into it).
-    if (meta.shallow && parent && parent.pkg === meta.pkg) return fn.apply(thisArg, Array.from(args));
+    if (meta.shallow && parent && !parent.skipped && parent.pkg === meta.pkg) return fn.apply(thisArg, Array.from(args));
+
+    // Ceiling of calls per function within the action: beyond it, only counted.
+    const ownsCap = !parent?.cap;
+    const cap = parent?.cap ?? new CallCap(capMax);
+    const anchorId = anchorIdOf(parent);
+    if (parent?.skipped) cap.noteOmitted(meta, anchorId, now());
+    if (parent?.skipped || !cap.admit(meta, anchorId, now())) {
+      const saved = current;
+      current = { id: -1, parent, pkg: meta.pkg, action: parent?.action ?? null, cap, skipped: true, ...(anchorId !== undefined ? { anchorId } : {}) };
+      try {
+        return fn.apply(thisArg, Array.from(args));
+      } finally {
+        current = saved;
+      }
+    }
 
     const call = callBase(placement, {
       defined_class: meta.klass,
@@ -202,10 +255,13 @@ function install(collector: string | undefined): MapaRuntime {
     emit(call);
 
     const started = performance.now();
-    const done = (fields: Partial<ReturnEvent>) => emit(returnOf(call.id, started, fields));
+    const done = (fields: Partial<ReturnEvent>) => {
+      emit(returnOf(call.id, started, fields));
+      if (ownsCap) reportOmitted(cap); // a root call outside any action owns its ceiling
+    };
 
     const saved = current;
-    current = { id: call.id, parent, pkg: meta.pkg, action: parent?.action ?? null };
+    current = { id: call.id, parent, pkg: meta.pkg, action: parent?.action ?? null, cap };
     let result: T;
     try {
       result = fn.apply(thisArg, Array.from(args));
@@ -261,8 +317,9 @@ function install(collector: string | undefined): MapaRuntime {
     });
     if (startedAt !== undefined) call.timestamp = startedAt;
     emit(call);
-    const frame: Frame = { id: call.id, parent: null, pkg: -1, action: null };
-    const action: Action = { frame, kind, started: performance.now(), lastActivity: performance.now(), pending: 0, timer: undefined };
+    const cap = new CallCap(capMax);
+    const frame: Frame = { id: call.id, parent: null, pkg: -1, action: null, cap };
+    const action: Action = { frame, kind, started: performance.now(), lastActivity: performance.now(), pending: 0, timer: undefined, cap };
     frame.action = action;
     openActions.push(action);
     touch(action, 0);
@@ -280,6 +337,7 @@ function install(collector: string | undefined): MapaRuntime {
     const index = openActions.indexOf(action);
     if (index < 0) return;
     openActions.splice(index, 1);
+    reportOmitted(action.cap);
     // Ends at its last activity, not at the end of the idle wait.
     emit({ id: nextId++, event: "return", thread_id: BROWSER_THREAD, parent_id: action.frame.id, elapsed: (action.lastActivity - action.started) / 1000 });
   }
@@ -402,8 +460,9 @@ function install(collector: string | undefined): MapaRuntime {
 
   for (const level of ["log", "info", "warn", "error", "debug"] as const) {
     const original = console[level];
+    const meta = consoleMeta(level);
     console[level] = function (...args: unknown[]) {
-      if (recording && current) {
+      if (recording && current && withinCap(current, meta)) {
         const call = callBase({ frame: current, inferred: false }, {
           defined_class: "console",
           method_id: level,
@@ -647,38 +706,64 @@ function install(collector: string | undefined): MapaRuntime {
     originalFetch(url, { method: "POST", body, headers: { "content-type": "text/plain" }, keepalive: body.length < 60_000 }).catch(() => {});
   }
 
+  function applyStatus(status: CollectorStatus) {
+    const enabled = status.enabled === true;
+    if (status.limits?.maxCallsPerFunctionPerAction) capMax = status.limits.maxCallsPerFunctionPerAction;
+    if (status.limits?.maxEvents) queueLimit = status.limits.maxEvents;
+    ui?.update(status);
+    if (provisional) {
+      provisional = false;
+      if (!enabled) {
+        // No recording after all: drop what was recorded since the page load.
+        recording = false;
+        queue = [];
+        openActions.length = 0;
+        epoch++;
+      }
+      return;
+    }
+    if (enabled === recording) return;
+    if (!enabled) {
+      for (const action of openActions) reportOmitted(action.cap);
+      flush();
+      queue = [];
+      openActions.length = 0;
+    }
+    epoch++;
+    recording = enabled;
+  }
+
   async function checkStatus() {
     if (!collector) return;
     try {
       const res = await originalFetch(`${collector}${RECORD_PATH}`, { cache: "no-store" });
-      const status = (await res.json()) as { enabled?: boolean };
-      const enabled = status.enabled === true;
-      if (provisional) {
-        provisional = false;
-        if (!enabled) {
-          // No recording after all: drop what was recorded since the page load.
-          recording = false;
-          queue = [];
-          openActions.length = 0;
-          epoch++;
-        }
-        return;
-      }
-      if (enabled === recording) return;
-      if (!enabled) {
-        flush();
-        queue = [];
-        openActions.length = 0;
-      }
-      epoch++;
-      recording = enabled;
+      applyStatus((await res.json()) as CollectorStatus);
     } catch {
+      provisional = false;
       recording = false;
       queue = [];
+      ui?.update(null);
     }
   }
 
+  // Start/Stop from the page, with the same HTTP API as `mapa record` (AppMap remote recording).
+  async function startRecording() {
+    const res = await originalFetch(`${collector}${RECORD_PATH}`, { method: "POST", headers: { "content-type": "application/json" }, body: "{}" });
+    if (!res.ok && res.status !== 409) throw new Error(`status ${res.status}`);
+    await checkStatus();
+  }
+  async function stopRecording() {
+    // Send what this tab still holds before the collector closes the recording.
+    for (const action of openActions) reportOmitted(action.cap);
+    flush();
+    const res = await originalFetch(`${collector}${RECORD_PATH}`, { method: "DELETE" });
+    if (!res.ok && res.status !== 404) throw new Error(`status ${res.status}`);
+    await checkStatus();
+  }
+
+  let ui: Ui | undefined;
   if (collector) {
+    ui = mountUi({ start: startRecording, stop: stopRecording });
     // The page load is the first action, starting when the navigation started (before the
     // server rendered the page), so the collector can tie the server's response to it.
     navigated("carregar", performance.timeOrigin / 1000);

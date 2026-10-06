@@ -39,7 +39,8 @@ Campos do formato base que o Mapa preenche:
 | `client` | `{ name: "mapa", url, version }` |
 | `recorder` | `{ type: "remote", name: "mapa" }` (Start/Stop = gravação remota do AppMap) |
 | `git` | `repository` (sem usuário/senha embutidos na URL), `branch`, `commit`, `status` |
-| `sanitized` / `trimmed` | preenchidos quando o mascaramento e o encurtamento entrarem (Etapa 4) |
+| `trimmed` | `{version, max_length: 100}`: todo valor capturado foi cortado em 100 caracteres |
+| `sanitized` | **não** usado: na especificação significa trocar *todo* valor por um código, o que o Mapa não faz (ele mascara só o que é sensível) |
 
 ### Extensão `metadata.mapa`
 
@@ -83,6 +84,7 @@ no `classMap` com o mesmo caminho.
 | `Browser` | `click`, `submit`, `type`, `navigate` | ação do usuário (`mapa.user-action`). Parâmetros: `target` (descrição do elemento, **nunca** o valor de um campo) e, em `navigate`, `url`. Clicar no botão de envio de um formulário é uma ação só (o `submit` entra no `click`). Teclas no mesmo campo com menos de 1 s entre elas são uma ação `type` só |
 | `Browser` | `error`, `unhandledrejection` | erro não tratado na página (`mapa.error`), com `exceptions` no `return` |
 | `console` | `log`, `info`, `warn`, `error`, `debug` | saída do `console` feita **dentro** de uma função gravada (rótulo `log`); mensagens do próprio Next ficam de fora |
+| `Mapa` | `omitted` | chamadas deixadas de fora pelo teto por função (`mapa.omitted`, caminho `mapa:recorder`). Parâmetros: `function` (`Classe.metodo`), `location` (`arquivo:linha`), `omitted_calls`. Fica onde a primeira chamada omitida estaria (sob o ancestral gravado mais próximo) |
 | `Realtime` | `send`, `receive` | quadro do WebSocket do Realtime, filho da conexão (`http_client_request` `GET` com resposta 101). Quadros de "heartbeat" ficam de fora |
 
 Uma ação termina quando, por 500 ms, não há nenhum pedido pendente ligado a ela; seu `elapsed`
@@ -162,7 +164,15 @@ seus filhos ficam nela.
   disparar *preflight* de CORS). Fontes: `browser-<id da aba>`, `server-<pid>`. Fora de uma
   gravação, o lote é ignorado.
 - CORS só para origens locais (`localhost`, `127.0.0.1`, `::1`); outras origens recebem 403.
-- No Stop, o coletor ainda aceita lotes por 1 s (os gravadores enviam a cada 0,3–0,5 s).
+- No Stop, o coletor ainda aceita lotes por 1 s (os gravadores enviam a cada 0,3–0,5 s); nesse
+  intervalo `GET /record` responde `saving: true`.
+- `GET /record` também traz `bytes` (tamanho recebido) e `last` (a última gravação salva: motivo
+  da parada, eventos, pasta), usados pelo botão flutuante. `POST`/`DELETE /record` também podem vir
+  da página (CORS com *preflight* para origens locais).
+- Limites estritos: um lote que passa do limite de eventos ou de MB é cortado no ponto do limite;
+  as chamadas cortadas no meio recebem o `return` sintético `incomplete`.
+- Antes de escrever, uma última varredura (`packages/format/src/finalize.ts`) mascara e corta de
+  novo todos os valores e remove cabeçalhos secretos (rede de segurança).
 - Contrato do código anotado com o gravador: `packages/format/src/protocol.ts`
   (`globalThis.__mapa.r/cur/bf/af/rs` e a tabela `__mapaFns` de cada arquivo).
 

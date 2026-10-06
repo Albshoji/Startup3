@@ -1,7 +1,7 @@
 # Status do projeto Mapa
 
 > Atualizado a cada avanço. Detalhes das decisões em `docs/decisions.md`.
-> Última atualização: **2026-10-06** (Etapa 3)
+> Última atualização: **2026-10-06** (Etapa 4)
 
 ## Visão geral das etapas
 
@@ -11,8 +11,8 @@
 | 1 | Estrutura, CLI e coletor | ✅ Concluída (2026-10-06) |
 | 2 | `withMapa`, plugin e `.mapa/config.json` | ✅ Concluída (2026-10-06) |
 | 3 | Gravadores de navegador e servidor | ✅ Concluída (2026-10-06) |
-| 4 | Start/Stop, limites e arquivo bruto | ⏭️ Próxima |
-| 5 | Plataforma: contas, login e envio | ⬜ |
+| 4 | Start/Stop, limites e arquivo bruto | ✅ Concluída (2026-10-06) |
+| 5 | Plataforma: contas, login e envio | ⏭️ Próxima |
 | 6 | "Conectar Supabase" e estrutura | ⬜ |
 | 7 | Processamento: refino, Supabase e registros | ⬜ |
 | 8 | Modelos de diagrama (método do AppMap) | ⬜ |
@@ -24,7 +24,11 @@
 ## O que já funciona
 
 - **`npx mapa dev`** (no app de teste): liga o app com o Mapa ativado e o coletor; mostra Next, empacotador e Node.
-- **`npx mapa record start | stop | status`**: grava em `.mapa/recordings/<data-hora>-<nome>/`; para sozinho em **1 minuto**; salva se o `mapa dev` for fechado no meio.
+- **Botão flutuante** no canto da tela do app (só com o Mapa ligado): Gravar, tempo restante, uso do limite de tamanho, Parar, e aviso quando a gravação é salva ou para sozinha.
+- **`npx mapa record start | stop | status`**: o mesmo pelo terminal. Grava em `.mapa/recordings/<data-hora>-<nome>/`; para sozinho em **1 minuto**, 50 000 eventos ou 12 MB (o que vier primeiro); salva se o `mapa dev` for fechado no meio.
+- **Teto de 50 chamadas por função em cada ação**: laços não estouram a gravação; o arquivo diz quantas chamadas ficaram de fora.
+- **`npx mapa stats`**: funções mais chamadas, tamanho e sugestão de exclusões (aplicáveis com `--aplicar`).
+- Funciona com várias abas na mesma gravação.
 - **As funções do app são gravadas** (navegador e servidor do Next, inclusive server actions e `proxy.ts`), com arquivo:linha, parâmetros, retorno, erros e tempo, e a ordem certa de quem chamou quem, mesmo com `await`. Funciona com Turbopack e com webpack.
 - `.mapa/config.json` (opcional) escolhe o que gravar, com as mesmas regras do `appmap.yml` do AppMap. Mudanças valem ao reiniciar o `mapa dev` (ele avisa).
 - O arquivo gerado é **válido no formato AppMap**, com o mapa de código (`classMap`).
@@ -37,7 +41,7 @@
 
 ## Como retomar
 
-**Ponto exato onde parou:** Etapa 3 concluída. Nada em andamento. O próximo passo é **começar a Etapa 4** (abaixo).
+**Ponto exato onde parou:** Etapa 4 concluída. Nada em andamento. O próximo passo é **começar a Etapa 5** (abaixo), que precisa de decisões e contas do dono antes de começar.
 
 **Atenção:** desde 2026-10-06 o projeto fica na pasta **`main_app/`** (o repositório Git é a pasta de cima, `Startup3/`). Todos os comandos abaixo são rodados dentro de `main_app/`.
 
@@ -63,8 +67,9 @@
 
 ## Próximo passo
 
-**Etapa 4:** Start/Stop pelo botão flutuante no navegador (e pelos comandos), limites com parada automática (tempo, eventos, MB, teto de 50 chamadas por função por ação), mascaramento e encurtamento finais, compressão, `npx mapa stats`, várias abas.
-Pronto quando: Start → cenário B → Stop gera `recording.appmap.json.gz` válido, com a cadeia completa; o botão do loop mostra o teto agrupando as chamadas repetidas (com a contagem) e a parada automática pelo limite salva o que foi gravado; senha, token completo e `apikey` não aparecem no arquivo; `mapa stats` lista as funções mais chamadas.
+**Etapa 5:** plataforma (site do Mapa em `apps/web`): contas, tabelas com RLS em todas e bucket privado (num projeto Supabase **do Mapa**, separado do projeto de teste), `mapa login`/`logout` (como `gh auth login`), envio da gravação com URL assinada, confirmação na primeira vez, reenvio com `mapa upload`.
+Pronto quando: do zero, conta → login → gravação → aparece no site como "recebida"; um segundo usuário não acessa a gravação do primeiro (testado).
+Antes de começar: pedir ao dono um projeto Supabase para o site do Mapa (e onde o site vai rodar).
 
 ## Pendências e decisões em aberto
 
@@ -87,4 +92,5 @@ Pronto quando: Start → cenário B → Stop gera `recording.appmap.json.gz` vá
 | 2026-10-06 | Etapa 1 concluída: monorepo, CLI `mapa`, coletor | `f75cd0a` |
 | 2026-10-06 | Projeto movido para `main_app/` | `e46e083` |
 | 2026-10-06 | Etapa 2 concluída: `withMapa`, plugin Babel, gravadores de funções, `.mapa/config.json` | `f3ac7e6` |
+| 2026-10-06 | Etapa 4 concluída: botão flutuante, limites estritos, teto por função, `mapa stats`, várias abas | (este commit) |
 | 2026-10-06 | Etapa 3 concluída: ações do usuário, pedidos ao Supabase traduzidos, requisições ao servidor, Realtime, erros | `85d1123` |

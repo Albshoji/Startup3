@@ -14,7 +14,7 @@ export const NO_STATUS = 599;
  * `path` of synthetic calls that have no source file (user actions, errors, console, Realtime
  * frames). The AppMap validator requires every call to be in the classMap with the same path.
  */
-export const SYNTHETIC_PATHS = { browser: "mapa:browser", console: "mapa:console", realtime: "mapa:realtime" } as const;
+export const SYNTHETIC_PATHS = { browser: "mapa:browser", console: "mapa:console", realtime: "mapa:realtime", recorder: "mapa:recorder" } as const;
 
 export type RecorderType = "code" | "process" | "requests" | "remote" | "tests";
 
