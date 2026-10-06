@@ -14,3 +14,7 @@ spikes/**/next-env.d.ts
 spikes/**/AGENTS.md
 spikes/**/CLAUDE.md
 spikes/**/tsconfig.tsbuildinfo
+examples/**/AGENTS.md
+examples/**/CLAUDE.md
+examples/**/next-env.d.ts
+*.tsbuildinfo

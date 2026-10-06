@@ -63,3 +63,22 @@ Formato: data · decisão · motivo · fonte (quando inspirada numa referência)
 | `docs/referencias.md` lista os arquivos-chave de cada repositório | ✅ |
 | `docs/appmap-mapping.md` completo, cita as fontes, revisado com o dono | ✅ (revisado pelo resumo em linguagem simples; dúvida sobre a divisão por ação esclarecida) |
 | `docs/spike-report.md` responde às 6 perguntas com evidência e propõe limites | ✅ (limites decididos: 1 min, 50 por função por ação, 50 000 eventos, 12 MB) |
+
+## Etapa 1
+
+- **2026-10-06 · Nome provisório do pacote: `@mapa/cli`**, com o comando `mapa`. O nome `mapa` no npm já pertence a outra biblioteca; o nome definitivo será escolhido antes de publicar.
+- **2026-10-06 · pnpm 12.9.1 via corepack** (`packageManager` no `package.json` da raiz), sem instalação global; os scripts da raiz não chamam `pnpm` de dentro de si mesmos.
+- **2026-10-06 · TypeScript 5.9.3** (e não o 7.0, que é a reescrita nativa, ainda nova); módulos ESM, `tsc -b` com referências entre pacotes. Testes com `node --test`, sem dependências.
+- **2026-10-06 · Pacotes criados só quando a etapa precisa deles** (`format`, `collector`, `cli` agora); os demais da seção 5 do CLAUDE.md entram nas suas etapas.
+- **2026-10-06 · Arquivo declara `version: "1.14"`; testes validam uma cópia com `"1.13.1"`.** O `@appland/appmap-validate` 2.5.1 só conhece o esquema até 1.13.1 e confere o valor de `version`. Ele também devolve a versão (e não `undefined`, como diz o README) quando o arquivo é válido; o sinal de erro é a exceção. Ver `docs/format.md`.
+- **2026-10-06 · Coletor:** só em `127.0.0.1`, porta 47100 (ou a próxima livre), recusa `Host` que não seja local (proteção contra páginas que tentem falar com ele), mesma API da gravação remota do AppMap (`GET/POST/DELETE /record`, 409 e 404). Onde está rodando fica em `.mapa/collector.json`, que `mapa record` lê. Fechar o `mapa dev` no meio de uma gravação salva o que foi gravado (`stopped_by: "shutdown"`).
+- **2026-10-06 · `mapa dev`** encontra o projeto Next mais próximo, roda o `next` instalado no app com o Node atual, passa `MAPA=1`, `MAPA_COLLECTOR_URL` e `MAPA_BUNDLER`, e repassa sinais. Detecção: Next 16 usa Turbopack salvo `--webpack`; Next 15 usa webpack salvo `--turbopack`. Avisa (sem bloquear) fora do Node 22/24 e do Next 15/16.
+- **2026-10-06 · URL do repositório no metadata sem credenciais** (remove `usuário:senha@` de URLs https).
+
+### Etapa 1: concluída (2026-10-06)
+
+| Critério | Evidência |
+|---|---|
+| `npx mapa dev` liga o app de teste | Em `examples/next16-supabase-demo`: `[mapa] Next 16.3.8 · Turbopack · Node v24.19.0`, coletor em `127.0.0.1:47100`, página 200; o processo do Next recebeu `MAPA=1` |
+| `record start/stop` gera arquivo válido (sem eventos) | `.mapa/recordings/<data>-teste-etapa-1/recording.appmap.json.gz` + `interactions.json`; `validate-recording.mjs`: "válido · version 1.14 · 0 eventos · parado por: user" |
+| Extras verificados | 2º `start` recusado; `stop` sem gravação avisa; fechar o `mapa dev` gravando salva (`shutdown`) e libera as portas; 9 testes automáticos passando (`corepack pnpm test`) |

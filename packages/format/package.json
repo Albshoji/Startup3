@@ -1,0 +1,25 @@
+{
+  "name": "@mapa/format",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Raw recording format of Mapa (AppMap-compatible) and its helpers.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "test": "node --test test/",
+    "validate-recording": "node scripts/validate-recording.mjs"
+  },
+  "devDependencies": {
+    "@appland/appmap-validate": "2.5.1"
+  }
+}

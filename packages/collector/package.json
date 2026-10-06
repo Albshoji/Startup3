@@ -1,0 +1,25 @@
+{
+  "name": "@mapa/collector",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Local Mapa collector: Start/Stop, limits and saving recordings.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "test": "node --test test/"
+  },
+  "dependencies": {
+    "@mapa/format": "workspace:*"
+  },
+  "devDependencies": {
+    "@appland/appmap-validate": "2.5.1"
+  }
+}

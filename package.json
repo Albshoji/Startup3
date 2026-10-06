@@ -1,0 +1,17 @@
+{
+  "name": "mapa-monorepo",
+  "private": true,
+  "packageManager": "pnpm@12.9.1",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsc -b packages/format packages/collector packages/cli",
+    "clean": "tsc -b --clean packages/format packages/collector packages/cli",
+    "test": "tsc -b packages/format packages/collector packages/cli && node --test \"packages/*/test/*.test.mjs\""
+  },
+  "devDependencies": {
+    "@types/node": "24.19.1",
+    "typescript": "5.9.3"
+  }
+}

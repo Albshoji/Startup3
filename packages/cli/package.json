@@ -1,0 +1,18 @@
+{
+  "name": "@mapa/cli",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Mapa command line (provisional npm name, see docs/decisions.md).",
+  "type": "module",
+  "bin": {
+    "mapa": "./dist/bin.js"
+  },
+  "files": ["dist"],
+  "scripts": {
+    "test": "node --test test/"
+  },
+  "dependencies": {
+    "@mapa/collector": "workspace:*",
+    "@mapa/format": "workspace:*"
+  }
+}
