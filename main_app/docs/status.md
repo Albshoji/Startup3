@@ -12,7 +12,7 @@
 | 2 | `withMapa`, plugin e `.mapa/config.json` | ✅ Concluída (2026-10-06) |
 | 3 | Gravadores de navegador e servidor | ✅ Concluída (2026-10-06) |
 | 4 | Start/Stop, limites e arquivo bruto | ✅ Concluída (2026-10-06) |
-| 5 | Plataforma: contas, login e envio | ⏭️ Próxima |
+| 5 | Plataforma: contas, login e envio | 🔨 Em andamento (falta testar com o projeto Supabase do site) |
 | 6 | "Conectar Supabase" e estrutura | ⬜ |
 | 7 | Processamento: refino, Supabase e registros | ⬜ |
 | 8 | Modelos de diagrama (método do AppMap) | ⬜ |
@@ -41,7 +41,7 @@
 
 ## Como retomar
 
-**Ponto exato onde parou:** Etapa 4 concluída. Nada em andamento. O próximo passo é **começar a Etapa 5** (abaixo), que precisa de decisões e contas do dono antes de começar.
+**Ponto exato onde parou:** Etapa 5 **no meio**. O código está escrito e testado contra um site falso (70 testes passando): site em `apps/web` (contas, `/gravacoes`, `/dispositivo`, API do comando em `/api/cli/*`), banco do site em `supabase/migrations/20261006000001_site.sql` (RLS em todas as tabelas, bucket privado `recordings`), comandos `mapa login`, `mapa logout`, `mapa upload` e envio automático no Stop. **Falta:** o dono criar o projeto Supabase do site e preencher `apps/web/.env.local` (modelo em `apps/web/.env.example`); depois aplicar a migração (`corepack pnpm db:migrate`), ligar o site (`cd apps/web && npx next dev --port 3300`) e rodar o teste ponta a ponta (conta → login → gravação → "recebida"; segundo usuário sem acesso).
 
 **Atenção:** desde 2026-10-06 o projeto fica na pasta **`main_app/`** (o repositório Git é a pasta de cima, `Startup3/`). Todos os comandos abaixo são rodados dentro de `main_app/`.
 

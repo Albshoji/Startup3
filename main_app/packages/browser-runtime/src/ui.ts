@@ -11,7 +11,13 @@ export interface CollectorStatus {
   event_count?: number;
   bytes?: number;
   limits?: RecordingLimits;
-  last?: { stopped_by: StopReason; event_count: number; directory: string; stopped_at: string };
+  last?: {
+    stopped_by: StopReason;
+    event_count: number;
+    directory: string;
+    stopped_at: string;
+    upload?: { status: "enviando" | "enviada" | "erro" | "local"; url?: string; message?: string };
+  };
 }
 
 export interface UiActions {
@@ -51,6 +57,22 @@ button:disabled { opacity: .5; cursor: default; }
 .note { max-width: 320px; padding: 8px 12px; border-radius: 10px; background: #18181b; box-shadow: 0 4px 16px rgba(0,0,0,.25); }
 .note[hidden] { display: none; }
 `;
+
+function noteFor(stop: NonNullable<CollectorStatus["last"]>): string {
+  const saved = `${STOP_MESSAGES[stop.stopped_by]} (${stop.event_count} eventos).`;
+  switch (stop.upload?.status) {
+    case "enviando":
+      return `${saved} Enviando para o site…`;
+    case "enviada":
+      return `${saved} Enviada para o site: ${stop.upload.url ?? ""}`;
+    case "erro":
+      return `${saved} Não consegui enviar para o site: ${stop.upload.message ?? ""}`;
+    case "local":
+      return `${saved} ${stop.upload.message ?? ""}`;
+    default:
+      return `${saved} Está em ${stop.directory.replace(/^.*?(\.mapa\/)/, "$1")}`;
+  }
+}
 
 export function mountUi(actions: UiActions): Ui {
   const host = document.createElement("div");
@@ -148,12 +170,14 @@ export function mountUi(actions: UiActions): Ui {
       status = next;
       receivedAt = Date.now();
       const stop = next?.last;
-      if (stop && stop.stopped_at !== lastSeenStop) {
-        if (lastSeenStop !== undefined || expectingStop) {
-          showNote(`${STOP_MESSAGES[stop.stopped_by]} (${stop.event_count} eventos). Está em ${stop.directory.replace(/^.*?(\.mapa\/)/, "$1")}`);
+      const stopKey = stop ? `${stop.stopped_at}|${stop.upload?.status ?? ""}` : undefined;
+      if (stop && stopKey !== lastSeenStop) {
+        const isNewStop = !lastSeenStop?.startsWith(stop.stopped_at);
+        if ((lastSeenStop !== undefined && !isNewStop) || (isNewStop && (lastSeenStop !== undefined || expectingStop))) {
+          showNote(noteFor(stop), 12000);
           expectingStop = false;
         }
-        lastSeenStop = stop.stopped_at;
+        lastSeenStop = stopKey;
       }
       render();
     },

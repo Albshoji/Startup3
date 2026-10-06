@@ -2,16 +2,21 @@
 import { dev } from "./dev.js";
 import { record } from "./record.js";
 import { stats } from "./stats.js";
+import { login, logout } from "./login.js";
+import { upload } from "./upload.js";
 import { MapaError } from "./project.js";
 import { MAPA_VERSION } from "./version.js";
 
 const HELP = `Mapa ${MAPA_VERSION}: grava o que acontece no seu app Next.js + Supabase.
 
 Uso:
+  npx mapa login                      conecta este computador à sua conta do Mapa (uma vez)
+  npx mapa logout                     desconecta este computador
   npx mapa dev [opções do next dev]   liga o app com o Mapa (no lugar de npm run dev)
   npx mapa record start [nome]        começa a gravar
   npx mapa record stop                para e salva em .mapa/recordings/
   npx mapa record status              mostra se está gravando
+  npx mapa upload [gravação]          envia a última gravação (ou --pendentes) para o site
   npx mapa stats [gravação]           funções mais chamadas e sugestões de exclusão
                                       (--limit N, --json, --aplicar)
 `;
@@ -25,6 +30,12 @@ async function main(argv: string[]): Promise<number> {
       return record(args);
     case "stats":
       return stats(args);
+    case "login":
+      return login();
+    case "logout":
+      return logout();
+    case "upload":
+      return upload(args);
     case "--version":
     case "-v":
       console.log(MAPA_VERSION);

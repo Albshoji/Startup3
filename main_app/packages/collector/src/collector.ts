@@ -30,6 +30,15 @@ export interface CollectorOptions {
   log?: (message: string) => void;
   /** How long Stop waits for the last batches the recorders are still sending (ms). */
   drainMs?: number;
+  /** Runs after each recording is saved (e.g. upload to the site); its result is shown in the status. */
+  afterSave?: (saved: SavedRecording) => Promise<UploadStatus | undefined>;
+}
+
+/** What happened to the recording after it was saved (shown by the floating button). */
+export interface UploadStatus {
+  status: "enviando" | "enviada" | "erro" | "local";
+  url?: string;
+  message?: string;
 }
 
 export interface RecordingStatus {
@@ -44,7 +53,7 @@ export interface RecordingStatus {
   /** True between Stop and the file being written. */
   saving?: boolean;
   /** The last recording saved by this collector (shown by the floating button after a Stop). */
-  last?: { stopped_by: StopReason; event_count: number; directory: string; stopped_at: string };
+  last?: { stopped_by: StopReason; event_count: number; directory: string; stopped_at: string; upload?: UploadStatus };
 }
 
 interface ActiveRecording {
@@ -154,8 +163,17 @@ export async function startCollector(options: CollectorOptions): Promise<Collect
     };
     const saving = writeRecording(options.projectRoot, buildAppMap(metadata, events, buildClassMap(events)), recording.startedAt, recording.name);
     const saved = await saving;
-    last = { stopped_by: reason, event_count: saved.event_count, directory: saved.directory, stopped_at: stoppedAt.toISOString() };
+    const current = { stopped_by: reason, event_count: saved.event_count, directory: saved.directory, stopped_at: stoppedAt.toISOString() } as NonNullable<RecordingStatus["last"]>;
+    last = current;
     log(`Gravação salva em ${saved.directory} (${saved.event_count} eventos).`);
+    if (options.afterSave) {
+      // In the background: Stop answers as soon as the file is on disk.
+      current.upload = { status: "enviando" };
+      void options.afterSave(saved).then(
+        (upload) => (upload ? (current.upload = upload) : delete current.upload),
+        (error: unknown) => (current.upload = { status: "erro", message: error instanceof Error ? error.message : String(error) }),
+      );
+    }
     return saved;
   }
 

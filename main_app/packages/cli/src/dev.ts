@@ -14,6 +14,8 @@ import {
   SUPPORTED_NODE_MAJORS,
 } from "./project.js";
 import { say, warn } from "./output.js";
+import { readCredentials } from "./account.js";
+import { uploadConsented, uploadRecording } from "./upload.js";
 
 /** `mapa dev [next dev args]`: starts the collector and `next dev` with MAPA=1. */
 export async function dev(args: string[]): Promise<number> {
@@ -43,6 +45,22 @@ export async function dev(args: string[]): Promise<number> {
     ...(config.limits ? { limits: config.limits } : {}),
     metadata: () => buildMetadata(project),
     log: (message) => say(message),
+    afterSave: async (saved) => {
+      // Nothing is sent without login and the first-time confirmation (CLAUDE.md §14).
+      const credentials = readCredentials();
+      if (!credentials) {
+        say("A gravação ficou só neste computador. Para enviá-la ao site do Mapa: npx mapa login e depois npx mapa upload");
+        return { status: "local", message: "Ficou só neste computador (rode npx mapa login para enviar)." };
+      }
+      if (!uploadConsented(project.root)) {
+        say("Para enviar esta gravação ao site, rode: npx mapa upload (pede confirmação só na primeira vez)");
+        return { status: "local", message: "Ficou só neste computador (rode npx mapa upload para enviar)." };
+      }
+      const result = await uploadRecording(project, saved.directory, credentials);
+      if (result.status === "enviada") say(`Gravação enviada para o site: ${result.url}`);
+      else warn(`Não consegui enviar a gravação: ${result.message}. Tente de novo com: npx mapa upload`);
+      return result.status === "enviada" ? { status: "enviada", url: result.url! } : { status: "erro", message: result.message ?? "" };
+    },
   });
   await writeCollectorState(project.root, {
     url: collector.url,

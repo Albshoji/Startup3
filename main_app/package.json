@@ -8,10 +8,12 @@
   "scripts": {
     "build": "tsc -b packages/format packages/supabase packages/babel-plugin packages/browser-runtime packages/server-runtime packages/next-plugin packages/collector packages/cli",
     "clean": "tsc -b --clean packages/format packages/supabase packages/babel-plugin packages/browser-runtime packages/server-runtime packages/next-plugin packages/collector packages/cli",
-    "test": "tsc -b packages/format packages/supabase packages/babel-plugin packages/browser-runtime packages/server-runtime packages/next-plugin packages/collector packages/cli && node --test \"packages/*/test/*.test.mjs\""
+    "test": "tsc -b packages/format packages/supabase packages/babel-plugin packages/browser-runtime packages/server-runtime packages/next-plugin packages/collector packages/cli && node --test \"packages/*/test/*.test.mjs\"",
+    "db:migrate": "node supabase/apply-migrations.mjs"
   },
   "devDependencies": {
     "@types/node": "24.19.1",
+    "postgres": "3.4.9",
     "typescript": "5.9.3"
   }
 }
