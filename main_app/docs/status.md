@@ -83,4 +83,5 @@ Observação: os cenários com login (A, B com sucesso, E) vão precisar de cada
 | 2026-10-05 | Etapa 0 parte B: riscos 3, 5 e 6 (Supabase de teste) | `fd4e336`, `46710b8` |
 | 2026-10-05 | Etapa 0 concluída; limites decididos (1 min) | `a86e7f7` |
 | 2026-10-06 | Etapa 1 concluída: monorepo, CLI `mapa`, coletor | `f75cd0a` |
-| 2026-10-06 | Etapa 2 concluída: `withMapa`, plugin Babel, gravadores de funções, `.mapa/config.json` | (este commit) |
+| 2026-10-06 | Projeto movido para `main_app/` | `e46e083` |
+| 2026-10-06 | Etapa 2 concluída: `withMapa`, plugin Babel, gravadores de funções, `.mapa/config.json` | `f3ac7e6` |
