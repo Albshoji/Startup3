@@ -509,6 +509,7 @@ Se a resposta não estiver nas referências, consultar a documentação oficial:
 
 ## 14. Regras de trabalho
 
+- **Retomar de onde parou:** ao iniciar uma sessão, leia `docs/status.md` para saber onde o trabalho parou (seção "Como retomar"). Mantenha esse arquivo atualizado a cada avanço e sempre que parar, inclusive no meio de uma etapa.
 - **AppMap primeiro:** diante de qualquer dúvida de desenho, consulte `docs/appmap-mapping.md` e as referências antes de inventar.
 - **Verifique rodando.** Nunca declare uma etapa pronta sem executar os critérios e mostrar a evidência.
 - **Pare e pergunte** quando uma decisão mudar o escopo, quando um risco se confirmar, quando precisar de contas/credenciais (Supabase de teste, OAuth App, LLM, pagamento) ou quando algo exigir alterar arquivos do usuário além do `mapa init`.

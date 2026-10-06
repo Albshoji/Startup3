@@ -33,7 +33,7 @@
 
 **Ponto exato onde parou:** Etapa 1 concluída e enviada ao GitHub. Nada em andamento. O próximo passo é **começar a Etapa 2** (abaixo).
 
-**Para uma nova sessão do Claude Code:** abrir na pasta do projeto e dizer *"Leia docs/status.md e continue de onde parou."*
+**Para uma nova sessão do Claude Code:** o CLAUDE.md (§14) já manda ler este arquivo; basta abrir na pasta do projeto e dizer *"continue de onde parou"*.
 
 **Ambiente (já configurado neste computador):**
 - Node 24; pnpm 12.9.1 **pelo corepack**: use `corepack pnpm ...` (não há `pnpm` instalado globalmente).
