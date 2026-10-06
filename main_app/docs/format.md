@@ -11,7 +11,7 @@
 .mapa/recordings/<AAAA-MM-DD_HH-mm-ss>[-<nome>]/
   recording.appmap.json.gz   → arquivo bruto (gzip), mascarado e válido
   interactions.json          → índice das ações do usuário (lista de Interaction)
-  upload.json                → status do envio (Etapa 5)
+  upload.json                → status do envio: {status: "enviada"|"erro", id, url, message, at}
 ```
 
 No site, mais tarde: `supabase-schema.json` (retrato da estrutura do banco) e

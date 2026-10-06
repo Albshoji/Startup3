@@ -22,7 +22,15 @@ if (!url) {
   process.exit(2);
 }
 
-const sql = postgres(url, { ssl: "require", max: 1, onnotice: () => {} });
+// Read the parts by hand: a password with `#`, `@` or `/` (common in generated passwords) breaks
+// URL parsing, so it is taken as everything between the user and the last `@`.
+const parts = /^postgres(?:ql)?:\/\/([^:]+):(.*)@([^@/:]+)(?::(\d+))?\/([^?]*)/.exec(url);
+if (!parts) {
+  console.error("SUPABASE_DB_URL não está no formato postgresql://usuario:senha@servidor:porta/banco");
+  process.exit(2);
+}
+const [, user, password, host, port, database] = parts;
+const sql = postgres({ host, port: Number(port ?? 5432), user, password, database: database || "postgres", ssl: "require", max: 1, onnotice: () => {} });
 try {
   await sql`create schema if not exists mapa_internal`;
   await sql`create table if not exists mapa_internal.migrations (name text primary key, applied_at timestamptz not null default now())`;

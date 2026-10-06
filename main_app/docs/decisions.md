@@ -174,3 +174,28 @@ Roteiro automatizado no Chromium, um cenário por gravação, nos modos Turbopac
 | `mapa stats` lista as funções mais chamadas | `1. precos.somar (lib/precos.ts:23) — 50 gravadas + 9950 omitidas`; sugestão "somar"; `--aplicar` escreveu o `exclude` |
 | Várias abas | Start na aba 1, a aba 2 mostrou "Gravando"; ações nas duas (threads t1 e t2), Stop pela aba 2 |
 | Testes automáticos | 69 passando |
+
+## Etapa 5
+
+- **2026-10-06 · Site em `apps/web`** (Next.js 16, mesmas versões do app de teste) com o **projeto Supabase do site** (`mapa-site`, separado do projeto de teste). Chaves só em `apps/web/.env.local` (fora do Git); a chave secreta é usada só em rotas de API e *server actions*; verificado que o código enviado ao navegador não contém a chave secreta nem a senha do banco.
+- **2026-10-06 · Banco do site** (`supabase/migrations/20261006000001_site.sql`): `projects`, `recordings`, `cli_device_codes`, `cli_tokens`, **RLS em todas**. Usuários só **leem** as próprias linhas; toda escrita passa pela API do site, que confere antes o token do comando ou a sessão. Bucket `recordings` **privado**, pasta `<id do usuário>/<id da gravação>/`; leitura só do dono; envio só por URL assinada criada pelo servidor (sem regra de escrita no bucket). Migrações aplicadas por `corepack pnpm db:migrate` (`supabase/apply-migrations.mjs`, controle em `mapa_internal.migrations`), com a conexão do banco do site. Achado: senha com `#` quebra a leitura do endereço como URL; o script lê usuário/senha/servidor separadamente.
+- **2026-10-06 · Login do comando por código de dispositivo** (`mapa login`, como `gh auth login`, RFC 8628): o comando mostra um código curto (sem vogais, sem 0/O/1/I), a pessoa entra no site e autoriza em `/dispositivo`; o comando recebe um **token próprio** (`mapa_…`, 32 bytes aleatórios). O banco guarda só o hash (SHA-256) do código e do token; cada código vale 10 minutos e uma vez. Token salvo em `~/.config/mapa/credentials.json` (Windows: `%APPDATA%\mapa`), permissão `600`, **fora do projeto**. `mapa logout` revoga no site e apaga o arquivo.
+- **2026-10-06 · Envio:** o comando pede ao site a criação da gravação e URLs assinadas, envia os dois arquivos (`recording.appmap.json.gz`, `interactions.json`) direto para o bucket e confirma; o site confere que os arquivos estão lá e muda a situação para "recebida". Resultado em `upload.json` na pasta da gravação. O site guarda só um resumo não sensível do `metadata` (app, tecnologias, ramo do Git).
+- **2026-10-06 · Confirmação na primeira vez, por projeto:** sem login, nada sai do computador; com login mas sem confirmação, o Stop avisa como enviar; `mapa upload` pergunta uma vez ("Enviar as gravações do projeto … para a conta …? Elas vão com senhas, tokens, chaves e e-mails mascarados") e grava `"upload": "auto"` em `.mapa/settings.json`; a partir daí cada Stop envia sozinho, e o botão flutuante mostra "Enviada para o site: <link>". `mapa upload --pendentes` reenvia o que falhou.
+- **2026-10-06 · Endereço do site:** por enquanto `http://localhost:3300` (padrão do comando, ou `MAPA_SITE_URL`); o endereço de produção entra quando o site for hospedado.
+- **2026-10-06 · "Confirm email" está LIGADO no projeto do site** (o passo de desligar não foi feito). O teste automático cria as contas já confirmadas pela chave secreta e entra pela tela "Entrar"; o cadastro pela tela foi exercitado e respondeu "Conta criada. Confirme o e-mail…". Um e-mail de confirmação foi enviado para um apelido do e-mail do dono (`albshoji+mapa-a-…@gmail.com`) numa tentativa anterior do teste. Achado: o projeto novo recusa endereços `@example.com` como inválidos.
+
+### Etapa 5: concluída (2026-10-06)
+
+Roteiro automatizado (Chromium + comando `mapa` + Supabase do site), 23 verificações, todas ✅:
+
+| Critério | Evidência |
+|---|---|
+| Do zero: conta → login → gravação → "recebida" | Conta A entra no site (lista vazia) → `mapa login` mostra o código, A autoriza em `/dispositivo` (mesmo código), o comando conecta à conta A guardando só um token → gravação sem confirmação fica só local → `mapa upload` pede confirmação e envia → nova gravação pelo botão flutuante é enviada sozinha no Stop ("Enviada para o site: …") → o site lista as 2 como **Recebida**; a página da gravação mostra "Recebida"; A baixa o próprio arquivo bruto |
+| Um segundo usuário não acessa a gravação do primeiro | B: lista vazia; página da gravação de A → 404; download → 404; direto no Supabase com a sessão de B: `recordings` e `projects` vazias, arquivo de A no Storage recusado, escrita recusada (42501), códigos de login invisíveis; sem login: `recordings` recusada (42501); o token de A não alcança gravação alheia; `mapa logout` revoga o token no site |
+| Segredos | Chave secreta e senha do banco ausentes dos 12 arquivos que o navegador baixa |
+| Testes automáticos | 70 passando (inclui login/envio/logout contra um site falso) |
+
+### Pendências novas
+- **Religar/decidir "Confirm email"** no projeto do site antes do lançamento (hoje ligado; o fluxo de confirmação por e-mail ainda não tem página própria de retorno no site).
+- **Hospedagem do site** e endereço de produção (o comando usa `http://localhost:3300` por padrão).
