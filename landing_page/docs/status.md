@@ -70,4 +70,5 @@ A página está pronta e igual à referência (`docs/landing-reference.html`, ve
   servidor consultou o Supabase sem a sessão e a regra RLS escondeu as linhas (commit `6c00a73`).
 - 07/10/2026 — Diagrama do topo ficou mais acessível: títulos em português simples com o
   nome técnico embaixo, e explicação de cada passo ao clicar (commit `290553c`).
-- 07/10/2026 — Balão com a explicação ao passar o mouse sobre cada passo do diagrama.
+- 07/10/2026 — Balão com a explicação ao passar o mouse sobre cada passo do diagrama
+  (commit `da9c6d1`).
