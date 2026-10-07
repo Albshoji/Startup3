@@ -65,4 +65,4 @@ A página está pronta e igual à referência (`docs/landing-reference.html`, ve
   "Para quem é" (commit `10f3f4b`).
 - 07/10/2026 — Diagrama do topo trocado: no lugar do exemplo do Stripe (que mostrava as
   ações do usuário), um exemplo do que o Mapa grava por baixo: lista vazia porque o
-  servidor consultou o Supabase sem a sessão e a regra RLS escondeu as linhas.
+  servidor consultou o Supabase sem a sessão e a regra RLS escondeu as linhas (commit `6c00a73`).
