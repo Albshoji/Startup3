@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>[Nome do produto] — descubra por que seu app quebrou</title>
-<meta name="description" content="Ligue a gravação, use seu app e receba um diagrama didático que aponta onde ele quebrou e explica cada passo no seu nível, além de um registro completo para a sua IA.">
+<title>[Nome do produto] — entenda o que seu código fez por trás dos panos</title>
+<meta name="description" content="Ligue a gravação, use seu app e receba um diagrama didático do que rodou no seu código, além de um registro completo para a sua IA.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -160,6 +160,23 @@ a{color:var(--blue-text)}a:hover{color:var(--red-text)}
 @keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-14deg)}60%{transform:rotate(10deg)}}
 @keyframes blink{0%,95%,100%{transform:scaleY(1)}97%{transform:scaleY(.1)}}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition:none !important}html{scroll-behavior:auto}}
+
+/* ===== hero swimlane diagram ===== */
+.swim-scroll{overflow:hidden}
+.swim{position:relative;margin:0 auto;transform-origin:top left}
+.lhd{position:absolute;top:0;display:flex;justify-content:center}
+.lhd span{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:12px;padding:5px 8px;border:1.5px solid #1f1f1f;border-radius:5px;white-space:nowrap}
+.lline{position:absolute;top:30px;bottom:6px;width:0;border-left:2px dashed #dadce0}
+.snode{position:absolute;width:116px;height:48px;border:2px solid #1f1f1f;border-radius:8px;background:#ffffff;padding:4px 6px 4px 28px;display:flex;align-items:center;font-weight:700;font-size:12.5px;line-height:1.2;transition:transform .15s,box-shadow .15s}
+.snode:hover{transform:translate(-2px,-2px);box-shadow:4px 4px 0 #4285f4}
+.snode .k{position:absolute;left:5px;top:50%;margin-top:-9px;width:18px;height:18px;border-radius:50%;border:1.5px solid #1f1f1f;display:grid;place-items:center;font-size:10px;font-weight:700;background:#ffffff}
+.snode.fail{border-color:#c5221f;background:#fce8e6;color:#a50e0e;box-shadow:3px 3px 0 #ea4335}
+.snode.fail:hover{box-shadow:5px 5px 0 #ea4335}
+.snode.dim{border-style:dashed}
+.sanno{position:absolute;font-family:'Caveat',cursive;font-weight:700;font-size:21px;line-height:1;color:#c5221f;transform:rotate(-4deg);white-space:nowrap}
+.swhy{margin-top:14px;border:2px solid #1f1f1f;border-radius:8px;background:#e8f0fe;padding:10px 12px;font-size:13.5px;line-height:1.5}
+.swhy b{font-weight:700}
+.swhy .lbl{display:block;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#1967d2;margin-bottom:2px}
 </style>
 </head>
 <body>
@@ -193,7 +210,7 @@ a{color:var(--blue-text)}a:hover{color:var(--red-text)}
         <span class="chip c-front" style="padding:4px 8px;border-radius:999px">Em desenvolvimento</span>
         Acesso antecipado aberto
       </div>
-      <h1 class="h1">Descubra por que seu app quebrou. E entenda o motivo, <span class="hl-y">no seu nível.</span></h1>
+      <h1 class="h1">Use seu app. Entenda o que o seu código fez <span class="hl-y">por trás dos panos.</span></h1>
       <p class="lead" style="max-width:560px">Ligue a gravação e use seu app como sempre. Enquanto você clica, registramos tudo o que o código faz por baixo: as funções chamadas, as requisições, o que chega ao banco. No fim, você recebe duas coisas:</p>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;max-width:560px">
         <div class="card card-hover stack" style="--sh:var(--green);padding:14px 16px;gap:8px">
@@ -247,29 +264,9 @@ a{color:var(--blue-text)}a:hover{color:var(--red-text)}
           <span class="dot" style="background:var(--red)"></span>
           <span class="dot" style="background:var(--yellow)"></span>
           <span class="dot" style="background:var(--green)"></span>
-          <span style="margin-left:10px;font-size:13px;font-weight:700;color:var(--ink-2)">Diagrama · por que o cadastro não salvou</span>
+          <span style="margin-left:10px;margin-right:88px;font-size:13px;font-weight:700;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">Diagrama · por que meu plano continua Free?</span>
         </div>
-        <ol class="stack" style="list-style:none;margin:0;padding:18px 20px 20px">
-          <li class="hstep-wrap">
-            <div class="hstep"><span class="step-num">1</span><span class="stack" style="gap:6px;min-width:0"><span style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span class="chip c-front">front</span><span style="font-weight:600;font-size:15px;line-height:1.3">Você clicou em “Criar conta”</span></span><span class="mono hcode">components/FormCadastro.tsx · onSubmit()</span></span></div>
-            <span class="harrow" aria-hidden="true"><svg width="14" height="16" viewBox="0 0 14 16"><path class="doodle-thin" d="M7 1 V13 M2 8 L7 14 L12 8" style="stroke:#9aa0a6"/></svg></span>
-          </li>
-          <li class="hstep-wrap">
-            <div class="hstep"><span class="step-num">2</span><span class="stack" style="gap:6px;min-width:0"><span style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span class="chip c-req">requisição</span><span style="font-weight:600;font-size:15px;line-height:1.3">O app enviou os dados ao servidor</span></span><span class="mono hcode">fetch("/api/cadastro", { method: "POST" })</span></span></div>
-            <span class="harrow" aria-hidden="true"><svg width="14" height="16" viewBox="0 0 14 16"><path class="doodle-thin" d="M7 1 V13 M2 8 L7 14 L12 8" style="stroke:#9aa0a6"/></svg></span>
-          </li>
-          <li class="hstep-wrap">
-            <div class="hstep"><span class="step-num">3</span><span class="stack" style="gap:6px;min-width:0"><span style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span class="chip c-func">função</span><span style="font-weight:600;font-size:15px;line-height:1.3">A rota chamou salvarUsuario()</span></span><span class="mono hcode">app/api/cadastro/route.ts · salvarUsuario()</span></span></div>
-            <span class="harrow" aria-hidden="true"><svg width="14" height="16" viewBox="0 0 14 16"><path class="doodle-thin" d="M7 1 V13 M2 8 L7 14 L12 8" style="stroke:#9aa0a6"/></svg></span>
-          </li>
-          <li class="hstep-wrap">
-            <div class="hstep is-fail"><span class="step-num">4</span><span class="stack" style="gap:6px;min-width:0"><span style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span class="chip c-db">banco</span><span style="font-weight:600;font-size:15px;line-height:1.3">O banco recusou a escrita</span></span><span class="mono hcode">supabase.from("usuarios").insert(...)</span><span class="chip" style="align-self:flex-start;background:var(--red-strong);color:#fff;border-color:var(--red-strong)">o problema nasce aqui</span></span></div>
-            <span class="harrow" aria-hidden="true"><svg width="14" height="16" viewBox="0 0 14 16"><path class="doodle-thin" d="M7 1 V13 M2 8 L7 14 L12 8" style="stroke:#9aa0a6"/></svg></span>
-          </li>
-          <li class="hstep-wrap">
-            <div class="hstep"><span class="step-num">5</span><span class="stack" style="gap:6px;min-width:0"><span style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span class="chip c-req">resposta</span><span style="font-weight:600;font-size:15px;line-height:1.3">O servidor respondeu 500</span></span><span class="mono hcode">route.ts → status 500</span></span></div>
-          </li>
-        </ol>
+        <div style="padding:18px 16px 18px"><div class="swim-scroll" id="swim-wrap"><div class="swim" id="swim" style="width: 472px; height: 478px" role="img" aria-label="Diagrama: o pagamento foi aprovado, mas o banco atualizou 0 linhas"><div class="lhd" style="left: 0px; width: 118px"><span style="background: #d2e3fc">navegador</span></div><div class="lline" style="left: 59px"></div><div class="lhd" style="left: 118px; width: 118px"><span style="background: #ceead6">seu servidor</span></div><div class="lline" style="left: 177px"></div><div class="lhd" style="left: 236px; width: 118px"><span style="background: #feefc3">Stripe</span></div><div class="lline" style="left: 295px"></div><div class="lhd" style="left: 354px; width: 118px"><span style="background: #fad2cf">banco</span></div><div class="lline" style="left: 413px"></div><svg width="472" height="478" viewBox="0 0 472 478" style="position: absolute; left: 0; top: 0" aria-hidden="true"><defs><marker id="sw-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#80868b"></path></marker><marker id="sw-ahr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#c5221f"></path></marker></defs><path d="M114.0 68.0 H169.0 Q177.0 68.0 177.0 76.0 V99" fill="none" stroke="#80868b" stroke-width="2" stroke-linejoin="round" marker-end="url(#sw-ah)"></path><path d="M232.0 130.0 H287.0 Q295.0 130.0 295.0 138.0 V161" fill="none" stroke="#80868b" stroke-width="2" stroke-linejoin="round" marker-end="url(#sw-ah)"></path><path d="M240.0 192.0 H67.0 Q59.0 192.0 59.0 200.0 V223" fill="none" stroke="#80868b" stroke-width="2" stroke-linejoin="round" marker-end="url(#sw-ah)"></path><path d="M295.0 216 V308.0 Q295.0 316.0 287.0 316.0 H239.0" fill="none" stroke="#80868b" stroke-width="2" stroke-linejoin="round" marker-end="url(#sw-ah)"></path><path d="M177.0 340 V370.0 Q177.0 378.0 185.0 378.0 H351.0" fill="none" stroke="#c5221f" stroke-width="2" stroke-linejoin="round" marker-end="url(#sw-ahr)"></path><path d="M413.0 402 V432.0 Q413.0 440.0 405.0 440.0 H121.0" fill="none" stroke="#80868b" stroke-width="2" stroke-linejoin="round" stroke-dasharray="6 6" marker-end="url(#sw-ah)"></path></svg><div class="snode" style="left: 4px; top: 44px; width: 110px"><span class="k">1</span>Clicou em “Assinar”</div><div class="snode" style="left: 122px; top: 106px; width: 110px"><span class="k">2</span>Criou o checkout</div><div class="snode" style="left: 240px; top: 168px; width: 110px"><span class="k">3</span>Pagamento aprovado</div><div class="snode" style="left: 4px; top: 230px; width: 110px"><span class="k">4</span>Mostrou “Pago”</div><div class="snode" style="left: 122px; top: 292px; width: 110px"><span class="k">5</span>Webhook chegou</div><div class="snode fail" style="left: 358px; top: 354px; width: 110px"><span class="k">6</span>Atualizou 0 linhas</div><div class="snode dim" style="left: 4px; top: 416px; width: 110px"><span class="k">7</span>Plano segue “Free”</div><div class="sanno" style="left: 348px; top: 304px">sem erro.<br>nada salvo.</div></div></div><div class="swhy"><span class="lbl">Por que quebrou</span>O Stripe chama seu webhook <b>sem usuário logado</b>. A regra do banco (<b>RLS</b>) só deixa cada usuário editar <b>a própria linha</b>, então o update afetou <b>0 linhas</b>: sem erro, nada salvo.</div></div>
       </div>
     </div>
   </div>
@@ -378,6 +375,7 @@ a{color:var(--blue-text)}a:hover{color:var(--red-text)}
     <div class="head">
       <span class="tag" style="color:var(--blue-text)">Para quem é</span>
       <h2 class="h2">Para quem constrói com IA e <span class="hl-b">não escreveu cada linha.</span></h2>
+        <p class="lead" style="max-width:760px">A explicação da IA não faz sentido para você, e você quer aprender o conhecimento técnico que falta para entender o seu repositório. <span class="hl-y">Só o necessário, sem fazer um curso inteiro.</span></p>
     </div>
     <div class="auto-2">
       <div class="note rot-l">
@@ -462,6 +460,17 @@ a{color:var(--blue-text)}a:hover{color:var(--red-text)}
 
 <script>
 (() => {
+
+  /* ---------- Hero diagram: scale down to fit narrow windows ---------- */
+  const swimWrap = document.getElementById('swim-wrap'), swim = document.getElementById('swim');
+  const fitSwim = () => {
+    const k = Math.min(1, swimWrap.clientWidth / 472);
+    swim.style.transform = k < 1 ? `scale(${k})` : 'none';
+    swim.style.margin = k < 1 ? '0' : '0 auto';
+    swimWrap.style.height = (478 * k) + 'px';
+  };
+  new ResizeObserver(fitSwim).observe(swimWrap); fitSwim();
+
   /* ---------- Mascot: eyes follow the cursor, click to poke ---------- */
   const mascot = document.getElementById('mascot');
   const pl = document.getElementById('pupil-l'), pr = document.getElementById('pupil-r');

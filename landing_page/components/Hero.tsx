@@ -17,7 +17,7 @@ export default function Hero() {
             <span className="chip c-front" style={{ padding: '4px 8px', borderRadius: 999 }}>Em desenvolvimento</span>
             Acesso antecipado aberto
           </div>
-          <h1 className="h1">Descubra por que seu app quebrou. E entenda o motivo, <span className="hl-y">no seu nível.</span></h1>
+          <h1 className="h1">Use seu app. Entenda o que o seu código fez <span className="hl-y">por trás dos panos.</span></h1>
           <p className="lead" style={{ maxWidth: 560 }}>
             Ligue a gravação e use seu app como sempre. Enquanto você clica, registramos tudo o que o código faz por baixo: as funções chamadas, as requisições, o que chega ao banco. No fim, você recebe duas coisas:
           </p>

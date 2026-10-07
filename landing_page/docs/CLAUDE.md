@@ -51,9 +51,17 @@ The product itself does not exist yet: this site is only the landing page.
    throttled with `requestAnimationFrame`). It blinks every 5s (CSS). Clicking it shows a
    speech bubble that cycles through: "oi!", "eu explico tudo!", "grava aí!",
    "ei, isso faz cócegas", and hides after 1.8s. It is a real `<button>`.
-2. **Diagram preview (hero):** the 5 steps fade in one after another (CSS
-   `animation-delay`). Step 4 is the failure (red, with the "o problema nasce aqui"
-   badge). Hover lifts each step.
+2. **Diagram preview (hero):** a swimlane diagram with 4 lanes (navegador, seu servidor,
+   Stripe, banco) and 7 numbered steps connected by elbow arrows. The flow splits after
+   step 3 (one arrow back to the browser, one to the server's webhook). Step 6 is the
+   failure (red, with the handwritten note "sem erro. nada salvo."), and step 7 is dashed.
+   A "Por que quebrou" box sits under it. Geometry is fixed at 472 × 478 px (lanes 118 px,
+   nodes 110 × 48 px, rows every 62 px); the SVG arrow paths in the reference are computed
+   from it, so keep them as they are. On narrow windows the whole diagram scales down
+   proportionally to fit (see `fitSwim` in the reference script); it never scrolls
+   sideways. This is the product's signature visual: build it as a reusable
+   `SwimlaneDiagram` component that takes lanes, nodes and edges as data, so the same
+   component can render other examples later. Hover lifts each node.
 3. **Comparison:** hovering or focusing an underlined term on the left (`.jargon`)
    highlights the matching row on the right (`.trow`, `data-row`) and dims the others.
    Hovering a row highlights its terms on the left. "client" and "insert" both map to
@@ -93,9 +101,9 @@ submit to the same endpoint.
 ## SEO and metadata
 
 - `lang="pt-BR"`.
-- Title: `[Nome do produto] — descubra por que seu app quebrou`.
-- Description: "Ligue a gravação, use seu app e receba um diagrama didático que aponta onde
-  ele quebrou e explica cada passo no seu nível, além de um registro completo para a sua IA."
+- Title: `[Nome do produto] — entenda o que seu código fez por trás dos panos`.
+- Description: "Ligue a gravação, use seu app e receba um diagrama didático do que rodou no
+  seu código, além de um registro completo para a sua IA."
 - Open Graph and Twitter tags with the same text. Leave a TODO for the OG image.
 - Favicon: a simple SVG of the logo (a rounded square with a red dot).
 
@@ -113,7 +121,9 @@ submit to the same endpoint.
 
 ## Notes
 
-- The diagram and chat content (cadastro, `salvarUsuario`, coluna `telefone`, erro 42703)
-  is an **illustrative example**. Keep it exactly as written.
+- The diagram and chat content is an **illustrative example**. Keep it exactly as written.
+  The hero diagram uses the payment example (Stripe webhook, RLS blocking the update,
+  0 rows). The comparison section and the "Para a sua IA" chat use the signup example
+  (`salvarUsuario`, coluna `telefone`, erro 42703).
 - All copy is in Brazilian Portuguese. Keep the curly quotes (“ ”) and the ellipses (…)
   as they are.

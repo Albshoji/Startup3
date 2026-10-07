@@ -8,6 +8,7 @@ export default function Audience() {
         <div className="head">
           <span className="tag" style={{ color: 'var(--blue-text)' }}>Para quem é</span>
           <h2 className="h2">Para quem constrói com IA e <span className="hl-b">não escreveu cada linha.</span></h2>
+          <p className="lead" style={{ maxWidth: 760 }}>A explicação da IA não faz sentido para você, e você quer aprender o conhecimento técnico que falta para entender o seu repositório. <span className="hl-y">Só o necessário, sem fazer um curso inteiro.</span></p>
         </div>
         <div className="auto-2">
           <div className="note rot-l">
