@@ -158,6 +158,9 @@ a{color:var(--blue-text)}a:hover{color:var(--red-text)}
 .snode.fail .c{color:#a50e0e}
 .snode.fail:hover,.snode.fail.sel{box-shadow:5px 5px 0 #ea4335}
 .snode.dim{border-style:dashed}
+.stip{position:absolute;z-index:5;pointer-events:none;display:flex;flex-direction:column;align-items:flex-start;gap:6px;background:#ffffff;border:2px solid #1f1f1f;border-radius:8px;box-shadow:4px 4px 0 #1f1f1f;padding:10px 12px;font-size:12.5px;line-height:1.45;color:var(--ink-2);animation:evIn .15s ease both}
+.stip-t{font-weight:700;font-size:13px;color:var(--ink)}
+.stip .chip{font-size:10px;padding:3px 5px}
 .sanno{position:absolute;font-family:var(--font-hand),cursive;font-weight:700;font-size:21px;line-height:1;color:#c5221f;transform:rotate(-4deg);white-space:nowrap}
 .swhy{min-height:162px;margin-top:14px;border:2px solid #1f1f1f;border-radius:8px;background:#e8f0fe;padding:10px 12px;font-size:13.5px;line-height:1.5}
 .swhy b{font-weight:700}

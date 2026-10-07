@@ -90,7 +90,16 @@ export default function DiagramPreview() {
       <div style={{ padding: '18px 16px 18px' }}>
         <SwimlaneDiagram
           lanes={LANES}
-          nodes={STEPS}
+          nodes={STEPS.map((st) => ({
+            ...st,
+            tip: (
+              <>
+                <span className="stip-t">{st.title}</span>
+                {st.detail}
+                <span className={`chip ${CERTAINTY[st.certainty].className}`}>{CERTAINTY[st.certainty].label}</span>
+              </>
+            ),
+          }))}
           edges={EDGES}
           selected={selected}
           onSelect={(i) => setSelected(i === selected ? null : i)}
@@ -115,7 +124,7 @@ export default function DiagramPreview() {
             <>
               <span className="lbl">Por que quebrou</span>
               Seu servidor conectou ao Supabase <b>sem dizer quem estava logado</b> (passo 3). Sem login, a <b>regra de acesso (RLS)</b> da tabela esconde todas as linhas (passo 5). Por isso a lista veio vazia, <b>sem nenhum erro</b>.
-              <span className="shint">Toque em um passo para ver a explicação.</span>
+              <span className="shint">Passe o mouse ou toque em um passo para ver a explicação.</span>
             </>
           )}
         </div>

@@ -12,7 +12,8 @@ A página está pronta e igual à referência (`docs/landing-reference.html`, ve
 - Página única em Next.js 16 + TypeScript, com uma seção por arquivo em `components/`.
 - Diagrama do topo mostra o que o Mapa de fato grava por baixo, no formato combinado para
   o produto: cada passo tem um título em português simples ("Conectou ao Supabase") e,
-  embaixo, o nome real no código (`createClient()`). Clicar num passo mostra a explicação
+  embaixo, o nome real no código (`createClient()`). Passar o mouse num passo mostra um
+  balão ao lado com a explicação e o grau de certeza. Clicar num passo mostra a explicação
   dele (com o nome do conceito técnico, ex.: "regra de acesso (RLS)"), a referência
   completa (arquivo:linha, pedido, regra) e o grau de certeza ("confirmado pela gravação"
   ou "configurado no banco"). Sem passo escolhido, o quadro mostra o resumo "Por que
@@ -69,3 +70,4 @@ A página está pronta e igual à referência (`docs/landing-reference.html`, ve
   servidor consultou o Supabase sem a sessão e a regra RLS escondeu as linhas (commit `6c00a73`).
 - 07/10/2026 — Diagrama do topo ficou mais acessível: títulos em português simples com o
   nome técnico embaixo, e explicação de cada passo ao clicar (commit `290553c`).
+- 07/10/2026 — Balão com a explicação ao passar o mouse sobre cada passo do diagrama.

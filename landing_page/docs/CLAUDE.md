@@ -56,7 +56,8 @@ The product itself does not exist yet: this site is only the landing page.
    Supabase, banco) and 7 numbered steps connected by elbow arrows (calls go down,
    returns come back dashed). It shows what Mapa really records, not what the user did,
    in the product's format: each step has a **plain title** ("Conectou ao Supabase") and
-   the **real name** in the code below it (`createClient()`). Steps are buttons: clicking
+   the **real name** in the code below it (`createClient()`). Hovering or focusing a step shows a tooltip beside
+   it with that step's explanation and certainty tag. Steps are buttons: clicking
    one replaces the box under the diagram with that step's explanation (names the
    technical concept, e.g. "regra de acesso (RLS)"), the full technical reference
    (file:line, request, policy) and its certainty tag ("confirmado pela gravação" or

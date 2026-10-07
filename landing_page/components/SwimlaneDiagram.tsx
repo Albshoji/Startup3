@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useId, useRef } from 'react';
+import { type ReactNode, useEffect, useId, useRef, useState } from 'react';
 
 // Fixed geometry: every example drawn with this component shares it. Arrows are
 // routed from it, so the data only says which step connects to which.
@@ -12,9 +12,11 @@ const ROW_STEP = 70;
 const BOTTOM_PAD = 14;
 const CORNER = 8;
 const HEAD_GAP = 7;
+const TIP_W = 230;
+const TIP_GAP = 10;
 
 export type SwimLane = { label: string; color: string };
-export type SwimNode = { lane: number; row: number; title: string; code: string; variant?: 'fail' | 'dim' };
+export type SwimNode = { lane: number; row: number; title: string; code: string; variant?: 'fail' | 'dim'; tip?: ReactNode };
 // 'hv': leaves from the side and goes down into the top of the next step (a call).
 // 'vh': leaves from the bottom and comes in from the side (a return).
 export type SwimEdge = { from: number; to: number; route?: 'hv' | 'vh'; fail?: boolean; dashed?: boolean };
@@ -57,6 +59,7 @@ export default function SwimlaneDiagram({ lanes, nodes, edges, notes = [], label
   const uid = useId().replace(/[^a-zA-Z0-9_-]/g, '');
   const arrow = `sw-ah-${uid}`;
   const arrowFail = `sw-ahr-${uid}`;
+  const [hovered, setHovered] = useState<number | null>(null);
 
   const width = lanes.length * LANE_W;
   const lastRow = Math.max(...nodes.map((n) => n.row));
@@ -118,13 +121,30 @@ export default function SwimlaneDiagram({ lanes, nodes, edges, notes = [], label
             className={['snode', n.variant, selected === i && 'sel'].filter(Boolean).join(' ')}
             style={{ left: nodeLeft(n), top: nodeTop(n), width: NODE_W, height: NODE_H }}
             aria-pressed={selected === i}
+            aria-describedby={hovered === i && n.tip ? `${uid}-tip` : undefined}
             onClick={() => onSelect?.(i)}
+            onMouseEnter={() => setHovered(i)}
+            onMouseLeave={() => setHovered((h) => (h === i ? null : h))}
+            onFocus={() => setHovered(i)}
+            onBlur={() => setHovered((h) => (h === i ? null : h))}
           >
             <span className="k">{i + 1}</span>
             <span className="t">{n.title}</span>
             <span className="c">{n.code}</span>
           </button>
         ))}
+        {hovered !== null && nodes[hovered].tip && (() => {
+          // Beside the step, on the side with room; the last rows grow upward.
+          const n = nodes[hovered];
+          const left = n.lane < lanes.length / 2 ? nodeLeft(n) + NODE_W + TIP_GAP : nodeLeft(n) - TIP_GAP - TIP_W;
+          const nearBottom = n.row >= lastRow - 1;
+          const vertical = nearBottom ? { bottom: height - nodeTop(n) - NODE_H } : { top: nodeTop(n) };
+          return (
+            <div id={`${uid}-tip`} role="tooltip" className="stip" style={{ left, width: TIP_W, ...vertical }}>
+              {n.tip}
+            </div>
+          );
+        })()}
         {notes.map((note) => (
           <div key={note.lines.join(' ')} className="sanno" style={{ left: note.left, top: note.top }}>
             {note.lines.map((line, i) => (
