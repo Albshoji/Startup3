@@ -59,3 +59,7 @@ dd { margin: 0; }
   dl { grid-template-columns: 1fr; }
   dt { margin-top: 8px; }
 }
+details.card > summary { cursor: pointer; }
+.policy { border-left: 3px solid var(--border); padding-left: 12px; margin: 8px 0; }
+h2 { font-size: 19px; margin: 0 0 12px; }
+h3 { font-size: 16px; margin: 20px 0 8px; }

@@ -7,12 +7,15 @@
   "bin": {
     "mapa": "./dist/bin.js"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "test": "node --test test/"
   },
   "dependencies": {
     "@mapa/collector": "workspace:*",
-    "@mapa/format": "workspace:*"
+    "@mapa/format": "workspace:*",
+    "@mapa/supabase": "workspace:*"
   }
 }

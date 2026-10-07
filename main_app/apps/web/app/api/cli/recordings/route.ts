@@ -3,7 +3,7 @@ import { MAX_UPLOAD_BYTES, RECORDING_FILES, summarizeMetadata, type RecordingFil
 import { RECORDINGS_BUCKET, supabaseAdmin } from "@/lib/supabase/admin";
 
 interface CreateBody {
-  project?: { name?: unknown };
+  project?: { name?: unknown; supabase_ref?: unknown };
   recording?: {
     name?: unknown;
     started_at?: unknown;
@@ -37,7 +37,14 @@ export async function POST(request: Request) {
   const admin = supabaseAdmin();
   const { data: project, error: projectError } = await admin
     .from("projects")
-    .upsert({ owner_id: caller.userId, name: projectName }, { onConflict: "owner_id,name" })
+    .upsert(
+      {
+        owner_id: caller.userId,
+        name: projectName,
+        ...(typeof body.project?.supabase_ref === "string" && /^[a-z0-9]{6,40}$/.test(body.project.supabase_ref) ? { supabase_ref_hint: body.project.supabase_ref } : {}),
+      },
+      { onConflict: "owner_id,name" },
+    )
     .select("id")
     .single();
   if (projectError || !project) return cliError(500, "server_error", "Não consegui registrar o projeto.");

@@ -13,7 +13,7 @@
 | 3 | Gravadores de navegador e servidor | ✅ Concluída (2026-10-06) |
 | 4 | Start/Stop, limites e arquivo bruto | ✅ Concluída (2026-10-06) |
 | 5 | Plataforma: contas, login e envio | ✅ Concluída (2026-10-06) |
-| 6 | "Conectar Supabase" e estrutura | ⏭️ Próxima |
+| 6 | "Conectar Supabase" e estrutura | 🔨 Em andamento (falta o dono autorizar no Supabase) |
 | 7 | Processamento: refino, Supabase e registros | ⬜ |
 | 8 | Modelos de diagrama (método do AppMap) | ⬜ |
 | 9 | Camada LLM e contexto | ⬜ |
@@ -43,7 +43,7 @@
 
 ## Como retomar
 
-**Ponto exato onde parou:** Etapa 5 concluída. Nada em andamento. O próximo passo é a **Etapa 6** (abaixo), que precisa que o dono crie um OAuth App no Supabase.
+**Ponto exato onde parou:** Etapa 6 **no meio**. O OAuth App "Mapa" foi criado pelo dono na organização do Supabase (permissões só de leitura: Analytics, Database, Edge Functions, Organizations, Projects, Storage) e as chaves estão em `apps/web/.env.local` (com `MAPA_TOKEN_ENCRYPTION_KEY`, gerada pelo Claude). Código escrito e testado até o redirecionamento para o Supabase: cliente só-leitura da Management API (`packages/supabase/src/management.ts`), leitura da estrutura (`schema.ts`), migração `20261006000002_conectar_supabase.sql` (aplicada), rotas `/conectar-supabase` e `/conectar-supabase/retorno`, páginas `/projetos` e `/projetos/[id]` (escolher projeto, estrutura, ler de novo, desconectar), retrato `supabase-schema.json` por gravação. **Falta:** o dono criar a conta no site (`http://localhost:3300/entrar`), o Claude confirmar a conta e criar o projeto `next16-supabase-demo` nela (script de ajuda: confirma via chave secreta), o dono clicar em "Conectar Supabase" e autorizar; depois o Claude verifica tokens criptografados, só leitura, renovação, retrato por gravação, e o dono clica em "Desconectar". Pendência a confirmar: se "Database: Read" libera o endpoint de consulta somente leitura.
 
 **Atenção:** desde 2026-10-06 o projeto fica na pasta **`main_app/`** (o repositório Git é a pasta de cima, `Startup3/`). Todos os comandos abaixo são rodados dentro de `main_app/`.
 

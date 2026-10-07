@@ -21,6 +21,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             {user ? (
               <>
                 <Link href="/gravacoes">Gravações</Link>
+                <Link href="/projetos">Projetos</Link>
                 <span className="hide-mobile">{user.email}</span>
                 <form action="/sair" method="post">
                   <button className="secondary" type="submit">

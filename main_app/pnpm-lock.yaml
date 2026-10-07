@@ -178,6 +178,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@mapa/supabase':
+        specifier: workspace:*
+        version: link:../../packages/supabase
       '@supabase/ssr':
         specifier: 0.12.7
         version: 0.12.7(@supabase/supabase-js@2.117.2)
@@ -271,6 +274,9 @@ importers:
       '@mapa/format':
         specifier: workspace:*
         version: link:../format
+      '@mapa/supabase':
+        specifier: workspace:*
+        version: link:../supabase
 
   packages/collector:
     dependencies:

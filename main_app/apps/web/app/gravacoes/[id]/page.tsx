@@ -17,8 +17,10 @@ export default async function Gravacao({ params }: { params: Promise<{ id: strin
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
   const supabase = await supabaseForUser();
   // RLS: someone else's recording is simply not found.
-  const { data: r } = await supabase.from("recordings").select("*, projects(name)").eq("id", id).maybeSingle();
+  const { data: r } = await supabase.from("recordings").select("*, projects(id, name, supabase_connections(supabase_ref))").eq("id", id).maybeSingle();
   if (!r) notFound();
+  const project = r.projects as unknown as { id: string; name: string; supabase_connections: { supabase_ref: string | null }[] | { supabase_ref: string | null } | null } | null;
+  const connection = Array.isArray(project?.supabase_connections) ? project.supabase_connections[0] : project?.supabase_connections;
   const meta = r.metadata as { app?: string; frameworks?: { name: string; version: string }[]; git?: { branch?: string; commit?: string }; incomplete_calls?: number };
 
   return (
@@ -40,7 +42,20 @@ export default async function Gravacao({ params }: { params: Promise<{ id: strin
         {r.status === "enviando" && <p className="muted">O envio começou mas ainda não terminou. Se ficar assim, rode <code>npx mapa upload</code> de novo.</p>}
         <dl>
           <dt>Projeto</dt>
-          <dd>{(r.projects as unknown as { name: string } | null)?.name}</dd>
+          <dd>{project ? <Link href={`/projetos/${project.id}`}>{project.name}</Link> : "—"}</dd>
+          <dt>Supabase</dt>
+          <dd id="supabase-retrato">
+            {r.has_supabase_schema ? (
+              "Retrato da estrutura do banco guardado com esta gravação."
+            ) : connection?.supabase_ref ? (
+              "Conectado, mas esta gravação não tem retrato da estrutura."
+            ) : (
+              <>
+                Não conectado: sem isso não dá para explicar regras de acesso, gatilhos e o que acontece dentro do Supabase.{" "}
+                {project && <Link href={`/projetos/${project.id}`}>Conectar Supabase</Link>}
+              </>
+            )}
+          </dd>
           <dt>Gravada</dt>
           <dd>
             {r.started_at ? new Date(r.started_at).toLocaleString("pt-BR") : "—"}

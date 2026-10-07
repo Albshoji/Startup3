@@ -9,6 +9,7 @@ import { createInterface } from "node:readline/promises";
 import { gunzipSync } from "node:zlib";
 import { MAPA_DIR, RECORDINGS_DIR } from "@mapa/collector";
 import type { AppMap } from "@mapa/format";
+import { projectRefFromUrl } from "@mapa/supabase";
 import { api, readCredentials, siteUrl, type Credentials } from "./account.js";
 import { findNextProject, MapaError, type NextProject } from "./project.js";
 import { say, warn } from "./output.js";
@@ -46,6 +47,20 @@ async function saveConsent(root: string) {
   await writeFile(join(root, SETTINGS_FILE), `${JSON.stringify({ ...readSettings(root), upload: "auto" }, null, 2)}\n`);
 }
 
+/** Ref of the Supabase project the app talks to, from NEXT_PUBLIC_SUPABASE_URL in its env files (only the URL is read). */
+export function supabaseRef(root: string): string | undefined {
+  for (const file of [".env.local", ".env.development.local", ".env.development", ".env"]) {
+    try {
+      const url = /^\s*NEXT_PUBLIC_SUPABASE_URL\s*=\s*["']?([^"'\s#]+)/m.exec(readFileSync(join(root, file), "utf8"))?.[1];
+      const ref = projectRefFromUrl(url);
+      if (ref) return ref;
+    } catch {
+      // file missing
+    }
+  }
+  return undefined;
+}
+
 export function projectName(project: NextProject): string {
   return project.packageJson.name || basename(project.root);
 }
@@ -60,7 +75,7 @@ export async function uploadRecording(project: NextProject, directory: string, c
     const created = await api<{ id: string; url: string; uploads: { file: keyof typeof FILES; url: string; content_type: string }[] }>(site, "/api/cli/recordings", {
       token: credentials.token,
       body: {
-        project: { name: projectName(project) },
+        project: { name: projectName(project), ...(supabaseRef(project.root) ? { supabase_ref: supabaseRef(project.root) } : {}) },
         recording: {
           name: appmap.metadata.name,
           started_at: appmap.metadata.mapa?.started_at,

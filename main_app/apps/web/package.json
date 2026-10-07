@@ -2,13 +2,14 @@
   "name": "@mapa/web",
   "version": "0.0.0",
   "private": true,
-  "description": "Site do Mapa: contas, login do comando, envio e lista de gravações.",
+  "description": "Site do Mapa: contas, login do comando, envio e lista de grava\u00e7\u00f5es.",
   "scripts": {
     "dev": "next dev --port 3300",
     "build": "next build",
     "start": "next start --port 3300"
   },
   "dependencies": {
+    "@mapa/supabase": "workspace:*",
     "@supabase/ssr": "0.12.7",
     "@supabase/supabase-js": "2.117.2",
     "next": "16.3.8",

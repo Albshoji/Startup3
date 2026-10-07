@@ -18,3 +18,5 @@ examples/**/AGENTS.md
 examples/**/CLAUDE.md
 examples/**/next-env.d.ts
 *.tsbuildinfo
+apps/**/AGENTS.md
+apps/**/CLAUDE.md
