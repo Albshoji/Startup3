@@ -10,11 +10,15 @@ A página está pronta e igual à referência (`docs/landing-reference.html`, ve
 ## O que está feito
 
 - Página única em Next.js 16 + TypeScript, com uma seção por arquivo em `components/`.
-- Diagrama do topo com o exemplo do pagamento (Stripe): 4 colunas, 7 passos com setas,
-  passo 6 em vermelho, nota "sem erro. nada salvo." e o quadro "Por que quebrou". Ele é
-  feito pelo componente `SwimlaneDiagram`, que recebe colunas, passos e setas como dados
-  (dá para usar com outros exemplos). Em telas estreitas o diagrama diminui inteiro para
-  caber, sem rolagem para o lado.
+- Diagrama do topo mostra o que o Mapa de fato grava, e não o que o usuário fez: o pedido
+  da página, as funções do servidor com arquivo:linha, o pedido ao Supabase com o papel de
+  quem pediu (`anon`), a consulta ao banco filtrada pela regra de acesso (RLS), a resposta
+  vazia sem erro e a tela "Nenhum item". Embaixo, o quadro "Por que quebrou" com as
+  etiquetas de grau de certeza ("confirmado pela gravação", "configurado no banco").
+  Só usa informações que o Mapa já consegue obter (cenário C da Etapa 7). Ele é feito
+  pelo componente `SwimlaneDiagram`, que recebe colunas, passos e ligações como dados e
+  desenha as setas sozinho. Em telas estreitas o diagrama diminui inteiro para caber.
+  **Esse diagrama é diferente da referência de propósito** (decisão do dono, 07/10).
 - Visual comparado com a referência em 1440px, 1024px e 390px. Diferenças só de largura
   de letra (arquivos de fonte diferentes, ver abaixo): por exemplo, "Atualizou 0 linhas"
   quebra a linha num ponto diferente.
@@ -59,3 +63,6 @@ A página está pronta e igual à referência (`docs/landing-reference.html`, ve
   principal ("Use seu app. Entenda o que o seu código fez por trás dos panos."), diagrama
   do topo trocado pelo exemplo do pagamento com o Stripe e novo parágrafo na seção
   "Para quem é" (commit `10f3f4b`).
+- 07/10/2026 — Diagrama do topo trocado: no lugar do exemplo do Stripe (que mostrava as
+  ações do usuário), um exemplo do que o Mapa grava por baixo: lista vazia porque o
+  servidor consultou o Supabase sem a sessão e a regra RLS escondeu as linhas.

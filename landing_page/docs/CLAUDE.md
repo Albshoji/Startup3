@@ -51,17 +51,20 @@ The product itself does not exist yet: this site is only the landing page.
    throttled with `requestAnimationFrame`). It blinks every 5s (CSS). Clicking it shows a
    speech bubble that cycles through: "oi!", "eu explico tudo!", "grava aí!",
    "ei, isso faz cócegas", and hides after 1.8s. It is a real `<button>`.
-2. **Diagram preview (hero):** a swimlane diagram with 4 lanes (navegador, seu servidor,
-   Stripe, banco) and 7 numbered steps connected by elbow arrows. The flow splits after
-   step 3 (one arrow back to the browser, one to the server's webhook). Step 6 is the
-   failure (red, with the handwritten note "sem erro. nada salvo."), and step 7 is dashed.
-   A "Por que quebrou" box sits under it. Geometry is fixed at 472 × 478 px (lanes 118 px,
-   nodes 110 × 48 px, rows every 62 px); the SVG arrow paths in the reference are computed
-   from it, so keep them as they are. On narrow windows the whole diagram scales down
-   proportionally to fit (see `fitSwim` in the reference script); it never scrolls
-   sideways. This is the product's signature visual: build it as a reusable
-   `SwimlaneDiagram` component that takes lanes, nodes and edges as data, so the same
-   component can render other examples later. Hover lifts each node.
+2. **Diagram preview (hero):** a swimlane diagram with 4 lanes (navegador, servidor Next,
+   Supabase API, banco) and 7 numbered steps connected by elbow arrows (calls go down,
+   returns come back dashed). It shows what Mapa really records, not what the user did:
+   the page request, the server function and the client creation with file:line, the
+   Supabase request with the role of who asked (`anon`), the SQL operation filtered by the
+   RLS rule, the empty answer (`200 OK · [ ]`, `error: null`) and the screen it produced.
+   Step 5 is the failure (red), with handwritten notes "sem o cookie da sessão →" and
+   "sem erro. só veio vazio.". A "Por que quebrou" box sits under it, with the certainty
+   tags "confirmado pela gravação" and "configurado no banco". Built by the reusable
+   `SwimlaneDiagram` component: it takes lanes, nodes (title + code line) and edges
+   (from/to) as data and routes the arrows itself. On narrow windows the whole diagram
+   scales down proportionally to fit; it never scrolls sideways. Hover lifts each node.
+   **This diagram intentionally differs from `reference/landing-reference.html`**
+   (changed by the owner on 07/10/2026); the code is the source of truth for it.
 3. **Comparison:** hovering or focusing an underlined term on the left (`.jargon`)
    highlights the matching row on the right (`.trow`, `data-row`) and dims the others.
    Hovering a row highlights its terms on the left. "client" and "insert" both map to
@@ -122,8 +125,8 @@ submit to the same endpoint.
 ## Notes
 
 - The diagram and chat content is an **illustrative example**. Keep it exactly as written.
-  The hero diagram uses the payment example (Stripe webhook, RLS blocking the update,
-  0 rows). The comparison section and the "Para a sua IA" chat use the signup example
+  The hero diagram uses the empty-list example (server client created without the
+  session cookie, request as `anon`, RLS hides every row). The comparison section and the "Para a sua IA" chat use the signup example
   (`salvarUsuario`, coluna `telefone`, erro 42703).
 - All copy is in Brazilian Portuguese. Keep the curly quotes (“ ”) and the ellipses (…)
   as they are.

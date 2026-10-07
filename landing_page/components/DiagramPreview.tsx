@@ -1,29 +1,32 @@
 import SwimlaneDiagram, { type SwimEdge, type SwimLane, type SwimNode } from './SwimlaneDiagram';
 
+// Illustrative example built only from what Mapa records: functions with file:line,
+// requests, the Supabase request translated (with the role of who asked), the access
+// rule (RLS) read from the database structure, and what came back.
 const LANES: SwimLane[] = [
   { label: 'navegador', color: '#d2e3fc' },
-  { label: 'seu servidor', color: '#ceead6' },
-  { label: 'Stripe', color: '#feefc3' },
+  { label: 'servidor Next', color: '#ceead6' },
+  { label: 'Supabase API', color: '#feefc3' },
   { label: 'banco', color: '#fad2cf' },
 ];
 
 const NODES: SwimNode[] = [
-  { lane: 0, row: 0, label: 'Clicou em “Assinar”' },
-  { lane: 1, row: 1, label: 'Criou o checkout' },
-  { lane: 2, row: 2, label: 'Pagamento aprovado' },
-  { lane: 0, row: 3, label: 'Mostrou “Pago”' },
-  { lane: 1, row: 4, label: 'Webhook chegou' },
-  { lane: 3, row: 5, label: 'Atualizou 0 linhas', variant: 'fail' },
-  { lane: 0, row: 6, label: 'Plano segue “Free”', variant: 'dim' },
+  { lane: 0, row: 0, title: 'GET /itens', code: 'navegação' },
+  { lane: 1, row: 1, title: 'ItensPage()', code: 'page.tsx:8' },
+  { lane: 1, row: 2, title: 'createClient()', code: 'lib/db.ts:4' },
+  { lane: 2, row: 3, title: 'GET /items', code: 'papel: anon' },
+  { lane: 3, row: 4, title: 'SELECT items', code: 'RLS filtrou', variant: 'fail' },
+  { lane: 1, row: 5, title: '200 OK · [ ]', code: 'error: null' },
+  { lane: 0, row: 6, title: '“Nenhum item”', code: 'page.tsx:15', variant: 'dim' },
 ];
 
 const EDGES: SwimEdge[] = [
-  { d: 'M114.0 68.0 H169.0 Q177.0 68.0 177.0 76.0 V99' },
-  { d: 'M232.0 130.0 H287.0 Q295.0 130.0 295.0 138.0 V161' },
-  { d: 'M240.0 192.0 H67.0 Q59.0 192.0 59.0 200.0 V223' },
-  { d: 'M295.0 216 V308.0 Q295.0 316.0 287.0 316.0 H239.0' },
-  { d: 'M177.0 340 V370.0 Q177.0 378.0 185.0 378.0 H351.0', variant: 'fail' },
-  { d: 'M413.0 402 V432.0 Q413.0 440.0 405.0 440.0 H121.0', variant: 'dashed' },
+  { from: 0, to: 1 },
+  { from: 1, to: 2 },
+  { from: 2, to: 3 },
+  { from: 3, to: 4 },
+  { from: 4, to: 5, route: 'vh', fail: true, dashed: true },
+  { from: 5, to: 6, route: 'vh', dashed: true },
 ];
 
 export default function DiagramPreview() {
@@ -39,7 +42,7 @@ export default function DiagramPreview() {
             whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0,
           }}
         >
-          Diagrama · por que meu plano continua Free?
+          Diagrama · por que minha lista veio vazia?
         </span>
       </div>
       <div style={{ padding: '18px 16px 18px' }}>
@@ -47,12 +50,19 @@ export default function DiagramPreview() {
           lanes={LANES}
           nodes={NODES}
           edges={EDGES}
-          notes={[{ left: 348, top: 304, lines: ['sem erro.', 'nada salvo.'] }]}
-          label="Diagrama: o pagamento foi aprovado, mas o banco atualizou 0 linhas"
+          notes={[
+            { left: 6, top: 160, lines: ['sem o cookie', 'da sessão →'] },
+            { left: 296, top: 404, lines: ['sem erro.', 'só veio vazio.'] },
+          ]}
+          label="Diagrama: o servidor consultou o Supabase sem a sessão, como anon, e a regra RLS escondeu todas as linhas"
         />
         <div className="swhy">
           <span className="lbl">Por que quebrou</span>
-          O Stripe chama seu webhook <b>sem usuário logado</b>. A regra do banco (<b>RLS</b>) só deixa cada usuário editar <b>a própria linha</b>, então o update afetou <b>0 linhas</b>: sem erro, nada salvo.
+          O <code>createClient()</code> do servidor foi criado <b>sem o cookie da sessão</b>, então o pedido chegou ao Supabase como <b>anon</b> (ninguém logado). A regra de acesso (<b>RLS</b>) da tabela <code>items</code> só mostra linhas com <code>owner_id = auth.uid()</code>. Para anon, nenhuma: veio <b>[ ]</b>, sem erro.
+          <span className="sfrom">
+            <span className="chip c-func">confirmado pela gravação</span>
+            <span className="chip c-db">configurado no banco</span>
+          </span>
         </div>
       </div>
     </div>

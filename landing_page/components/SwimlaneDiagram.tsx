@@ -2,18 +2,22 @@
 
 import { useEffect, useId, useRef } from 'react';
 
-// Fixed geometry: every example drawn with this component shares it, so the
-// edge paths (computed from it) can be passed in as-is.
-const LANE_W = 118;
-const NODE_W = 110;
-const NODE_H = 48;
+// Fixed geometry: every example drawn with this component shares it. Arrows are
+// routed from it, so the data only says which step connects to which.
+const LANE_W = 122;
+const NODE_W = 114;
+const NODE_H = 50;
 const FIRST_ROW_TOP = 44;
 const ROW_STEP = 62;
 const BOTTOM_PAD = 14;
+const CORNER = 8;
+const HEAD_GAP = 7;
 
 export type SwimLane = { label: string; color: string };
-export type SwimNode = { lane: number; row: number; label: string; variant?: 'fail' | 'dim' };
-export type SwimEdge = { d: string; variant?: 'fail' | 'dashed' };
+export type SwimNode = { lane: number; row: number; title: string; code: string; variant?: 'fail' | 'dim' };
+// 'hv': leaves from the side and goes down into the top of the next step (a call).
+// 'vh': leaves from the bottom and comes in from the side (a return).
+export type SwimEdge = { from: number; to: number; route?: 'hv' | 'vh'; fail?: boolean; dashed?: boolean };
 export type SwimNote = { left: number; top: number; lines: string[] };
 
 type Props = {
@@ -23,6 +27,27 @@ type Props = {
   notes?: SwimNote[];
   label: string;
 };
+
+const nodeLeft = (n: SwimNode) => n.lane * LANE_W + (LANE_W - NODE_W) / 2;
+const nodeTop = (n: SwimNode) => FIRST_ROW_TOP + n.row * ROW_STEP;
+const laneCenter = (lane: number) => lane * LANE_W + LANE_W / 2;
+
+function edgePath(a: SwimNode, b: SwimNode, route: 'hv' | 'vh'): string {
+  const dir = b.lane > a.lane ? 1 : -1;
+  if (a.lane === b.lane) {
+    return `M${laneCenter(a.lane)} ${nodeTop(a) + NODE_H} V${nodeTop(b) - HEAD_GAP}`;
+  }
+  if (route === 'hv') {
+    const y = nodeTop(a) + NODE_H / 2;
+    const x0 = dir > 0 ? nodeLeft(a) + NODE_W : nodeLeft(a);
+    const x1 = laneCenter(b.lane);
+    return `M${x0} ${y} H${x1 - dir * CORNER} Q${x1} ${y} ${x1} ${y + CORNER} V${nodeTop(b) - HEAD_GAP}`;
+  }
+  const x = laneCenter(a.lane);
+  const y = nodeTop(b) + NODE_H / 2;
+  const x1 = dir > 0 ? nodeLeft(b) - HEAD_GAP : nodeLeft(b) + NODE_W + HEAD_GAP;
+  return `M${x} ${nodeTop(a) + NODE_H} V${y - CORNER} Q${x} ${y} ${x + dir * CORNER} ${y} H${x1}`;
+}
 
 export default function SwimlaneDiagram({ lanes, nodes, edges, notes = [], label }: Props) {
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -59,7 +84,7 @@ export default function SwimlaneDiagram({ lanes, nodes, edges, notes = [], label
             <div className="lhd" style={{ left: i * LANE_W, width: LANE_W }}>
               <span style={{ background: l.color }}>{l.label}</span>
             </div>
-            <div className="lline" style={{ left: i * LANE_W + LANE_W / 2 }}></div>
+            <div className="lline" style={{ left: laneCenter(i) }}></div>
           </div>
         ))}
         <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} style={{ position: 'absolute', left: 0, top: 0 }} aria-hidden="true">
@@ -73,25 +98,26 @@ export default function SwimlaneDiagram({ lanes, nodes, edges, notes = [], label
           </defs>
           {edges.map((e) => (
             <path
-              key={e.d}
-              d={e.d}
+              key={`${e.from}-${e.to}`}
+              d={edgePath(nodes[e.from], nodes[e.to], e.route ?? 'hv')}
               fill="none"
-              stroke={e.variant === 'fail' ? '#c5221f' : '#80868b'}
+              stroke={e.fail ? '#c5221f' : '#80868b'}
               strokeWidth="2"
               strokeLinejoin="round"
-              strokeDasharray={e.variant === 'dashed' ? '6 6' : undefined}
-              markerEnd={`url(#${e.variant === 'fail' ? arrowFail : arrow})`}
+              strokeDasharray={e.dashed ? '6 6' : undefined}
+              markerEnd={`url(#${e.fail ? arrowFail : arrow})`}
             />
           ))}
         </svg>
         {nodes.map((n, i) => (
           <div
-            key={n.label}
+            key={`${n.title}-${i}`}
             className={n.variant ? `snode ${n.variant}` : 'snode'}
-            style={{ left: n.lane * LANE_W + (LANE_W - NODE_W) / 2, top: FIRST_ROW_TOP + n.row * ROW_STEP, width: NODE_W }}
+            style={{ left: nodeLeft(n), top: nodeTop(n), width: NODE_W, height: NODE_H }}
           >
             <span className="k">{i + 1}</span>
-            {n.label}
+            <span className="t">{n.title}</span>
+            <span className="c">{n.code}</span>
           </div>
         ))}
         {notes.map((note) => (
