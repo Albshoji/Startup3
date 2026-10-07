@@ -76,4 +76,4 @@ A página está pronta e igual à referência (`docs/landing-reference.html`, ve
 - 07/10/2026 — Tirada a promessa de que o diagrama aponta o erro: cartão "para você" do
   topo, título do diagrama, passo em vermelho, anotação "o problema nasce aqui" e quadro
   "Por que quebrou" (agora "O que aconteceu") (commit `0ca1e45`).
-- 07/10/2026 — Título principal e título do site: "Entenda o que…" virou "Aprenda o que…".
+- 07/10/2026 — Título principal e título do site: "Entenda o que…" virou "Aprenda o que…" (commit `45f80a8`).
