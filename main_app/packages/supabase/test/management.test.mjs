@@ -36,7 +36,7 @@ test("readSchema uses only the read-only endpoint and GETs, and records parts it
     if (path.endsWith("/functions")) return { body: [{ slug: "send-welcome", name: "send-welcome", status: "ACTIVE", version: 3, verify_jwt: true, updated_at: 1791300000000 }] };
     if (body.query === SCHEMA_QUERIES.webhooks) return { status: 403, body: { message: "sem permissão" } };
     if (body.query === SCHEMA_QUERIES.triggers) return { body: [{ name: "on_auth_user_created", schema: "auth", table: "users", function: "public.handle_new_user", definition: "CREATE TRIGGER …", function_code: "begin insert into public.profiles … end" }] };
-    if (body.query === SCHEMA_QUERIES.policies) return { body: [{ schema: "public", table: "items", name: "dono le", command: "SELECT", roles: ["authenticated"], permissive: "PERMISSIVE", using: "(owner_id = auth.uid())", with_check: null }] };
+    if (body.query === SCHEMA_QUERIES.policies) return { body: [{ schema: "public", table: "items", name: "dono le", command: "SELECT", roles: "{anon,authenticated}", permissive: "PERMISSIVE", using: "(owner_id = auth.uid())", with_check: null }] };
     return { body: [] };
   });
   const client = new ManagementClient(async () => "tok-123", fetchImpl);
@@ -45,6 +45,7 @@ test("readSchema uses only the read-only endpoint and GETs, and records parts it
   assert.ok(calls.every((c) => c.auth === "Bearer tok-123"));
   assert.equal(snapshot.triggers[0].function_code.includes("profiles"), true);
   assert.equal(snapshot.policies[0].using, "(owner_id = auth.uid())");
+  assert.deepEqual(snapshot.policies[0].roles, ["anon", "authenticated"], "Postgres array text becomes a list");
   assert.deepEqual(snapshot.edge_functions, [{ slug: "send-welcome", name: "send-welcome", status: "ACTIVE", version: 3, verify_jwt: true, updated_at: new Date(1791300000000).toISOString() }]);
   assert.deepEqual(snapshot.errors.map((e) => e.section), ["webhooks"]);
   assert.equal(snapshot.read_at, "2026-10-06T00:00:00.000Z");
@@ -54,4 +55,16 @@ test("project ref from the app's Supabase URL", () => {
   assert.equal(projectRefFromUrl("https://heofkizkwzznoukxplou.supabase.co"), "heofkizkwzznoukxplou");
   assert.equal(projectRefFromUrl("https://api.meusite.com"), undefined);
   assert.equal(projectRefFromUrl(undefined), undefined);
+});
+
+test("a database that does not answer stops the reading at the first failure (paused project)", async () => {
+  let queries = 0;
+  const { fetchImpl } = fakeApi((method, path) => {
+    if (path.endsWith("/functions")) return { body: [] };
+    queries++;
+    return { status: 544, body: { message: "Failed to run sql query: Connection terminated due to connection timeout" } };
+  });
+  const snapshot = await readSchema(new ManagementClient(async () => "t", fetchImpl), "abc123");
+  assert.equal(queries, 1, "no other query waits");
+  assert.equal(snapshot.errors.length, Object.keys(SCHEMA_QUERIES).length);
 });

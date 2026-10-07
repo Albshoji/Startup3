@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import type { SchemaSnapshot, SupabaseProjectSummary } from "@mapa/supabase";
+import { isProjectActive, type SchemaSnapshot, type SupabaseProjectSummary } from "@mapa/supabase";
 import SchemaView from "@/components/SchemaView";
 import { STATUS_LABELS } from "@/lib/recordings";
 import { managementClientFor } from "@/lib/supabase-oauth";
@@ -66,16 +66,29 @@ export default async function Projeto({ params, searchParams }: { params: Promis
           <>
             <p>Conectado. Qual projeto do Supabase este app usa?</p>
             {choicesError && <p className="alert error">Não consegui listar os projetos: {choicesError}</p>}
+            {project.supabase_ref_hint && !choicesError && !choices.some((p) => p.ref === project.supabase_ref_hint) && (
+              <p className="alert error" id="organizacao-errada">
+                O projeto do Supabase que o seu app usa ({project.supabase_ref_hint}) não está na organização que você autorizou. Conecte de novo e, na
+                tela do Supabase, escolha a organização onde ele está.
+              </p>
+            )}
             <form action={escolherProjetoSupabase}>
               <input type="hidden" name="projeto" value={project.id} />
               {choices.map((p) => (
                 <label key={p.ref} style={{ fontWeight: 400 }}>
-                  <input type="radio" name="ref" value={p.ref} defaultChecked={p.ref === project.supabase_ref_hint} style={{ width: "auto", marginRight: 8 }} />
-                  {p.name} <span className="muted">({p.ref}){p.ref === project.supabase_ref_hint ? " — é o que o seu app usa" : ""}</span>
+                  <input type="radio" name="ref" value={p.ref} defaultChecked={p.ref === project.supabase_ref_hint} disabled={!isProjectActive(p)} style={{ width: "auto", marginRight: 8 }} />
+                  {p.name}{" "}
+                  <span className="muted">
+                    ({p.ref}){p.ref === project.supabase_ref_hint ? " — é o que o seu app usa" : ""}
+                    {!isProjectActive(p) ? " — pausado no Supabase: reative no painel para usar" : ""}
+                  </span>
                 </label>
               ))}
               <div className="row">
-                <button type="submit">Usar este projeto</button>
+                {choices.some(isProjectActive) && <button type="submit">Usar este projeto</button>}
+                <a className="button secondary" href={`/conectar-supabase?projeto=${project.id}`}>
+                  Conectar outra organização
+                </a>
               </div>
             </form>
           </>

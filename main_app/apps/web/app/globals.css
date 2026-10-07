@@ -36,7 +36,7 @@ h1 { font-size: 24px; margin: 0 0 16px; }
 label { display: block; margin: 12px 0 4px; font-weight: 600; }
 input { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font: inherit; }
 button, .button { display: inline-block; padding: 10px 16px; border: 0; border-radius: 8px; background: var(--accent); color: var(--accent-text); font: inherit; font-weight: 600; cursor: pointer; text-decoration: none; }
-button.secondary { background: transparent; color: var(--accent); border: 1px solid var(--border); }
+button.secondary, .button.secondary { background: transparent; color: var(--accent); border: 1px solid var(--border); }
 .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
 .alert { padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 12px; }
 .alert.error { color: var(--error); border-color: currentColor; }

@@ -199,3 +199,29 @@ Roteiro automatizado (Chromium + comando `mapa` + Supabase do site), 23 verifica
 ### Pendências novas
 - **Religar/decidir "Confirm email"** no projeto do site antes do lançamento (hoje ligado; o fluxo de confirmação por e-mail ainda não tem página própria de retorno no site).
 - **Hospedagem do site** e endereço de produção (o comando usa `http://localhost:3300` por padrão).
+
+## Etapa 6
+
+- **2026-10-06 · OAuth App "Mapa" na organização do dono** (Organization settings → OAuth Apps), callback `http://localhost:3300/conectar-supabase/retorno`, permissões **só de leitura**: Analytics (registros, Etapa 7), Database, Edge Functions, Organizations, Projects, Storage; **sem** Secrets, Auth, Rest, Domains, Environment e nada de "Write". Verificado: "Database: Read" **libera** o endpoint de consulta somente leitura (era a dúvida da etapa). Achado: o formulário "Create a new OAuth app" dentro de um projeto é outra coisa (o Supabase como provedor de login); o certo é o da organização.
+- **2026-10-06 · Fluxo:** botão "Conectar Supabase" na página do projeto do Mapa → `/conectar-supabase` guarda `state` (hash) + verificador PKCE no banco do site (10 min, uso único, só o servidor lê) → `https://api.supabase.com/v1/oauth/authorize` (S256) → `/conectar-supabase/retorno` confere que o `state` é da mesma pessoa, troca o código (basic auth com `client_id`/`client_secret`) e guarda os tokens. Se o projeto que o app usa (detectado pelo comando a partir de `NEXT_PUBLIC_SUPABASE_URL`, `projects.supabase_ref_hint`) está entre os autorizados, ele é escolhido sozinho e a estrutura é lida; senão a pessoa escolhe. Uma nova autorização limpa a escolha anterior (pode ser outra organização).
+- **2026-10-06 · Tokens criptografados** com AES-256-GCM (`apps/web/lib/crypto.ts`), chave `MAPA_TOKEN_ENCRYPTION_KEY` só no servidor do site (gerada pelo Claude e posta no `.env.local` do dono). Colunas de token sem permissão de leitura pela API, nem para o dono (verificado: 42501). Renovação automática quando falta menos de 1 minuto para vencer; se o Supabase recusar a renovação (acesso retirado), a conexão é apagada e a pessoa é avisada.
+- **2026-10-06 · Cliente só-leitura da Management API** (`packages/supabase/src/management.ts`): lista fechada de chamadas permitidas (GETs de organizações, projetos, Edge Functions, buckets, registros e o POST de `/database/query/read-only`); qualquer outra é recusada **antes de sair** (testado, inclusive o endpoint `/database/query` que escreve e `/api-keys`). Tempo máximo de 20 s por chamada.
+- **2026-10-06 · Estrutura do banco** (`packages/supabase/src/schema.ts`, consultas da Etapa 0 em `pg_catalog`): tabelas com colunas, RLS e permissões da API; políticas (inclusive `storage.objects`); chaves estrangeiras com cascata; gatilhos com o código da função; funções do banco; tabelas no Realtime; webhooks; buckets; Edge Functions. Cada parte falha sozinha e vai para `errors`. Achados rodando: (1) arrays do Postgres (`roles`, `allowed_mime_types`) voltam como texto `{a,b}` no endpoint só de leitura — convertidos para lista; (2) projeto **pausado** pelo Supabase (INACTIVE) faz cada consulta esperar 15 s e falhar: a leitura agora para na primeira falha do banco, o projeto pausado aparece como "pausado" e não pode ser escolhido.
+- **2026-10-06 · Retrato por gravação:** quando uma gravação chega (`/complete`) e o projeto está conectado, o site lê a estrutura e guarda `supabase-schema.json` na pasta da gravação no bucket privado (`recordings.has_supabase_schema`). A página da gravação diz se há retrato ou avisa "Supabase não conectado" com o link para conectar.
+- **2026-10-06 · "Desconectar"** apaga os tokens (a linha da conexão); os retratos já guardados com gravações continuam. O Supabase não documenta um endpoint para revogar o token pelo app: o aviso explica como remover a autorização no painel do Supabase.
+- **2026-10-06 · Cada autorização vale para uma organização** do Supabase, e a tela de autorização só mostra as organizações da conta logada no supabase.com. Achado no teste: o dono estava logado com outra conta do Supabase (organização "usp", projeto pausado); a página do projeto agora avisa quando o projeto que o app usa não está na organização autorizada e oferece "Conectar outra organização".
+
+### Etapa 6: concluída (2026-10-06)
+
+| Critério | Evidência |
+|---|---|
+| Conectar o projeto de teste mostra tabelas, políticas, gatilhos (com código), buckets e Edge Functions | O dono autorizou o app no Supabase (conta albshoji, organização do projeto "Startup3"); o site escolheu sozinho o projeto do app e leu: tabelas `items` e `profiles` (RLS ligada), 10 regras de acesso (`items`, `profiles`, `storage.objects` do bucket `avatars`), gatilho `on_auth_user_created` → `public.handle_new_user` com o código, funções `calcular_total` e `handle_new_user`, bucket `avatars` privado, Edge Function `send-welcome`, cascatas `items`/`profiles` → `auth.users`; nenhuma parte com erro |
+| Só o endpoint de leitura é usado | Chamadas registradas na leitura real: só `POST /database/query/read-only` e `GET /functions`; o cliente recusa qualquer outra chamada antes de enviar (testes automáticos) |
+| Tokens criptografados, renovação | Tokens `v1.…` (AES-256-GCM) no banco; colunas de token ilegíveis pela API (42501); token forçado a vencer foi renovado sozinho na chamada seguinte |
+| Retrato por gravação | Gravação enviada pela conta do dono → `supabase-schema.json` guardado com ela (mesmas regras, gatilho com código) |
+| Desconectar apaga os tokens | O dono clicou em "Desconectar": a conexão (com os tokens) sumiu do banco; o retrato da gravação continua |
+| Testes automáticos | 75 passando |
+
+### Pendências novas
+- Uma conexão da primeira tentativa (conta shojialbert, organização "usp", sem projeto escolhido) ficou no banco do site; apagar quando o dono confirmar.
+- Antes da hospedagem: trocar a callback e o Website URL do OAuth App para o endereço de produção.

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isProjectActive } from "@mapa/supabase";
 import { exchangeCode, managementClientFor, refreshSchema, sha256, storeTokens } from "@/lib/supabase-oauth";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { currentUser } from "@/lib/supabase/server";
@@ -25,6 +26,11 @@ export async function GET(request: Request) {
 
   try {
     await storeTokens(saved.project_id, user.id, await exchangeCode(url.origin, code, saved.code_verifier));
+    // A new authorization may be for another organization: choose the project again.
+    await admin
+      .from("supabase_connections")
+      .update({ supabase_ref: null, supabase_project_name: null, supabase_org_id: null, schema_snapshot: null, schema_read_at: null })
+      .eq("project_id", saved.project_id);
   } catch {
     return back(saved.project_id, "Não consegui concluir a conexão com o Supabase. Tente de novo.");
   }
@@ -34,10 +40,13 @@ export async function GET(request: Request) {
   try {
     const projects = await managementClientFor(saved.project_id).listProjects();
     const match = projects.find((p) => p.ref === project?.supabase_ref_hint);
-    if (match) {
+    if (match && isProjectActive(match)) {
       await admin.from("supabase_connections").update({ supabase_ref: match.ref, supabase_project_name: match.name, supabase_org_id: match.organization_id }).eq("project_id", saved.project_id);
       await refreshSchema(saved.project_id);
       return back(saved.project_id, `Conectado ao projeto ${match.name} do Supabase.`);
+    }
+    if (project?.supabase_ref_hint && !match) {
+      return back(saved.project_id, "Conectado, mas o projeto do Supabase que o seu app usa não está na organização que você autorizou. Use \"Conectar outra organização\" e escolha a organização certa.");
     }
   } catch {
     // the person chooses on the project page

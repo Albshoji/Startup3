@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { isProjectActive } from "@mapa/supabase";
 import { managementClientFor, refreshSchema } from "@/lib/supabase-oauth";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { currentUser, supabaseForUser } from "@/lib/supabase/server";
@@ -22,6 +23,9 @@ export async function escolherProjetoSupabase(form: FormData) {
   const projects = await managementClientFor(projectId).listProjects();
   const chosen = projects.find((p) => p.ref === ref);
   if (!chosen) back(projectId, "Esse projeto do Supabase não está entre os autorizados.");
+  if (!isProjectActive(chosen!)) {
+    back(projectId, `O projeto ${chosen!.name} está pausado no Supabase (o banco está desligado). Reative-o no painel do Supabase ou escolha outro.`);
+  }
   await supabaseAdmin().from("supabase_connections").update({ supabase_ref: chosen!.ref, supabase_project_name: chosen!.name, supabase_org_id: chosen!.organization_id }).eq("project_id", projectId);
   try {
     await refreshSchema(projectId);
@@ -34,7 +38,10 @@ export async function escolherProjetoSupabase(form: FormData) {
 export async function lerEstruturaDeNovo(form: FormData) {
   const projectId = await ownProject(String(form.get("projeto")));
   try {
-    await refreshSchema(projectId);
+    const snapshot = await refreshSchema(projectId);
+    if (snapshot.errors.some((e) => /não respondeu|timeout|sem resposta/.test(e.message))) {
+      back(projectId, "O banco do seu Supabase não respondeu (o projeto pode estar pausado). Reative-o no painel do Supabase e tente de novo.");
+    }
   } catch (error) {
     back(projectId, error instanceof Error ? error.message : "Não consegui ler a estrutura.");
   }

@@ -1,4 +1,4 @@
-import type { SchemaSnapshot } from "@mapa/supabase";
+import { pgArray, type SchemaSnapshot } from "@mapa/supabase";
 
 /** Structure of the person's database, as read from Supabase ("configurado no banco", CLAUDE.md §7.3). */
 export default function SchemaView({ schema }: { schema: SchemaSnapshot }) {
@@ -31,7 +31,7 @@ export default function SchemaView({ schema }: { schema: SchemaSnapshot }) {
             {policies.map((p) => (
               <div key={p.name} className="policy">
                 <p>
-                  <strong>Regra de acesso “{p.name}”</strong> — vale para {p.command === "ALL" ? "todas as operações" : p.command} de {p.roles.join(", ")}
+                  <strong>Regra de acesso “{p.name}”</strong> — vale para {p.command === "ALL" ? "todas as operações" : p.command} de {pgArray(p.roles).join(", ")}
                 </p>
                 {p.using && (
                   <p>

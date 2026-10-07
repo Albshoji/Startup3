@@ -1,7 +1,7 @@
 # Status do projeto Mapa
 
 > Atualizado a cada avanço. Detalhes das decisões em `docs/decisions.md`.
-> Última atualização: **2026-10-06** (Etapa 5)
+> Última atualização: **2026-10-06** (Etapa 6)
 
 ## Visão geral das etapas
 
@@ -13,8 +13,8 @@
 | 3 | Gravadores de navegador e servidor | ✅ Concluída (2026-10-06) |
 | 4 | Start/Stop, limites e arquivo bruto | ✅ Concluída (2026-10-06) |
 | 5 | Plataforma: contas, login e envio | ✅ Concluída (2026-10-06) |
-| 6 | "Conectar Supabase" e estrutura | 🔨 Em andamento (falta o dono autorizar no Supabase) |
-| 7 | Processamento: refino, Supabase e registros | ⬜ |
+| 6 | "Conectar Supabase" e estrutura | ✅ Concluída (2026-10-06) |
+| 7 | Processamento: refino, Supabase e registros | ⏭️ Próxima |
 | 8 | Modelos de diagrama (método do AppMap) | ⬜ |
 | 9 | Camada LLM e contexto | ⬜ |
 | 10 | Site: visualização | ⬜ |
@@ -30,6 +30,7 @@
 - **`npx mapa stats`**: funções mais chamadas, tamanho e sugestão de exclusões (aplicáveis com `--aplicar`).
 - Funciona com várias abas na mesma gravação.
 - **Site do Mapa** (`apps/web`, por enquanto em `http://localhost:3300`): conta, lista de gravações, página de cada gravação ("Recebida"), download do arquivo bruto. Cada pessoa só vê as próprias gravações.
+- **"Conectar Supabase"** na página de cada projeto do site: o dono autoriza o Mapa (só leitura) no Supabase; o site mostra tabelas, regras de acesso, gatilhos com código, funções, buckets e Edge Functions em português simples, e guarda um retrato da estrutura com cada gravação. "Desconectar" apaga o acesso.
 - **`npx mapa login` / `logout` / `upload`**: conecta o computador à conta (código mostrado no terminal e autorizado no site); a primeira vez em cada projeto pede confirmação; depois cada Stop envia sozinho.
 - **As funções do app são gravadas** (navegador e servidor do Next, inclusive server actions e `proxy.ts`), com arquivo:linha, parâmetros, retorno, erros e tempo, e a ordem certa de quem chamou quem, mesmo com `await`. Funciona com Turbopack e com webpack.
 - `.mapa/config.json` (opcional) escolhe o que gravar, com as mesmas regras do `appmap.yml` do AppMap. Mudanças valem ao reiniciar o `mapa dev` (ele avisa).
@@ -43,7 +44,7 @@
 
 ## Como retomar
 
-**Ponto exato onde parou:** Etapa 6 **no meio**. O OAuth App "Mapa" foi criado pelo dono na organização do Supabase (permissões só de leitura: Analytics, Database, Edge Functions, Organizations, Projects, Storage) e as chaves estão em `apps/web/.env.local` (com `MAPA_TOKEN_ENCRYPTION_KEY`, gerada pelo Claude). Código escrito e testado até o redirecionamento para o Supabase: cliente só-leitura da Management API (`packages/supabase/src/management.ts`), leitura da estrutura (`schema.ts`), migração `20261006000002_conectar_supabase.sql` (aplicada), rotas `/conectar-supabase` e `/conectar-supabase/retorno`, páginas `/projetos` e `/projetos/[id]` (escolher projeto, estrutura, ler de novo, desconectar), retrato `supabase-schema.json` por gravação. **Falta:** o dono criar a conta no site (`http://localhost:3300/entrar`), o Claude confirmar a conta e criar o projeto `next16-supabase-demo` nela (script de ajuda: confirma via chave secreta), o dono clicar em "Conectar Supabase" e autorizar; depois o Claude verifica tokens criptografados, só leitura, renovação, retrato por gravação, e o dono clica em "Desconectar". Pendência a confirmar: se "Database: Read" libera o endpoint de consulta somente leitura.
+**Ponto exato onde parou:** Etapa 6 concluída. Nada em andamento. O próximo passo é a **Etapa 7** (abaixo).
 
 **Atenção:** desde 2026-10-06 o projeto fica na pasta **`main_app/`** (o repositório Git é a pasta de cima, `Startup3/`). Todos os comandos abaixo são rodados dentro de `main_app/`.
 
@@ -53,7 +54,8 @@
 - Node 24; pnpm 12.9.1 **pelo corepack**: use `corepack pnpm ...` (não há `pnpm` instalado globalmente).
 - Instalar e testar: `COREPACK_ENABLE_DOWNLOAD_PROMPT=0 corepack pnpm install` · `corepack pnpm test` (compila e roda os testes de `packages/`).
 - `.env` na raiz (fora do Git): `SUPABASE_URL`, `SUPABASE_ANON_KEY` (e `SUPABASE_ACCESS_TOKEN`, a apagar).
-- `apps/web/.env.local` (fora do Git): chaves do projeto Supabase **do site** (`mapa-site`). Migrações do site: `corepack pnpm db:migrate`. Ligar o site: `cd apps/web && npx next dev --port 3300`.
+- `apps/web/.env.local` (fora do Git): chaves do projeto Supabase **do site** (`mapa-site`), do OAuth App "Mapa" (`SUPABASE_OAUTH_CLIENT_ID/SECRET`) e a chave que criptografa os tokens (`MAPA_TOKEN_ENCRYPTION_KEY`).
+- Contas reais do dono no site: `albshoji@gmail.com` (projeto `next16-supabase-demo`, já testado com o "Conectar Supabase") e `shojialbert@gmail.com`. No Supabase, o projeto de teste "Startup3" e o `mapa-site` estão na conta/organização do albshoji; a conta shojialbert só tem a organização "usp" (projeto pausado). Migrações do site: `corepack pnpm db:migrate`. Ligar o site: `cd apps/web && npx next dev --port 3300`.
 - Para testar o comando contra o site local sem mexer na sua conta real: `MAPA_CONFIG_DIR=/tmp/algum-lugar MAPA_SITE_URL=http://localhost:3300 npx mapa login`.
 - `examples/next16-supabase-demo/.env.local` (fora do Git): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
 - Rodar o app de teste com o Mapa: `cd examples/next16-supabase-demo && npx mapa dev --port 3200` (ou `--webpack`); em outro terminal, `npx mapa record start` / `npx mapa record stop`.
@@ -71,9 +73,9 @@
 
 ## Próximo passo
 
-**Etapa 6:** "Conectar Supabase": o Mapa registrado como OAuth App no Supabase, fluxo OAuth com PKCE, escolha do projeto, tokens criptografados só no servidor do site, renovação, "Desconectar"; leitura da estrutura do banco (só pelo endpoint somente leitura) e retrato por gravação.
-Pronto quando: conectar o projeto de teste mostra tabelas, políticas, gatilhos (com código), buckets e Edge Functions; só o endpoint de leitura é usado; desconectar apaga os tokens.
-Antes de começar: **pedir ao dono** para criar o OAuth App no painel do Supabase (passo a passo) e colocar `client_id`/`client_secret` no `apps/web/.env.local`.
+**Etapa 7:** processamento no site: fila; validação; refino e corte de gravações grandes (como o AppMap); cruzamento da gravação com a estrutura do banco (grau "configurado no banco": gatilhos, regras de acesso); registros do Supabase em segunda fase como `eventUpdates` (grau "confirmado pelos registros"); situação recebida → processando → pronta (app) → pronta (com registros) / erro.
+Pronto quando: cenário A mostra o perfil criado pelo gatilho ("configurado no banco"); cenário C atribui a resposta vazia à regra de acesso, citando a política; cenário D mostra os `console.log` ("confirmado pelos registros").
+Observação: os registros usam a permissão Analytics do OAuth App (já concedida) e o endpoint `analytics/endpoints/logs` (coluna `source`, consultas espaçadas, atraso de até ~35 s; ver `docs/spike-report.md`, risco 6).
 
 ## Pendências e decisões em aberto
 
@@ -83,7 +85,8 @@ Antes de começar: **pedir ao dono** para criar o OAuth App no painel do Supabas
 | Nome definitivo do pacote no npm (provisório: `@mapa/cli`) | Dono do projeto | Antes de publicar |
 | Testar no Next 15 (sem app Next 15 por enquanto) | Claude | Etapa 11 |
 | "Confirm email" do projeto do site (hoje ligado) e página de retorno da confirmação | Dono + Claude | Antes do lançamento |
-| Hospedagem e endereço de produção do site | Dono | Antes dos primeiros usuários |
+| Hospedagem e endereço de produção do site (e trocar callback/Website URL do OAuth App) | Dono | Antes dos primeiros usuários |
+| Apagar a conexão de teste da conta shojialbert (organização "usp") | Dono decide | Quando quiser |
 | Apagar o token pessoal `sbp_` do Supabase e tirar do `.env` | Dono do projeto | Agora (não é mais necessário) |
 | Conferir se o repositório no GitHub está privado | Dono do projeto | Agora |
 
@@ -98,6 +101,7 @@ Antes de começar: **pedir ao dono** para criar o OAuth App no painel do Supabas
 | 2026-10-06 | Etapa 1 concluída: monorepo, CLI `mapa`, coletor | `f75cd0a` |
 | 2026-10-06 | Projeto movido para `main_app/` | `e46e083` |
 | 2026-10-06 | Etapa 2 concluída: `withMapa`, plugin Babel, gravadores de funções, `.mapa/config.json` | `f3ac7e6` |
+| 2026-10-06 | Etapa 6 concluída: Conectar Supabase (OAuth + PKCE), estrutura só leitura, retrato por gravação, desconectar | (este commit) |
 | 2026-10-06 | Etapa 5 concluída: site, contas, `mapa login`/`logout`/`upload`, envio, RLS testada com 2 usuários | `436583f` |
 | 2026-10-06 | Etapa 4 concluída: botão flutuante, limites estritos, teto por função, `mapa stats`, várias abas | `41e22a2` |
 | 2026-10-06 | Etapa 3 concluída: ações do usuário, pedidos ao Supabase traduzidos, requisições ao servidor, Realtime, erros | `85d1123` |

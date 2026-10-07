@@ -30,6 +30,14 @@ export class ManagementApiError extends Error {
 
 export class ReadOnlyViolation extends Error {}
 
+/** No call waits longer than this (a paused project's database never answers). */
+export const CALL_TIMEOUT_MS = 20_000;
+
+/** Supabase pauses idle free projects: their database does not answer until reactivated. */
+export function isProjectActive(project: { status?: string }): boolean {
+  return !project.status || project.status.startsWith("ACTIVE");
+}
+
 export interface SupabaseProjectSummary {
   ref: string;
   name: string;
@@ -48,11 +56,18 @@ export class ManagementClient {
   private async call<T>(method: "GET" | "POST", path: string, body?: unknown): Promise<T> {
     const pathname = path.split("?")[0]!;
     if (!isAllowedCall(method, pathname)) throw new ReadOnlyViolation(`chamada não permitida (somente leitura): ${method} ${pathname}`);
-    const res = await this.fetchImpl(`${this.base}${path}`, {
-      method,
-      headers: { authorization: `Bearer ${await this.accessToken()}`, ...(body !== undefined ? { "content-type": "application/json" } : {}) },
-      ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
-    });
+    const token = await this.accessToken(); // its own errors (e.g. access revoked) pass through unchanged
+    let res: Response;
+    try {
+      res = await this.fetchImpl(`${this.base}${path}`, {
+        method,
+        signal: AbortSignal.timeout(CALL_TIMEOUT_MS),
+        headers: { authorization: `Bearer ${token}`, ...(body !== undefined ? { "content-type": "application/json" } : {}) },
+        ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+      });
+    } catch (error) {
+      throw new ManagementApiError(`${method} ${pathname} → sem resposta (${error instanceof Error ? error.name : "erro"})`, 504);
+    }
     const text = await res.text();
     if (!res.ok) throw new ManagementApiError(`${method} ${pathname} → ${res.status} ${text.slice(0, 300)}`, res.status);
     return (text ? JSON.parse(text) : undefined) as T;
