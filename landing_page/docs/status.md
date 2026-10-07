@@ -68,4 +68,4 @@ A página está pronta e igual à referência (`docs/landing-reference.html`, ve
   ações do usuário), um exemplo do que o Mapa grava por baixo: lista vazia porque o
   servidor consultou o Supabase sem a sessão e a regra RLS escondeu as linhas (commit `6c00a73`).
 - 07/10/2026 — Diagrama do topo ficou mais acessível: títulos em português simples com o
-  nome técnico embaixo, e explicação de cada passo ao clicar.
+  nome técnico embaixo, e explicação de cada passo ao clicar (commit `290553c`).
