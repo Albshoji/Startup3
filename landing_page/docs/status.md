@@ -46,4 +46,6 @@ A página está pronta e igual à referência (`docs/landing-reference.html`, ve
 
 - 06/10/2026 — Primeira versão da página (commit `668b1ae`).
 - 06/10/2026 — Instruções atualizadas: novo título e descrição, novo título principal, novo
-  texto do cartão "para você" e a etiqueta "o problema nasce aqui" no passo 4.
+  texto do cartão "para você" e a etiqueta "o problema nasce aqui" no passo 4. Essas mudanças
+  entraram no commit `a6d97d4` (junto com a Etapa 7 do `main_app`); este arquivo de status,
+  no `3e089fc`.
