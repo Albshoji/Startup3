@@ -111,7 +111,7 @@ submit to the same endpoint.
 ## SEO and metadata
 
 - `lang="pt-BR"`.
-- Title: `[Nome do produto] — entenda o que seu código fez por trás dos panos`.
+- Title: `[Nome do produto] — aprenda o que seu código fez por trás dos panos`.
 - Description: "Ligue a gravação, use seu app e receba um diagrama didático do que rodou no
   seu código, além de um registro completo para a sua IA."
 - Open Graph and Twitter tags with the same text. Leave a TODO for the OG image.
