@@ -41,7 +41,8 @@ The product itself does not exist yet: this site is only the landing page.
   `Nav`, `Hero` (with `Mascot` and `DiagramPreview`), `Comparison`, `HowItWorks`,
   `ForYourAI`, `Audience`, `FAQ`, `FinalCTA`, `Footer`, and a shared `WaitlistForm`.
 - Static parts stay Server Components; only the interactive pieces are Client Components
-  (`'use client'`): Mascot, Comparison highlight, chat tabs, FAQ, WaitlistForm.
+  (`'use client'`): Mascot, DiagramPreview, Comparison highlight, chat tabs, FAQ,
+  WaitlistForm.
 - Put the product name in a single constant (`lib/site.ts` → `PRODUCT_NAME`), used in the
   nav, the footer and the metadata. It is still `[Nome do produto]`.
 
@@ -51,18 +52,20 @@ The product itself does not exist yet: this site is only the landing page.
    throttled with `requestAnimationFrame`). It blinks every 5s (CSS). Clicking it shows a
    speech bubble that cycles through: "oi!", "eu explico tudo!", "grava aí!",
    "ei, isso faz cócegas", and hides after 1.8s. It is a real `<button>`.
-2. **Diagram preview (hero):** a swimlane diagram with 4 lanes (navegador, servidor Next,
-   Supabase API, banco) and 7 numbered steps connected by elbow arrows (calls go down,
-   returns come back dashed). It shows what Mapa really records, not what the user did:
-   the page request, the server function and the client creation with file:line, the
-   Supabase request with the role of who asked (`anon`), the SQL operation filtered by the
-   RLS rule, the empty answer (`200 OK · [ ]`, `error: null`) and the screen it produced.
-   Step 5 is the failure (red), with handwritten notes "sem o cookie da sessão →" and
-   "sem erro. só veio vazio.". A "Por que quebrou" box sits under it, with the certainty
-   tags "confirmado pela gravação" and "configurado no banco". Built by the reusable
-   `SwimlaneDiagram` component: it takes lanes, nodes (title + code line) and edges
-   (from/to) as data and routes the arrows itself. On narrow windows the whole diagram
-   scales down proportionally to fit; it never scrolls sideways. Hover lifts each node.
+2. **Diagram preview (hero):** a swimlane diagram with 4 lanes (navegador, seu servidor,
+   Supabase, banco) and 7 numbered steps connected by elbow arrows (calls go down,
+   returns come back dashed). It shows what Mapa really records, not what the user did,
+   in the product's format: each step has a **plain title** ("Conectou ao Supabase") and
+   the **real name** in the code below it (`createClient()`). Steps are buttons: clicking
+   one replaces the box under the diagram with that step's explanation (names the
+   technical concept, e.g. "regra de acesso (RLS)"), the full technical reference
+   (file:line, request, policy) and its certainty tag ("confirmado pela gravação" or
+   "configurado no banco"); "ver o resumo" (or clicking the step again) goes back to the
+   "Por que quebrou" summary. Step 5 is the failure (red); handwritten notes "o problema
+   nasce aqui →" (step 3) and "sem erro. só veio vazio.". Built by the reusable
+   `SwimlaneDiagram` component: lanes, nodes and edges (from/to) as data; it routes the
+   arrows itself. On narrow windows the whole diagram scales down to fit; it never
+   scrolls sideways.
    **This diagram intentionally differs from `reference/landing-reference.html`**
    (changed by the owner on 07/10/2026); the code is the source of truth for it.
 3. **Comparison:** hovering or focusing an underlined term on the left (`.jargon`)

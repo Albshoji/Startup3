@@ -6,9 +6,9 @@ import { useEffect, useId, useRef } from 'react';
 // routed from it, so the data only says which step connects to which.
 const LANE_W = 122;
 const NODE_W = 114;
-const NODE_H = 50;
+const NODE_H = 58;
 const FIRST_ROW_TOP = 44;
-const ROW_STEP = 62;
+const ROW_STEP = 70;
 const BOTTOM_PAD = 14;
 const CORNER = 8;
 const HEAD_GAP = 7;
@@ -26,6 +26,8 @@ type Props = {
   edges: SwimEdge[];
   notes?: SwimNote[];
   label: string;
+  selected?: number | null;
+  onSelect?: (index: number) => void;
 };
 
 const nodeLeft = (n: SwimNode) => n.lane * LANE_W + (LANE_W - NODE_W) / 2;
@@ -49,7 +51,7 @@ function edgePath(a: SwimNode, b: SwimNode, route: 'hv' | 'vh'): string {
   return `M${x} ${nodeTop(a) + NODE_H} V${y - CORNER} Q${x} ${y} ${x + dir * CORNER} ${y} H${x1}`;
 }
 
-export default function SwimlaneDiagram({ lanes, nodes, edges, notes = [], label }: Props) {
+export default function SwimlaneDiagram({ lanes, nodes, edges, notes = [], label, selected = null, onSelect }: Props) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const swimRef = useRef<HTMLDivElement>(null);
   const uid = useId().replace(/[^a-zA-Z0-9_-]/g, '');
@@ -78,7 +80,7 @@ export default function SwimlaneDiagram({ lanes, nodes, edges, notes = [], label
 
   return (
     <div className="swim-scroll" ref={wrapRef}>
-      <div className="swim" ref={swimRef} style={{ width, height }} role="img" aria-label={label}>
+      <div className="swim" ref={swimRef} style={{ width, height }} role="group" aria-label={label}>
         {lanes.map((l, i) => (
           <div key={l.label} style={{ display: 'contents' }}>
             <div className="lhd" style={{ left: i * LANE_W, width: LANE_W }}>
@@ -110,15 +112,18 @@ export default function SwimlaneDiagram({ lanes, nodes, edges, notes = [], label
           ))}
         </svg>
         {nodes.map((n, i) => (
-          <div
+          <button
+            type="button"
             key={`${n.title}-${i}`}
-            className={n.variant ? `snode ${n.variant}` : 'snode'}
+            className={['snode', n.variant, selected === i && 'sel'].filter(Boolean).join(' ')}
             style={{ left: nodeLeft(n), top: nodeTop(n), width: NODE_W, height: NODE_H }}
+            aria-pressed={selected === i}
+            onClick={() => onSelect?.(i)}
           >
             <span className="k">{i + 1}</span>
             <span className="t">{n.title}</span>
             <span className="c">{n.code}</span>
-          </div>
+          </button>
         ))}
         {notes.map((note) => (
           <div key={note.lines.join(' ')} className="sanno" style={{ left: note.left, top: note.top }}>

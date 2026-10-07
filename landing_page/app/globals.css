@@ -148,21 +148,26 @@ a{color:var(--blue-text)}a:hover{color:var(--red-text)}
 .lhd{position:absolute;top:0;display:flex;justify-content:center}
 .lhd span{font-family:var(--font-mono),monospace;font-weight:600;font-size:12px;padding:5px 8px;border:1.5px solid #1f1f1f;border-radius:5px;white-space:nowrap}
 .lline{position:absolute;top:30px;bottom:6px;width:0;border-left:2px dashed #dadce0}
-.snode{position:absolute;border:2px solid #1f1f1f;border-radius:8px;background:#ffffff;padding:4px 6px 4px 10px;display:flex;flex-direction:column;justify-content:center;gap:3px;line-height:1.15;transition:transform .15s,box-shadow .15s}
-.snode:hover{transform:translate(-2px,-2px);box-shadow:4px 4px 0 #4285f4}
-.snode .k{position:absolute;left:-9px;top:-9px;width:18px;height:18px;border-radius:50%;border:1.5px solid #1f1f1f;display:grid;place-items:center;font-size:10px;font-weight:700;background:#ffffff}
-.snode .t{font-weight:700;font-size:12px;white-space:nowrap}
+.snode{position:absolute;border:2px solid #1f1f1f;border-radius:8px;background:#ffffff;color:var(--ink);font:inherit;text-align:left;cursor:pointer;padding:4px 6px 4px 10px;display:flex;flex-direction:column;justify-content:center;gap:3px;line-height:1.15;transition:transform .15s,box-shadow .15s}
+.snode:hover,.snode.sel{transform:translate(-2px,-2px);box-shadow:4px 4px 0 #4285f4}
+.snode:focus-visible{outline:3px solid #1a73e8;outline-offset:2px}
+.snode .k{position:absolute;left:-9px;top:-9px;width:18px;height:18px;border-radius:50%;border:1.5px solid #1f1f1f;display:grid;place-items:center;font-size:10px;font-weight:700;background:#ffffff;color:#1f1f1f}
+.snode .t{font-weight:700;font-size:12px}
 .snode .c{font-family:var(--font-mono),monospace;font-weight:500;font-size:10px;color:#5f6368;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .snode.fail{border-color:#c5221f;background:#fce8e6;color:#a50e0e;box-shadow:3px 3px 0 #ea4335}
 .snode.fail .c{color:#a50e0e}
-.snode.fail:hover{box-shadow:5px 5px 0 #ea4335}
+.snode.fail:hover,.snode.fail.sel{box-shadow:5px 5px 0 #ea4335}
 .snode.dim{border-style:dashed}
 .sanno{position:absolute;font-family:var(--font-hand),cursive;font-weight:700;font-size:21px;line-height:1;color:#c5221f;transform:rotate(-4deg);white-space:nowrap}
-.swhy{margin-top:14px;border:2px solid #1f1f1f;border-radius:8px;background:#e8f0fe;padding:10px 12px;font-size:13.5px;line-height:1.5}
+.swhy{min-height:162px;margin-top:14px;border:2px solid #1f1f1f;border-radius:8px;background:#e8f0fe;padding:10px 12px;font-size:13.5px;line-height:1.5}
 .swhy b{font-weight:700}
 .swhy code{font-family:var(--font-mono),monospace;font-size:12px;background:#fff;border:1px solid #c6dafc;border-radius:3px;padding:0 3px}
 .swhy .sfrom{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.swhy .sfrom{align-items:center}
 .swhy .sfrom .chip{font-size:10.5px;padding:4px 6px}
+.swhy .sreal{display:block;margin-top:6px;font-family:var(--font-mono),monospace;font-size:11.5px;color:#3c4043;overflow-wrap:anywhere}
+.swhy .shint{display:block;margin-top:8px;font-size:12.5px;font-weight:600;color:#1967d2}
+.swhy .sback{margin-left:auto;font:600 12.5px var(--font-sans),sans-serif;color:#1967d2;background:none;border:0;padding:2px 0;cursor:pointer;text-decoration:underline}
 .swhy .lbl{display:block;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#1967d2;margin-bottom:2px}
 
 /* ===== Honeypot (campo escondido contra bots) ===== */
