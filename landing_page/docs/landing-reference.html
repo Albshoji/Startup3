@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>[Nome do produto] — entenda o que seu código fez por trás dos panos</title>
+<meta name="description" content="Ligue a gravação, use seu app e receba um diagrama didático do que rodou no seu código, além de um registro completo para a sua IA.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* ===== Tokens ===== */
+:root{
+  --ink:#1f1f1f; --ink-2:#3c4043; --muted:#5f6368; --line:#dadce0; --bg:#ffffff; --bg-soft:#f8f9fa;
+  --blue:#4285f4; --blue-text:#1a73e8; --blue-tint:#e8f0fe; --blue-chip:#d2e3fc; --blue-hl:#aecbfa;
+  --red:#ea4335; --red-text:#d93025; --red-strong:#c5221f; --red-tint:#fce8e6; --red-chip:#fad2cf; --red-hl:#f6aea9;
+  --yellow:#fbbc05; --yellow-text:#b06000; --yellow-tint:#fef7e0; --yellow-chip:#feefc3;
+  --green:#34a853; --green-text:#188038; --green-tint:#e6f4ea; --green-chip:#ceead6; --green-hl:#a8dab5;
+  --focus:#8ab4f8;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:var(--blue-text)}a:hover{color:var(--red-text)}
+.hand{font-family:'Caveat',cursive}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.doodle{fill:none;stroke:var(--ink);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.doodle-thin{fill:none;stroke:var(--ink);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+[hidden]{display:none !important}
+
+/* ===== Layout ===== */
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+.section{padding:104px 0}
+.head{display:flex;flex-direction:column;gap:16px;max-width:820px}
+.stack{display:flex;flex-direction:column}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:64px;align-items:center}
+.two-col{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:56px;align-items:center}
+@media (max-width:920px){.hero-grid,.two-col{grid-template-columns:minmax(0,1fr);gap:40px}}
+.auto-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:24px}
+.auto-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:32px}
+.gridpaper{background-color:#fff;background-image:linear-gradient(#eaf1fd 1px,transparent 1px),linear-gradient(90deg,#eaf1fd 1px,transparent 1px);background-size:28px 28px}
+.bt{border-top:2px solid var(--ink)}.bb{border-bottom:2px solid var(--ink)}
+
+/* ===== Type ===== */
+.h1{margin:0;font-weight:700;font-size:clamp(40px,5.2vw,66px);line-height:1.05;letter-spacing:-0.035em}
+.h2{margin:0;font-weight:700;font-size:clamp(30px,3.6vw,46px);line-height:1.1;letter-spacing:-0.03em}
+.lead{margin:0;font-size:19px;line-height:1.6;color:var(--ink-2)}
+.tag{font-family:'Caveat',cursive;font-size:30px;font-weight:700;line-height:1;display:inline-block;transform:rotate(-2deg)}
+.hl-y{background:linear-gradient(transparent 60%,var(--yellow) 60%,var(--yellow) 90%,transparent 90%);padding:0 4px;margin:0 -2px}
+.hl-b{background:linear-gradient(transparent 60%,var(--blue-hl) 60%,var(--blue-hl) 90%,transparent 90%);padding:0 4px;margin:0 -2px}
+.hl-g{background:linear-gradient(transparent 60%,var(--green-hl) 60%,var(--green-hl) 90%,transparent 90%);padding:0 4px;margin:0 -2px}
+
+/* ===== Nav ===== */
+.topbar{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.94);border-bottom:2px solid var(--ink);backdrop-filter:blur(6px)}
+.topbar .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;height:72px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
+.brand:hover{color:var(--ink)}
+.logo{position:relative;width:36px;height:36px;border:2px solid var(--ink);border-radius:8px;background:#fff;display:grid;place-items:center;box-shadow:3px 3px 0 var(--ink)}
+.logo i{position:absolute;width:4px;height:4px;border-radius:50%}
+.brand-name{font-weight:700;font-size:20px;letter-spacing:-0.02em}
+.nav-links{display:flex;gap:4px}
+@media (max-width:820px){.nav-links{display:none}}
+.navlink{color:var(--ink);text-decoration:none;font-weight:600;font-size:15px;padding:10px 12px;border-radius:6px;transition:color .15s,background .15s}
+.navlink:nth-child(1):hover{color:var(--blue-text);background:var(--blue-tint)}
+.navlink:nth-child(2):hover{color:var(--red-text);background:var(--red-tint)}
+
+/* ===== Buttons & inputs ===== */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:50px;padding:0 22px;font:700 16px/1 'IBM Plex Sans',sans-serif;border:2px solid var(--ink);border-radius:6px;cursor:pointer;text-decoration:none;box-shadow:0 4px 0 var(--ink);transition:transform .1s ease,box-shadow .1s ease,background .15s;white-space:nowrap}
+.btn:hover{transform:translateY(-2px);box-shadow:0 6px 0 var(--ink)}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.btn:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+.btn-blue{background:var(--blue-text);color:#fff}.btn-blue:hover{background:#1765cc;color:#fff}
+.btn-yellow{background:var(--yellow);color:var(--ink)}.btn-yellow:hover{background:#f9ab00;color:var(--ink)}
+.btn-sm{min-height:44px;padding:0 16px;font-size:15px}
+.btn[disabled]{opacity:.6;cursor:wait}
+.input{height:50px;padding:0 14px;font:500 16px 'IBM Plex Sans',sans-serif;border:2px solid var(--ink);border-radius:6px;background:#fff;color:var(--ink);min-width:0;flex:1 1 220px}
+.input:focus{outline:3px solid var(--focus);outline-offset:2px}
+.input::placeholder{color:#6b7076}
+.form-row{display:flex;flex-wrap:wrap;gap:12px}
+.form-error{margin:0;color:var(--red-strong);font-weight:600;font-size:15px}
+.success{display:flex;align-items:center;gap:12px;padding:16px 18px;border:2px solid var(--ink);border-radius:8px;background:var(--green-tint);font-weight:600;font-size:16px;box-shadow:4px 4px 0 var(--green);animation:evIn .3s ease both}
+
+/* ===== Cards, chips, notes ===== */
+.card{background:#fff;border:2px solid var(--ink);border-radius:8px;transition:transform .18s ease,box-shadow .18s ease}
+.card-hover:hover{transform:translate(-4px,-4px);box-shadow:8px 8px 0 var(--sh,var(--ink))}
+.num{width:48px;height:48px;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;font:700 20px 'IBM Plex Sans',sans-serif}
+.card-hover:hover .num{animation:wiggle .45s ease}
+.chip{display:inline-flex;align-items:center;gap:6px;font:600 12px/1 'IBM Plex Mono',monospace;padding:6px 8px;border-radius:4px;border:1.5px solid var(--ink);white-space:nowrap}
+.c-front{background:var(--blue-chip)}.c-req{background:var(--yellow-chip)}.c-func{background:var(--green-chip)}.c-db{background:var(--red-chip)}
+.note{border:2px solid var(--ink);border-radius:4px;padding:32px 28px 28px;position:relative;background:#fff;transition:transform .22s ease,box-shadow .22s ease}
+.rot-l{transform:rotate(-1.8deg)}.rot-r{transform:rotate(1.5deg)}
+.note:hover{transform:rotate(0deg) translateY(-8px);box-shadow:6px 8px 0 var(--ink)}
+.tape{position:absolute;top:-14px;left:50%;width:96px;height:26px;margin-left:-48px;border:1px solid rgba(31,31,31,.25);transform:rotate(-3deg)}
+
+/* ===== Hero window (diagram preview) ===== */
+.window{position:relative;z-index:2;background:#fff;border:2px solid var(--ink);border-radius:10px;box-shadow:10px 10px 0 var(--ink);overflow:hidden}
+.win-bar{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:2px solid var(--ink);background:var(--bg-soft)}
+.dot{width:12px;height:12px;border-radius:50%;border:1.5px solid var(--ink)}
+.rec{width:10px;height:10px;border-radius:50%;background:var(--red);animation:pulse 1.4s ease-in-out infinite}
+.hstep-wrap{animation:evIn .5s ease both}
+.hstep-wrap:nth-child(1){animation-delay:.2s}.hstep-wrap:nth-child(2){animation-delay:.55s}.hstep-wrap:nth-child(3){animation-delay:.9s}.hstep-wrap:nth-child(4){animation-delay:1.25s}.hstep-wrap:nth-child(5){animation-delay:1.6s}
+.hstep{display:flex;align-items:center;gap:10px;padding:12px 14px;border:2px solid var(--line);border-radius:8px;background:#fff;transition:border-color .15s,box-shadow .15s,transform .15s}
+.hstep:hover{border-color:var(--ink);transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--blue)}
+.hstep.is-fail{border-color:var(--red-text);background:var(--red-tint)}
+.hstep.is-fail:hover{box-shadow:5px 5px 0 var(--red)}
+.step-num{width:28px;height:28px;flex:0 0 28px;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;font-weight:700;font-size:13px;background:#fff}
+.harrow{display:flex;justify-content:center;height:16px}
+.hcode{font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+
+/* ===== Mascot ===== */
+.mascot{position:absolute;right:18px;top:-38px;z-index:3;width:96px;cursor:pointer;background:none;border:0;padding:0;transition:transform .2s ease}
+.mascot:hover{transform:rotate(-8deg) translateY(-4px)}
+.mascot:focus-visible{outline:3px solid var(--focus);outline-offset:4px;border-radius:8px}
+.blink{animation:blink 5s infinite;transform-box:fill-box;transform-origin:center}
+.speech{position:absolute;right:92px;top:6px;background:#fff;border:2px solid var(--ink);border-radius:12px;padding:4px 12px;font-size:22px;white-space:nowrap;animation:evIn .25s ease both}
+
+/* ===== Comparison (jargon ↔ diagram) ===== */
+.vs-card{transition:transform .2s ease,box-shadow .2s ease}
+.vs-card:hover{transform:translate(-4px,-4px)}
+.vs-bad{background:var(--bg-soft)}.vs-bad:hover{box-shadow:8px 8px 0 var(--red)}
+.vs-good:hover{box-shadow:8px 8px 0 var(--green)}
+.jargon{text-decoration:underline wavy var(--red);text-decoration-thickness:1.5px;text-underline-offset:4px;cursor:help;border-radius:3px;padding:0 2px;outline:none;transition:background .15s}
+.jargon:focus-visible{outline:2px solid var(--focus)}
+.jargon.j-on{background:var(--yellow);color:var(--ink);text-decoration-color:var(--ink)}
+.trow{display:flex;gap:12px;align-items:flex-start;padding:10px 8px;border:2px solid transparent;border-radius:8px;transition:opacity .2s,background .2s,border-color .2s,transform .2s}
+.trow.lit{border-color:var(--ink);background:var(--yellow-tint);transform:translateX(4px)}
+.trow.dim{opacity:.3}
+.tterm{font-weight:700;color:var(--ink);text-decoration:underline solid var(--blue);text-decoration-thickness:2px;text-underline-offset:3px;border-radius:3px;padding:0 2px;transition:background .15s}
+.trow.lit .tterm{background:var(--yellow);text-decoration-color:var(--ink)}
+.trow.fail .tterm{text-decoration-color:var(--red)}
+
+/* ===== Chat (before/after) ===== */
+.tab{min-height:44px;padding:0 16px;border:2px solid var(--ink);background:#fff;color:var(--ink);font:700 15px 'IBM Plex Sans',sans-serif;border-radius:6px;cursor:pointer;transition:background .15s,color .15s}
+.tab:hover{background:#f1f3f4}
+.tab.is-on{background:var(--ink);color:#fff}
+.tab:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.bubble{border:2px solid var(--ink);border-radius:14px;padding:14px 16px;font-size:16px;line-height:1.55;max-width:88%;animation:evIn .35s ease both}
+.bubble-me{align-self:flex-end;background:var(--blue-tint);border-bottom-right-radius:4px}
+.bubble-ai{align-self:flex-start;background:#fff;border-bottom-left-radius:4px}
+.bubble-bad{background:var(--bg-soft);color:var(--muted)}
+.bubble-good{box-shadow:5px 5px 0 var(--green)}
+
+/* ===== FAQ ===== */
+.faq{border:2px solid var(--ink);border-radius:8px;background:#fff;transition:box-shadow .15s,transform .15s}
+.faq:hover{box-shadow:5px 5px 0 var(--ink);transform:translate(-2px,-2px)}
+.faq-q{display:flex;justify-content:space-between;align-items:center;gap:16px;width:100%;padding:18px 20px;border:0;background:transparent;font:600 17px/1.35 'IBM Plex Sans',sans-serif;color:var(--ink);text-align:left;cursor:pointer;border-radius:8px}
+.faq-q:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.faq-a{margin:0;padding:0 20px 20px;font-size:16px;line-height:1.6;color:var(--ink-2);animation:evIn .25s ease both}
+.plus{flex:0 0 30px;width:30px;height:30px;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;transition:transform .2s ease,background .2s}
+.faq.is-open .plus{transform:rotate(45deg);background:var(--yellow)}
+
+/* ===== Footer ===== */
+.footlink{color:var(--ink-2);text-decoration:none;font-weight:600}
+.footlink:hover{color:var(--blue-text)}
+
+/* ===== Motion ===== */
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}}
+@keyframes evIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-14deg)}60%{transform:rotate(10deg)}}
+@keyframes blink{0%,95%,100%{transform:scaleY(1)}97%{transform:scaleY(.1)}}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition:none !important}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<!-- ============ NAV ============ -->
+<header class="topbar">
+  <div class="wrap">
+    <a href="#topo" class="brand">
+      <span class="logo" aria-hidden="true">
+        <span class="rec" style="width:12px;height:12px"></span>
+        <i style="left:5px;bottom:5px;background:var(--blue)"></i>
+        <i style="right:5px;top:5px;background:var(--yellow)"></i>
+        <i style="right:5px;bottom:5px;background:var(--green)"></i>
+      </span>
+      <span class="brand-name">[Nome do produto]</span>
+    </a>
+    <nav class="nav-links" aria-label="Seções">
+      <a class="navlink" href="#como-funciona">Como funciona</a>
+      <a class="navlink" href="#perguntas">Perguntas</a>
+    </nav>
+    <a class="btn btn-blue btn-sm" href="#lista">Entrar na lista</a>
+  </div>
+</header>
+
+<main>
+<!-- ============ 1. HERO ============ -->
+<section id="topo" class="gridpaper bb" style="padding:88px 0 112px">
+  <div class="wrap hero-grid">
+    <div class="stack" style="gap:28px">
+      <div style="display:inline-flex;align-self:flex-start;align-items:center;gap:10px;padding:8px 14px 8px 10px;border:2px solid var(--ink);border-radius:999px;background:#fff;font-weight:600;font-size:14px;box-shadow:3px 3px 0 var(--ink)">
+        <span class="chip c-front" style="padding:4px 8px;border-radius:999px">Em desenvolvimento</span>
+        Acesso antecipado aberto
+      </div>
+      <h1 class="h1">Use seu app. Entenda o que o seu código fez <span class="hl-y">por trás dos panos.</span></h1>
+      <p class="lead" style="max-width:560px">Ligue a gravação e use seu app como sempre. Enquanto você clica, registramos tudo o que o código faz por baixo: as funções chamadas, as requisições, o que chega ao banco. No fim, você recebe duas coisas:</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;max-width:560px">
+        <div class="card card-hover stack" style="--sh:var(--green);padding:14px 16px;gap:8px">
+          <span class="chip c-func" style="align-self:flex-start">para você</span>
+          <span style="font-size:15px;line-height:1.45;font-weight:500">Um diagrama didático que explica cada passo no seu nível.</span>
+        </div>
+        <div class="card card-hover stack" style="--sh:var(--yellow);padding:14px 16px;gap:8px">
+          <span class="chip c-req" style="align-self:flex-start">para a sua IA</span>
+          <span style="font-size:15px;line-height:1.45;font-weight:500">O registro completo do que rodou, para ela entender também.</span>
+        </div>
+      </div>
+
+      <form class="waitlist stack" data-source="hero" style="gap:12px;max-width:540px" novalidate>
+        <div class="success" role="status" hidden>
+          <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><path class="doodle" d="M5 14 L11 19 L21 7"/></svg>
+          Pronto, você está na lista. Avisamos assim que o acesso abrir.
+        </div>
+        <div class="fields stack" style="gap:12px">
+          <div class="form-row">
+            <label for="email-hero" class="sr">Seu e-mail</label>
+            <input id="email-hero" name="email" class="input" type="email" placeholder="seu@email.com" autocomplete="email" required>
+            <button class="btn btn-blue" type="submit">Entrar na lista</button>
+          </div>
+          <p class="form-error" role="alert" hidden>Esse e-mail não parece certo. Confere?</p>
+        </div>
+      </form>
+    </div>
+
+    <div style="position:relative;padding:36px 8px 8px 0">
+      <button type="button" class="mascot" id="mascot" aria-label="Mascote: uma folha de caderno com olhos">
+        <svg width="96" height="104" viewBox="0 0 96 104" aria-hidden="true">
+          <path d="M14 10 H70 L86 26 V96 H14 Z" fill="#fff" stroke="#1f1f1f" stroke-width="2.5" stroke-linejoin="round"/>
+          <path d="M70 10 V26 H86" fill="#e8f0fe" stroke="#1f1f1f" stroke-width="2.5" stroke-linejoin="round"/>
+          <line x1="24" y1="64" x2="76" y2="64" stroke="#aecbfa" stroke-width="2"/>
+          <line x1="24" y1="74" x2="76" y2="74" stroke="#aecbfa" stroke-width="2"/>
+          <line x1="24" y1="84" x2="64" y2="84" stroke="#aecbfa" stroke-width="2"/>
+          <line x1="22" y1="14" x2="22" y2="94" stroke="#f6aea9" stroke-width="2"/>
+          <g class="blink">
+            <circle cx="38" cy="40" r="11" fill="#fff" stroke="#1f1f1f" stroke-width="2.5"/>
+            <circle cx="62" cy="40" r="11" fill="#fff" stroke="#1f1f1f" stroke-width="2.5"/>
+            <circle id="pupil-l" cx="38" cy="40" r="4.5" fill="#1f1f1f"/>
+            <circle id="pupil-r" cx="62" cy="40" r="4.5" fill="#1f1f1f"/>
+          </g>
+          <path d="M44 55 Q50 60 56 55" fill="none" stroke="#1f1f1f" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+        <span class="speech hand" id="speech" hidden></span>
+      </button>
+
+      <div class="window">
+        <div class="win-bar">
+          <span class="dot" style="background:var(--red)"></span>
+          <span class="dot" style="background:var(--yellow)"></span>
+          <span class="dot" style="background:var(--green)"></span>
+          <span style="margin-left:10px;font-size:13px;font-weight:700;color:var(--ink-2)">Diagrama · por que o cadastro não salvou</span>
+        </div>
+        <ol class="stack" style="list-style:none;margin:0;padding:18px 20px 20px">
+          <li class="hstep-wrap">
+            <div class="hstep"><span class="step-num">1</span><span class="stack" style="gap:6px;min-width:0"><span style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span class="chip c-front">front</span><span style="font-weight:600;font-size:15px;line-height:1.3">Você clicou em “Criar conta”</span></span><span class="mono hcode">components/FormCadastro.tsx · onSubmit()</span></span></div>
+            <span class="harrow" aria-hidden="true"><svg width="14" height="16" viewBox="0 0 14 16"><path class="doodle-thin" d="M7 1 V13 M2 8 L7 14 L12 8" style="stroke:#9aa0a6"/></svg></span>
+          </li>
+          <li class="hstep-wrap">
+            <div class="hstep"><span class="step-num">2</span><span class="stack" style="gap:6px;min-width:0"><span style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span class="chip c-req">requisição</span><span style="font-weight:600;font-size:15px;line-height:1.3">O app enviou os dados ao servidor</span></span><span class="mono hcode">fetch("/api/cadastro", { method: "POST" })</span></span></div>
+            <span class="harrow" aria-hidden="true"><svg width="14" height="16" viewBox="0 0 14 16"><path class="doodle-thin" d="M7 1 V13 M2 8 L7 14 L12 8" style="stroke:#9aa0a6"/></svg></span>
+          </li>
+          <li class="hstep-wrap">
+            <div class="hstep"><span class="step-num">3</span><span class="stack" style="gap:6px;min-width:0"><span style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span class="chip c-func">função</span><span style="font-weight:600;font-size:15px;line-height:1.3">A rota chamou salvarUsuario()</span></span><span class="mono hcode">app/api/cadastro/route.ts · salvarUsuario()</span></span></div>
+            <span class="harrow" aria-hidden="true"><svg width="14" height="16" viewBox="0 0 14 16"><path class="doodle-thin" d="M7 1 V13 M2 8 L7 14 L12 8" style="stroke:#9aa0a6"/></svg></span>
+          </li>
+          <li class="hstep-wrap">
+            <div class="hstep is-fail"><span class="step-num">4</span><span class="stack" style="gap:6px;min-width:0"><span style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span class="chip c-db">banco</span><span style="font-weight:600;font-size:15px;line-height:1.3">O banco recusou a escrita</span></span><span class="mono hcode">supabase.from("usuarios").insert(...)</span></span></div>
+            <span class="harrow" aria-hidden="true"><svg width="14" height="16" viewBox="0 0 14 16"><path class="doodle-thin" d="M7 1 V13 M2 8 L7 14 L12 8" style="stroke:#9aa0a6"/></svg></span>
+          </li>
+          <li class="hstep-wrap">
+            <div class="hstep"><span class="step-num">5</span><span class="stack" style="gap:6px;min-width:0"><span style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span class="chip c-req">resposta</span><span style="font-weight:600;font-size:15px;line-height:1.3">O servidor respondeu 500</span></span><span class="mono hcode">route.ts → status 500</span></span></div>
+          </li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. POR QUE ISSO EXISTE ============ -->
+<section class="section">
+  <div class="wrap stack" style="gap:48px">
+    <div class="head">
+      <span class="tag" style="color:var(--red-text)">Por que isso existe</span>
+      <h2 class="h2">A IA explica o código sem saber o que aconteceu. E como se você <span class="hl-b">já soubesse.</span></h2>
+    </div>
+    <div class="auto-2">
+      <div class="card vs-card vs-bad stack" style="padding:28px;gap:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+          <span style="font-weight:700;font-size:18px">Pedindo para a IA explicar</span>
+          <span class="hand" style="font-size:28px;color:var(--red-text);transform:rotate(-3deg)">hã?</span>
+        </div>
+        <p style="margin:0;font-size:17px;line-height:1.85;color:var(--ink-2)">Este componente deve disparar uma <span class="jargon" tabindex="0" data-row="0">Server Action</span> que faz o parse do <span class="jargon" tabindex="0" data-row="1">FormData</span>, valida com um <span class="jargon" tabindex="0" data-row="2">schema</span> e usa o <span class="jargon" tabindex="0" data-row="3">client</span> do Supabase para um <span class="jargon" tabindex="0" data-row="3">insert</span>. Se não está salvando, pode ser permissão da tabela, uma variável de ambiente ou algo no <span class="jargon" tabindex="0" data-row="4">schema cache</span>…</p>
+        <p style="margin:auto 0 0;font-size:14px;color:var(--muted)">Descreve o que o código deveria fazer e chuta o que deu errado. Com seis termos sem explicação.</p>
+        <span class="hand" style="font-size:22px;color:var(--blue-text)">passe o mouse nas palavras sublinhadas →</span>
+      </div>
+      <div class="card vs-card vs-good stack" style="padding:24px 22px;gap:6px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 8px 8px">
+          <span style="font-weight:700;font-size:18px">No diagrama</span>
+          <span class="hand" style="font-size:28px;color:var(--green-text);transform:rotate(-3deg)">ahh, entendi</span>
+        </div>
+        <div class="trow" data-row="0"><span class="chip c-front" style="align-self:flex-start">1</span><span style="font-size:15px;line-height:1.6;min-width:0">Ao clicar em “Criar conta”, o formulário chamou uma <span class="tterm">Server Action</span>: uma função do seu código que roda no servidor, e não no navegador.</span></div>
+        <div class="trow" data-row="1"><span class="chip c-req" style="align-self:flex-start">2</span><span style="font-size:15px;line-height:1.6;min-width:0">O que você digitou foi junto, dentro de um <span class="tterm">FormData</span>, o pacote com os campos do formulário. No servidor, o código abriu esse pacote: isso é o “parse”.</span></div>
+        <div class="trow" data-row="2"><span class="chip c-func" style="align-self:flex-start">3</span><span style="font-size:15px;line-height:1.6;min-width:0">Antes de salvar, o código conferiu os dados contra um <span class="tterm">schema</span>, a lista de regras que eles precisam seguir, como o e-mail ter @. Estava tudo certo.</span></div>
+        <div class="trow" data-row="3"><span class="chip c-func" style="align-self:flex-start">4</span><span style="font-size:15px;line-height:1.6;min-width:0">Para salvar, o código usou o <span class="tterm">client</span> do Supabase, a peça que conversa com o banco, e pediu um <span class="tterm">insert</span>: criar uma linha nova na tabela usuarios.</span></div>
+        <div class="trow fail" data-row="4"><span class="chip c-db" style="align-self:flex-start">5</span><span style="font-size:15px;line-height:1.6;min-width:0">O banco recusou com o erro <span class="tterm">42703</span>, que quer dizer “essa coluna não existe”. Na cópia da estrutura das tabelas que o Supabase consulta, o <span class="tterm">schema cache</span>, a tabela usuarios não tinha telefone.</span></div>
+      </div>
+    </div>
+    <p style="margin:0;font-size:17px;line-height:1.6;color:var(--ink-2);max-width:800px"><strong>O diagrama conta o que foi gravado, não o que provavelmente aconteceu.</strong> Os termos técnicos continuam lá, porque são eles que você vai encontrar no código, mas cada um aparece na ordem em que as coisas aconteceram e é explicado na mesma frase.</p>
+  </div>
+</section>
+
+<!-- ============ 3. COMO FUNCIONA ============ -->
+<section id="como-funciona" class="section gridpaper bt bb">
+  <div class="wrap stack" style="gap:48px">
+    <div class="head">
+      <span class="tag" style="color:var(--green-text)">Como funciona</span>
+      <h2 class="h2">Três passos, <span class="hl-g">sem mudar sua stack.</span></h2>
+    </div>
+    <div class="auto-3">
+      <div class="card card-hover stack" style="--sh:var(--blue);padding:28px;gap:14px">
+        <div class="num" style="background:var(--blue-chip)">1</div>
+        <h3 style="margin:0;font-size:22px;font-weight:700">Ligue a gravação</h3>
+        <p style="margin:0;font-size:16px;line-height:1.6;color:var(--ink-2)">Antes de passar pelo fluxo que você quer entender.</p>
+      </div>
+      <div class="card card-hover stack" style="--sh:var(--yellow);padding:28px;gap:14px">
+        <div class="num" style="background:var(--yellow-chip)">2</div>
+        <h3 style="margin:0;font-size:22px;font-weight:700">Use o app normalmente</h3>
+        <p style="margin:0;font-size:16px;line-height:1.6;color:var(--ink-2)">Por baixo, tudo entra na mesma linha do tempo:</p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <span class="chip c-front">cliques</span><span class="chip c-req">requisições</span><span class="chip c-func">funções</span><span class="chip c-db">banco</span>
+        </div>
+      </div>
+      <div class="card card-hover stack" style="--sh:var(--green);padding:28px;gap:14px">
+        <div class="num" style="background:var(--green-chip)">3</div>
+        <h3 style="margin:0;font-size:22px;font-weight:700">Pare e receba</h3>
+        <p style="margin:0;font-size:16px;line-height:1.6;color:var(--ink-2)">O que rodou no seu código vira duas saídas:</p>
+        <div class="stack" style="gap:8px">
+          <span style="display:flex;gap:8px;align-items:center;font-size:15px"><span class="chip c-func">para você</span>o diagrama, passo a passo</span>
+          <span style="display:flex;gap:8px;align-items:center;font-size:15px"><span class="chip c-req">para a sua IA</span>o registro para anexar no chat</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. PARA A SUA IA ============ -->
+<section class="section">
+  <div class="wrap two-col">
+    <div class="stack" style="gap:18px">
+      <span class="tag" style="color:var(--green-text)">Para a sua IA</span>
+      <h2 class="h2">Com o registro, ela para de <span class="hl-g">adivinhar.</span></h2>
+      <p class="lead" style="font-size:18px">Anexe o arquivo da sessão na conversa e ela responde sobre o que aconteceu, não sobre suposições.</p>
+    </div>
+    <div class="stack" style="gap:14px">
+      <div style="display:flex;flex-wrap:wrap;gap:10px" role="group" aria-label="Comparar respostas">
+        <button class="tab" type="button" data-chat="sem" aria-pressed="false">Sem o registro</button>
+        <button class="tab is-on" type="button" data-chat="com" aria-pressed="true">Com o registro</button>
+      </div>
+      <div class="card stack" style="padding:22px;gap:14px;min-height:270px;box-shadow:8px 8px 0 var(--ink)" aria-live="polite">
+        <div class="stack" style="gap:14px" data-panel="sem" hidden>
+          <div class="bubble bubble-me">Meu cadastro não salva.</div>
+          <div class="bubble bubble-ai bubble-bad">Pode ser várias coisas: confira a conexão com o banco, os erros no console, as permissões da tabela…</div>
+        </div>
+        <div class="stack" style="gap:14px" data-panel="com">
+          <div class="bubble bubble-me stack" style="gap:10px">
+            <span>Meu cadastro não salva.</span>
+            <span class="chip" style="align-self:flex-start;background:#fff">registro-execucao.json</span>
+          </div>
+          <div class="bubble bubble-ai bubble-good">A função <span class="mono" style="font-size:14px">salvarUsuario</span> tentou gravar o campo <strong>telefone</strong>, que não existe na tabela <span class="mono" style="font-size:14px">usuarios</span>. Por isso o servidor respondeu 500.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5. PARA QUEM É ============ -->
+<section class="section gridpaper bt bb" style="padding:96px 0">
+  <div class="wrap stack" style="gap:48px">
+    <div class="head">
+      <span class="tag" style="color:var(--blue-text)">Para quem é</span>
+      <h2 class="h2">Para quem constrói com IA e <span class="hl-b">não escreveu cada linha.</span></h2>
+    </div>
+    <div class="auto-2">
+      <div class="note rot-l">
+        <span class="tape" style="background:rgba(52,168,83,.35)"></span>
+        <h3 style="margin:0 0 10px;font-size:24px;font-weight:700">Desenvolvedor júnior</h3>
+        <p style="margin:0;font-size:18px;line-height:1.6;color:var(--ink-2)">Entrou num projeto que não escreveu e não quer perguntar tudo ao time. Num bug, a IA sugere correções às cegas.</p>
+      </div>
+      <div class="note rot-r">
+        <span class="tape" style="background:rgba(234,67,53,.3)"></span>
+        <h3 style="margin:0 0 10px;font-size:24px;font-weight:700">Vibe coder</h3>
+        <p style="margin:0;font-size:18px;line-height:1.6;color:var(--ink-2)">Entrega com IA, mas o código é uma caixa preta. Quando algo quebra, a IA entra no loop de “corrige aqui, quebra ali”.</p>
+      </div>
+    </div>
+    <p class="hand" style="margin:0;font-size:26px;color:var(--muted)">Já domina o seu repositório? Então isso não é para você.</p>
+  </div>
+</section>
+
+<!-- ============ 6. PERGUNTAS ============ -->
+<section id="perguntas" class="section">
+  <div class="wrap" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:48px;align-items:start">
+    <div class="head">
+      <span class="tag" style="color:var(--red-text)">Perguntas</span>
+      <h2 class="h2">Antes de entrar na lista</h2>
+    </div>
+    <div class="stack" style="gap:12px" id="faq">
+      <div class="faq is-open"><button type="button" class="faq-q" aria-expanded="true"><span>Quando fica pronto?</span><span class="plus" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 14 14"><path class="doodle-thin" d="M7 2 V12 M2 7 H12"/></svg></span></button><p class="faq-a">Está em desenvolvimento. Quem está na lista recebe acesso antes e fica sabendo da data primeiro.</p></div>
+      <div class="faq"><button type="button" class="faq-q" aria-expanded="false"><span>Vai funcionar no meu app?</span><span class="plus" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 14 14"><path class="doodle-thin" d="M7 2 V12 M2 7 H12"/></svg></span></button><p class="faq-a" hidden>A meta é funcionar sem você reescrever nada. Conte sua stack ao entrar na lista: ela entra na nossa prioridade.</p></div>
+      <div class="faq"><button type="button" class="faq-q" aria-expanded="false"><span>Deixa meu app mais lento?</span><span class="plus" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 14 14"><path class="doodle-thin" d="M7 2 V12 M2 7 H12"/></svg></span></button><p class="faq-a" hidden>A gravação só roda quando você liga. Fora dela, nada muda no seu app.</p></div>
+      <div class="faq"><button type="button" class="faq-q" aria-expanded="false"><span>Vai ser pago?</span><span class="plus" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 14 14"><path class="doodle-thin" d="M7 2 V12 M2 7 H12"/></svg></span></button><p class="faq-a" hidden>Ainda estamos definindo. Entrar na lista é grátis, e quem está nela fica sabendo do preço antes.</p></div>
+      <div class="faq"><button type="button" class="faq-q" aria-expanded="false"><span>O que vocês fazem com meu e-mail?</span><span class="plus" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 14 14"><path class="doodle-thin" d="M7 2 V12 M2 7 H12"/></svg></span></button><p class="faq-a" hidden>Só avisamos sobre o acesso. Você sai da lista quando quiser.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7. CTA FINAL ============ -->
+<section id="lista" style="padding:24px 0 112px">
+  <div class="wrap">
+    <div class="gridpaper stack" style="border:2px solid var(--ink);border-radius:12px;box-shadow:12px 12px 0 var(--ink);padding:clamp(32px,6vw,64px);gap:24px;align-items:center;text-align:center">
+      <div style="display:flex;gap:10px" aria-hidden="true">
+        <span style="width:14px;height:14px;border-radius:50%;background:var(--blue);border:2px solid var(--ink)"></span>
+        <span style="width:14px;height:14px;border-radius:50%;background:var(--red);border:2px solid var(--ink)"></span>
+        <span style="width:14px;height:14px;border-radius:50%;background:var(--yellow);border:2px solid var(--ink)"></span>
+        <span style="width:14px;height:14px;border-radius:50%;background:var(--green);border:2px solid var(--ink)"></span>
+      </div>
+      <h2 class="h2" style="max-width:760px">Entre na lista e veja seu app <span class="hl-y">por dentro.</span></h2>
+      <form class="waitlist stack" data-source="final" style="width:100%;max-width:620px;gap:12px;text-align:left" novalidate>
+        <div class="success" role="status" style="justify-content:center;font-size:17px" hidden>
+          <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><path class="doodle" d="M5 14 L11 19 L21 7"/></svg>
+          Pronto, você está na lista. Avisamos assim que o acesso abrir.
+        </div>
+        <div class="fields stack" style="gap:12px">
+          <div class="form-row">
+            <label for="email-final" class="sr">Seu e-mail</label>
+            <input id="email-final" name="email" class="input" type="email" placeholder="seu@email.com" autocomplete="email" required>
+            <label for="stack-final" class="sr">Qual stack você usa? (opcional)</label>
+            <input id="stack-final" name="stack" class="input" type="text" placeholder="Qual stack você usa? (opcional)">
+          </div>
+          <button class="btn btn-yellow" type="submit" style="width:100%;font-size:17px">Entrar na lista</button>
+          <p class="form-error" role="alert" style="text-align:center" hidden>Esse e-mail não parece certo. Confere?</p>
+          <p style="margin:0;font-size:14px;color:var(--muted);text-align:center">Sem spam. Você sai da lista quando quiser.</p>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="bt" style="padding:36px 0">
+  <div class="wrap" style="display:flex;flex-wrap:wrap;gap:24px;justify-content:space-between;align-items:center">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="width:28px;height:28px;border:2px solid var(--ink);border-radius:6px;display:grid;place-items:center"><span class="rec" style="width:9px;height:9px;animation:none"></span></span>
+      <span style="font-weight:700;font-size:17px">[Nome do produto]</span>
+    </div>
+    <nav style="display:flex;flex-wrap:wrap;gap:24px" aria-label="Rodapé">
+      <a class="footlink" href="#como-funciona">Como funciona</a>
+      <a class="footlink" href="#perguntas">Perguntas</a>
+    </nav>
+    <span style="font-size:14px;color:var(--muted)">© 2026 [Nome do produto]. Todos os direitos reservados.</span>
+  </div>
+</footer>
+
+<script>
+(() => {
+  /* ---------- Mascot: eyes follow the cursor, click to poke ---------- */
+  const mascot = document.getElementById('mascot');
+  const pl = document.getElementById('pupil-l'), pr = document.getElementById('pupil-r');
+  let raf = null, pending = { x: 0, y: 0 };
+  window.addEventListener('mousemove', (e) => {
+    const r = mascot.getBoundingClientRect();
+    const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height * 0.4);
+    const d = Math.hypot(dx, dy) || 1, k = Math.min(1, d / 160);
+    pending = { x: (dx / d) * 5 * k, y: (dy / d) * 5 * k };
+    if (!raf) raf = requestAnimationFrame(() => {
+      raf = null;
+      pl.setAttribute('cx', 38 + pending.x); pr.setAttribute('cx', 62 + pending.x);
+      pl.setAttribute('cy', 40 + pending.y); pr.setAttribute('cy', 40 + pending.y);
+    });
+  });
+  const speech = document.getElementById('speech');
+  const lines = ['oi!', 'eu explico tudo!', 'grava aí!', 'ei, isso faz cócegas'];
+  let poke = 0, pokeTimer = null;
+  mascot.addEventListener('click', () => {
+    speech.textContent = lines[poke++ % lines.length];
+    speech.hidden = false;
+    clearTimeout(pokeTimer);
+    pokeTimer = setTimeout(() => { speech.hidden = true; }, 1800);
+  });
+
+  /* ---------- Comparison: jargon ↔ diagram row highlight ---------- */
+  const jargons = [...document.querySelectorAll('.jargon')];
+  const rows = [...document.querySelectorAll('.trow')];
+  const light = (i) => {
+    jargons.forEach((j) => j.classList.toggle('j-on', i !== null && j.dataset.row === String(i)));
+    rows.forEach((r) => {
+      const on = i !== null && r.dataset.row === String(i);
+      r.classList.toggle('lit', on);
+      r.classList.toggle('dim', i !== null && !on);
+    });
+  };
+  jargons.forEach((j) => {
+    ['mouseenter', 'focus'].forEach((ev) => j.addEventListener(ev, () => light(j.dataset.row)));
+    ['mouseleave', 'blur'].forEach((ev) => j.addEventListener(ev, () => light(null)));
+  });
+  rows.forEach((r) => {
+    r.addEventListener('mouseenter', () => light(r.dataset.row));
+    r.addEventListener('mouseleave', () => light(null));
+  });
+
+  /* ---------- Chat tabs (sem / com o registro) ---------- */
+  const tabs = [...document.querySelectorAll('[data-chat]')];
+  tabs.forEach((t) => t.addEventListener('click', () => {
+    tabs.forEach((x) => { const on = x === t; x.classList.toggle('is-on', on); x.setAttribute('aria-pressed', on); });
+    document.querySelectorAll('[data-panel]').forEach((p) => { p.hidden = p.dataset.panel !== t.dataset.chat; });
+  }));
+
+  /* ---------- FAQ accordion (one open at a time) ---------- */
+  document.querySelectorAll('#faq .faq').forEach((item, _, all) => {
+    item.querySelector('.faq-q').addEventListener('click', () => {
+      const willOpen = !item.classList.contains('is-open');
+      all.forEach((it) => {
+        const open = it === item && willOpen;
+        it.classList.toggle('is-open', open);
+        it.querySelector('.faq-q').setAttribute('aria-expanded', open);
+        it.querySelector('.faq-a').hidden = !open;
+      });
+    });
+  });
+
+  /* ---------- Waitlist forms ----------
+     Reference only: validates and shows the success state.
+     In the real site, POST {email, stack, source} to the backend (see CLAUDE.md). */
+  const valid = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((v || '').trim());
+  document.querySelectorAll('form.waitlist').forEach((form) => {
+    const err = form.querySelector('.form-error');
+    form.email.addEventListener('input', () => { err.hidden = true; });
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (!valid(form.email.value)) { err.hidden = false; form.email.focus(); return; }
+      form.querySelector('.fields').hidden = true;
+      form.querySelector('.success').hidden = false;
+    });
+  });
+})();
+</script>
+</body>
+</html>
