@@ -38,7 +38,7 @@ const STEPS: Step[] = [
     detail: 'O pedido chegou ao Supabase com o papel anon, que é como o Supabase chama quem não está logado. Você estava logado no navegador, mas essa informação ficou para trás no passo 3.',
   },
   {
-    lane: 3, row: 4, title: 'Regra escondeu tudo', code: 'RLS · items', certainty: 'schema', variant: 'fail',
+    lane: 3, row: 4, title: 'Regra escondeu tudo', code: 'RLS · items', certainty: 'schema',
     real: 'política “items: dono vê” · owner_id = auth.uid()',
     detail: 'A tabela items tem uma regra de acesso (RLS): cada pessoa só vê as linhas em que owner_id é o próprio id. Quem está como anon não tem id, então a regra escondeu todas. Isso não quer dizer que a tabela está vazia.',
   },
@@ -48,7 +48,7 @@ const STEPS: Step[] = [
     detail: 'O Supabase respondeu 200 (sucesso) com uma lista vazia e sem erro. Para o código, deu tudo certo. Por isso nenhuma mensagem de erro apareceu.',
   },
   {
-    lane: 0, row: 6, title: 'Mostrou lista vazia', code: 'page.tsx:15', certainty: 'recording', variant: 'dim',
+    lane: 0, row: 6, title: 'Mostrou lista vazia', code: 'page.tsx:15', certainty: 'recording',
     real: 'app/itens/page.tsx:15',
     detail: 'Com a lista vazia, a página mostrou a mensagem “Nenhum item”. É o que você viu na tela.',
   },
@@ -59,7 +59,7 @@ const EDGES: SwimEdge[] = [
   { from: 1, to: 2 },
   { from: 2, to: 3 },
   { from: 3, to: 4 },
-  { from: 4, to: 5, route: 'vh', fail: true, dashed: true },
+  { from: 4, to: 5, route: 'vh', dashed: true },
   { from: 5, to: 6, route: 'vh', dashed: true },
 ];
 
@@ -84,7 +84,7 @@ export default function DiagramPreview() {
             whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0,
           }}
         >
-          Diagrama · por que minha lista veio vazia?
+          Diagrama · abrir a página /itens
         </span>
       </div>
       <div style={{ padding: '18px 16px 18px' }}>
@@ -104,10 +104,9 @@ export default function DiagramPreview() {
           selected={selected}
           onSelect={(i) => setSelected(i === selected ? null : i)}
           notes={[
-            { left: 4, top: 190, lines: ['o problema', 'nasce aqui →'] },
             { left: 296, top: 472, lines: ['sem erro.', 'só veio vazio.'] },
           ]}
-          label="Diagrama em 7 passos de por que a lista veio vazia. Escolha um passo para ver a explicação."
+          label="Diagrama em 7 passos do que rodou ao abrir a página /itens. Escolha um passo para ver a explicação."
         />
         <div className="swhy" aria-live="polite">
           {step ? (
@@ -122,8 +121,8 @@ export default function DiagramPreview() {
             </>
           ) : (
             <>
-              <span className="lbl">Por que quebrou</span>
-              Seu servidor conectou ao Supabase <b>sem dizer quem estava logado</b> (passo 3). Sem login, a <b>regra de acesso (RLS)</b> da tabela esconde todas as linhas (passo 5). Por isso a lista veio vazia, <b>sem nenhum erro</b>.
+              <span className="lbl">O que aconteceu</span>
+              Seu servidor pediu os itens ao Supabase <b>sem dizer quem estava logado</b> (passos 3 e 4). A <b>regra de acesso (RLS)</b> da tabela só mostra as linhas do próprio usuário, então nenhuma voltou (passo 5). A resposta veio vazia e <b>sem nenhum erro</b> (passo 6).
               <span className="shint">Passe o mouse ou toque em um passo para ver a explicação.</span>
             </>
           )}

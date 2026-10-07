@@ -24,7 +24,7 @@ export default function Hero() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: 12, maxWidth: 560 }}>
             <div className="card card-hover stack" style={{ '--sh': 'var(--green)', padding: '14px 16px', gap: 8 } as React.CSSProperties}>
               <span className="chip c-func" style={{ alignSelf: 'flex-start' }}>para você</span>
-              <span style={{ fontSize: 15, lineHeight: 1.45, fontWeight: 500 }}>Um diagrama didático que aponta onde quebrou e explica cada passo.</span>
+              <span style={{ fontSize: 15, lineHeight: 1.45, fontWeight: 500 }}>Um diagrama didático do que rodou, com cada passo explicado.</span>
             </div>
             <div className="card card-hover stack" style={{ '--sh': 'var(--yellow)', padding: '14px 16px', gap: 8 } as React.CSSProperties}>
               <span className="chip c-req" style={{ alignSelf: 'flex-start' }}>para a sua IA</span>

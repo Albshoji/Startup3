@@ -16,8 +16,9 @@ A página está pronta e igual à referência (`docs/landing-reference.html`, ve
   balão ao lado com a explicação e o grau de certeza. Clicar num passo mostra a explicação
   dele (com o nome do conceito técnico, ex.: "regra de acesso (RLS)"), a referência
   completa (arquivo:linha, pedido, regra) e o grau de certeza ("confirmado pela gravação"
-  ou "configurado no banco"). Sem passo escolhido, o quadro mostra o resumo "Por que
-  quebrou". Só usa informações que o Mapa já consegue obter (cenário C da Etapa 7).
+  ou "configurado no banco"). Sem passo escolhido, o quadro mostra o resumo "O que
+  aconteceu". O diagrama não diz o que é erro: ele mostra o que rodou (o Mapa não sabe o
+  que o usuário esperava). Só usa informações que o Mapa já consegue obter (cenário C da Etapa 7).
   Feito pelo componente `SwimlaneDiagram` (colunas, passos e ligações como dados; desenha
   as setas sozinho). Em telas estreitas o diagrama diminui inteiro para caber.
   **Esse diagrama é diferente da referência de propósito** (decisão do dono, 07/10).
@@ -72,3 +73,6 @@ A página está pronta e igual à referência (`docs/landing-reference.html`, ve
   nome técnico embaixo, e explicação de cada passo ao clicar (commit `290553c`).
 - 07/10/2026 — Balão com a explicação ao passar o mouse sobre cada passo do diagrama
   (commit `da9c6d1`).
+- 07/10/2026 — Tirada a promessa de que o diagrama aponta o erro: cartão "para você" do
+  topo, título do diagrama, passo em vermelho, anotação "o problema nasce aqui" e quadro
+  "Por que quebrou" (agora "O que aconteceu").

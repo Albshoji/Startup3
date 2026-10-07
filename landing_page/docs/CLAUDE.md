@@ -62,8 +62,11 @@ The product itself does not exist yet: this site is only the landing page.
    technical concept, e.g. "regra de acesso (RLS)"), the full technical reference
    (file:line, request, policy) and its certainty tag ("confirmado pela gravação" or
    "configurado no banco"); "ver o resumo" (or clicking the step again) goes back to the
-   "Por que quebrou" summary. Step 5 is the failure (red); handwritten notes "o problema
-   nasce aqui →" (step 3) and "sem erro. só veio vazio.". Built by the reusable
+   "O que aconteceu" summary. Handwritten note "sem erro. só veio vazio.".
+   **The diagram does not judge what is an error:** Mapa records and explains what ran;
+   it cannot know what the user expected. No step is marked as "the problem", and the
+   copy never says the diagram points out where it broke (only errors actually returned
+   by the code or the database, like 42703 in the comparison section, are shown as errors). Built by the reusable
    `SwimlaneDiagram` component: lanes, nodes and edges (from/to) as data; it routes the
    arrows itself. On narrow windows the whole diagram scales down to fit; it never
    scrolls sideways.
@@ -129,7 +132,7 @@ submit to the same endpoint.
 ## Notes
 
 - The diagram and chat content is an **illustrative example**. Keep it exactly as written.
-  The hero diagram uses the empty-list example (server client created without the
+  The hero diagram ("Diagrama · abrir a página /itens") uses the empty-list example (server client created without the
   session cookie, request as `anon`, RLS hides every row). The comparison section and the "Para a sua IA" chat use the signup example
   (`salvarUsuario`, coluna `telefone`, erro 42703).
 - All copy is in Brazilian Portuguese. Keep the curly quotes (“ ”) and the ellipses (…)
