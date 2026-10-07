@@ -101,7 +101,7 @@ Observação: os registros usam a permissão Analytics do OAuth App (já concedi
 | 2026-10-06 | Etapa 1 concluída: monorepo, CLI `mapa`, coletor | `f75cd0a` |
 | 2026-10-06 | Projeto movido para `main_app/` | `e46e083` |
 | 2026-10-06 | Etapa 2 concluída: `withMapa`, plugin Babel, gravadores de funções, `.mapa/config.json` | `f3ac7e6` |
-| 2026-10-06 | Etapa 6 concluída: Conectar Supabase (OAuth + PKCE), estrutura só leitura, retrato por gravação, desconectar | (este commit) |
+| 2026-10-06 | Etapa 6 concluída: Conectar Supabase (OAuth + PKCE), estrutura só leitura, retrato por gravação, desconectar | `d25d3a8` |
 | 2026-10-06 | Etapa 5 concluída: site, contas, `mapa login`/`logout`/`upload`, envio, RLS testada com 2 usuários | `436583f` |
 | 2026-10-06 | Etapa 4 concluída: botão flutuante, limites estritos, teto por função, `mapa stats`, várias abas | `41e22a2` |
 | 2026-10-06 | Etapa 3 concluída: ações do usuário, pedidos ao Supabase traduzidos, requisições ao servidor, Realtime, erros | `85d1123` |
