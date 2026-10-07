@@ -178,6 +178,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@mapa/format':
+        specifier: workspace:*
+        version: link:../../packages/format
       '@mapa/supabase':
         specifier: workspace:*
         version: link:../../packages/supabase
@@ -326,6 +329,10 @@ importers:
       '@mapa/format':
         specifier: workspace:*
         version: link:../format
+    devDependencies:
+      '@appland/appmap-validate':
+        specifier: 2.5.1
+        version: 2.5.1
 
 packages:
 

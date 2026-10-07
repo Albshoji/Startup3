@@ -8,7 +8,7 @@ const SECRET_NAME = /pass(word)?|senha|token|secret|api_?key|authorization|cooki
 const EMAIL_NAME = /e-?mail/i;
 const SECRET_KEY_IN_TEXT =
   /((?:pass(?:word)?|senha|token|secret|api_?key|authorization|cookie|refresh|cpf|cvv|card|cart[aã]o)\w*"?\s*[:=]\s*)("(?:[^"\\]|\\.)*"?|[^,}\]\s&]+)/gi;
-const EMAIL = /[^\s"'@,{}[\]=&]+@[^\s"'@,{}[\]=&]+\.[^\s"'@,{}[\]=&]+/g;
+const EMAIL = /[^\s"'@,{}[\]=&()<>]+@[^\s"'@,{}[\]=&()<>]+\.[^\s"'@,{}[\]=&()<>]+/g;
 // Also catches tokens cut in the middle by summarizing (header + start of the payload).
 const JWT = /eyJ[\w-]{4,}(?:\.[\w-]*){0,2}/g;
 // New Supabase API keys (not JWTs) and bearer values.

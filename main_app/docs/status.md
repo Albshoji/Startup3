@@ -1,7 +1,7 @@
 # Status do projeto Mapa
 
 > Atualizado a cada avanço. Detalhes das decisões em `docs/decisions.md`.
-> Última atualização: **2026-10-06** (Etapa 6)
+> Última atualização: **2026-10-07** (Etapa 7 em andamento)
 
 ## Visão geral das etapas
 
@@ -14,7 +14,7 @@
 | 4 | Start/Stop, limites e arquivo bruto | ✅ Concluída (2026-10-06) |
 | 5 | Plataforma: contas, login e envio | ✅ Concluída (2026-10-06) |
 | 6 | "Conectar Supabase" e estrutura | ✅ Concluída (2026-10-06) |
-| 7 | Processamento: refino, Supabase e registros | ⏭️ Próxima |
+| 7 | Processamento: refino, Supabase e registros | 🔨 Em andamento (falta o teste ponta a ponta) |
 | 8 | Modelos de diagrama (método do AppMap) | ⬜ |
 | 9 | Camada LLM e contexto | ⬜ |
 | 10 | Site: visualização | ⬜ |
@@ -44,7 +44,16 @@
 
 ## Como retomar
 
-**Ponto exato onde parou:** Etapa 6 concluída. Nada em andamento. O próximo passo é a **Etapa 7** (abaixo).
+**Ponto exato onde parou:** Etapa 7 **no meio**. O código está escrito e testado (83 testes passando):
+- `packages/format`: validador próprio (`validate.ts`) e corte de gravações grandes pelo método do AppMap (`prune.ts`).
+- `packages/supabase`: cruzamento com a estrutura do banco (`enrich.ts`: regras de acesso que valem, "voltou vazio por causa da regra", recusado pela regra, tabela sem RLS, gatilhos e cascatas como passos sintéticos "configurado no banco") e registros do Supabase (`logs.ts`: busca na API de registros, ligação exata por `sb-request-id` no servidor e por horário+método+caminho+status no navegador, `console.log` das Edge Functions pela execução, como `eventUpdates`).
+- Site: fila `processing_jobs` (migração `20261006000003_processamento.sql`, aplicada), `apps/web/lib/processing.ts` (fase "app" → "pronta"; fase "logs" com novas tentativas → "pronta_com_registros"), rota `/api/internal/process` (segredo `MAPA_WORKER_SECRET`, gerado no `.env.local`), processador local `node apps/web/scripts/worker.mjs`, página da gravação com "O que aconteceu no Supabase" e o grau de certeza de cada informação.
+- Testado de verdade: a fase "app" processou uma gravação real da conta albshoji ("pronta", inserção permitida pela regra "itens: dono cria").
+
+**Falta (retomar por aqui):**
+1. O dono reconectar o Supabase (ele clicou em "Desconectar" no fim da Etapa 6): `http://localhost:3300/projetos` → **next16-supabase-demo** → **Conectar Supabase** → organização do projeto "Startup3" → Authorize.
+2. Claude: ligar o site (`cd apps/web && npx next dev --port 3300`), o processador (`node apps/web/scripts/worker.mjs`) e o app de teste com o comando conectado à conta albshoji (criar um token de comando de teste pela chave secreta, `MAPA_CONFIG_DIR` temporário, `.mapa/settings.json` com `"upload": "auto"`), gravar os cenários **A** (cadastro), **C** (lista sem login) e **D** (Edge Function) e conferir os critérios: A mostra o perfil criado pelo gatilho ("configurado no banco"); C atribui a resposta vazia à regra de acesso, citando a política; D mostra os `console.log` ("confirmado pelos registros", leva 1–3 minutos).
+3. Documentar em `docs/decisions.md`, atualizar este arquivo e fazer o commit da etapa.
 
 **Atenção:** desde 2026-10-06 o projeto fica na pasta **`main_app/`** (o repositório Git é a pasta de cima, `Startup3/`). Todos os comandos abaixo são rodados dentro de `main_app/`.
 

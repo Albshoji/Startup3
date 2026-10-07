@@ -9,3 +9,5 @@ export * from "./protocol.js";
 export * from "./finalize.js";
 export * from "./cap.js";
 export * from "./stats.js";
+export * from "./validate.js";
+export * from "./prune.js";

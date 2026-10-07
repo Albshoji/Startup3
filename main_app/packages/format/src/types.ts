@@ -124,6 +124,10 @@ export interface CallEvent extends BaseEvent {
   remote_parent_id?: number;
   /** Translation of a request to Supabase (docs/format.md). */
   supabase?: SupabaseRequestInfo;
+  /** Enriched copy only: a step the database runs by itself (trigger, cascade), from the schema. */
+  database?: DatabaseStep;
+  /** Enriched copy only: id of the same event in the raw file. */
+  raw_id?: number;
   /** A Supabase Realtime frame (WebSocket). */
   realtime?: RealtimeFrameInfo;
 }
@@ -157,11 +161,81 @@ export interface SupabaseRequestInfo {
   write_columns?: string[];
   /** Readable SQL equivalent, derived (never seen in the database). */
   sql?: string;
+  /** Enriched copy: what the database structure says about this request (Etapa 7). */
+  findings?: SupabaseFinding[];
+  /** Enriched copy: what Supabase's own logs say about this request (second phase, Etapa 7). */
+  logs?: SupabaseLogInfo;
   /** Who made the request, read only from the token's `role` and `sub`. */
   role?: string;
   user_id?: string;
   key?: "jwt" | "publishable" | "secret";
   certainty: Certainty;
+}
+
+export type SupabaseFindingKind =
+  | "policy"
+  | "rls_filtered"
+  | "rls_denied"
+  | "rls_no_policy"
+  | "rls_off"
+  | "rls_bypassed"
+  | "trigger"
+  | "cascade"
+  | "function"
+  | "bucket"
+  | "bucket_denied"
+  | "edge_function"
+  | "edge_function_missing";
+
+export interface PolicyRef {
+  name: string;
+  command: string;
+  roles: string[];
+  using: string | null;
+  with_check: string | null;
+}
+
+export interface SupabaseFinding {
+  kind: SupabaseFindingKind;
+  certainty: Certainty;
+  table?: string;
+  /** Rules that apply to this request (same operation and role). */
+  policies?: PolicyRef[];
+  /** Rules of the same table and operation for OTHER roles (e.g. only logged-in users may read). */
+  other_policies?: PolicyRef[];
+  /** Role of the request when it matters for the explanation (anon = not logged in). */
+  role?: string;
+  trigger?: string;
+  function?: string;
+  security?: "definer" | "invoker";
+  bucket?: string;
+  public?: boolean;
+  verify_jwt?: boolean;
+}
+
+export interface DatabaseStep {
+  kind: "trigger" | "cascade";
+  name: string;
+  /** schema.table where it happens */
+  table: string;
+  function?: string;
+  timing?: string;
+  certainty: Certainty;
+}
+
+export interface SupabaseLogInfo {
+  certainty: "logs";
+  source: string;
+  timestamp: string;
+  status?: number;
+  request_id?: string;
+  /** "exact" (same request id) or "nearest" (same method, path and status, closest in time) */
+  match: "exact" | "nearest";
+  execution_id?: string;
+  /** console.log lines of an Edge Function, masked */
+  console?: { timestamp: string; level?: string; message: string }[];
+  /** database errors around this request */
+  database_errors?: { timestamp: string; severity?: string; message: string }[];
 }
 
 export interface RealtimeFrameInfo {
@@ -185,6 +259,8 @@ export interface ReturnEvent extends BaseEvent {
   incomplete?: boolean;
   /** Mapa extension: an HTTP call that failed without a response (network error, aborted). */
   error?: { class: string; message: string };
+  /** Enriched copy only: id of the same event in the raw file. */
+  raw_id?: number;
 }
 
 export type Event = CallEvent | ReturnEvent;

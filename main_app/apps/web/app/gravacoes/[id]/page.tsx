@@ -1,4 +1,10 @@
 import Link from "next/link";
+import { gunzipSync } from "node:zlib";
+import { after } from "next/server";
+import type { AppMap } from "@mapa/format";
+import SupabaseFindings from "@/components/SupabaseFindings";
+import { ENRICHED_FILE, processDueJobs } from "@/lib/processing";
+import { RECORDINGS_BUCKET } from "@/lib/supabase/admin";
 import { notFound, redirect } from "next/navigation";
 import { STATUS_LABELS, STOP_LABELS } from "@/lib/recordings";
 import { currentUser, supabaseForUser } from "@/lib/supabase/server";
@@ -21,6 +27,14 @@ export default async function Gravacao({ params }: { params: Promise<{ id: strin
   if (!r) notFound();
   const project = r.projects as unknown as { id: string; name: string; supabase_connections: { supabase_ref: string | null }[] | { supabase_ref: string | null } | null } | null;
   const connection = Array.isArray(project?.supabase_connections) ? project.supabase_connections[0] : project?.supabase_connections;
+  // Opening the page also moves the processing queue along (in the background).
+  if (r.status !== "pronta_com_registros" && r.status !== "erro") after(() => processDueJobs().catch(() => {}));
+  let enriched: AppMap | null = null;
+  if (r.status === "pronta" || r.status === "pronta_com_registros") {
+    const { data: file } = await supabase.storage.from(RECORDINGS_BUCKET).download(`${r.storage_prefix}${ENRICHED_FILE}`);
+    if (file) enriched = JSON.parse(gunzipSync(Buffer.from(await file.arrayBuffer())).toString("utf8")) as AppMap;
+  }
+  const summary = r.summary as { pruned?: { function: string; removed_calls: number }[]; logs?: { matched: number; requests: number; complete: boolean } };
   const meta = r.metadata as { app?: string; frameworks?: { name: string; version: string }[]; git?: { branch?: string; commit?: string }; incomplete_calls?: number };
 
   return (
@@ -39,6 +53,26 @@ export default async function Gravacao({ params }: { params: Promise<{ id: strin
             pronto (próximas etapas do Mapa).
           </p>
         )}
+        {r.status === "processando" && <p className="muted">Processando: conferindo o arquivo e cruzando com a estrutura do seu Supabase. Recarregue em alguns segundos.</p>}
+        {r.status === "pronta" && (
+          <p className="muted">
+            Pronta.{" "}
+            {connection?.supabase_ref
+              ? "Os registros do Supabase chegam alguns minutos depois da gravação; quando chegarem, esta página mostra também o que eles confirmam."
+              : ""}
+          </p>
+        )}
+        {r.status === "pronta_com_registros" && summary.logs && (
+          <p className="muted">
+            Pronta, com os registros do Supabase: {summary.logs.matched} de {summary.logs.requests} pedidos encontrados nos registros.
+          </p>
+        )}
+        {r.status === "erro" && <p className="alert error">Não foi possível processar esta gravação: {r.processing_error}</p>}
+        {summary.pruned?.length ? (
+          <p className="alert">
+            A gravação era grande e foi cortada: ficaram de fora as chamadas de {summary.pruned.map((p) => `${p.function} (${p.removed_calls})`).join(", ")}.
+          </p>
+        ) : null}
         {r.status === "enviando" && <p className="muted">O envio começou mas ainda não terminou. Se ficar assim, rode <code>npx mapa upload</code> de novo.</p>}
         <dl>
           <dt>Projeto</dt>
@@ -82,6 +116,12 @@ export default async function Gravacao({ params }: { params: Promise<{ id: strin
             </>
           ) : null}
         </dl>
+        {enriched && (
+          <>
+            <h2 style={{ marginTop: 24 }}>O que aconteceu no Supabase</h2>
+            <SupabaseFindings appmap={enriched} />
+          </>
+        )}
         {r.status !== "enviando" && (
           <div className="row">
             <a className="button" href={`/gravacoes/${r.id}/baixar`}>

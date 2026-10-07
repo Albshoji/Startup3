@@ -52,7 +52,8 @@ The product itself does not exist yet: this site is only the landing page.
    speech bubble that cycles through: "oi!", "eu explico tudo!", "grava aí!",
    "ei, isso faz cócegas", and hides after 1.8s. It is a real `<button>`.
 2. **Diagram preview (hero):** the 5 steps fade in one after another (CSS
-   `animation-delay`). Step 4 is the failure (red). Hover lifts each step.
+   `animation-delay`). Step 4 is the failure (red, with the "o problema nasce aqui"
+   badge). Hover lifts each step.
 3. **Comparison:** hovering or focusing an underlined term on the left (`.jargon`)
    highlights the matching row on the right (`.trow`, `data-row`) and dims the others.
    Hovering a row highlights its terms on the left. "client" and "insert" both map to
@@ -92,9 +93,9 @@ submit to the same endpoint.
 ## SEO and metadata
 
 - `lang="pt-BR"`.
-- Title: `[Nome do produto] — entenda o que seu código fez por trás dos panos`.
-- Description: "Ligue a gravação, use seu app e receba um diagrama didático do que rodou no
-  seu código, além de um registro completo para a sua IA."
+- Title: `[Nome do produto] — descubra por que seu app quebrou`.
+- Description: "Ligue a gravação, use seu app e receba um diagrama didático que aponta onde
+  ele quebrou e explica cada passo no seu nível, além de um registro completo para a sua IA."
 - Open Graph and Twitter tags with the same text. Leave a TODO for the OG image.
 - Favicon: a simple SVG of the logo (a rounded square with a red dot).
 

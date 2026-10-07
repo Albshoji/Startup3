@@ -90,6 +90,14 @@ export class ManagementClient {
     return this.call<{ id: string; name: string; public: boolean }[]>("GET", `/v1/projects/${ref}/storage/buckets`);
   }
 
+  /** Supabase's logs (Analytics permission): ClickHouse SQL over a time window. */
+  async queryLogs<T = Record<string, unknown>>(ref: string, sql: string, isoStart: string, isoEnd: string): Promise<T[]> {
+    const query = new URLSearchParams({ sql, iso_timestamp_start: isoStart, iso_timestamp_end: isoEnd });
+    const data = await this.call<{ result?: T[]; error?: unknown }>("GET", `/v1/projects/${ref}/analytics/endpoints/logs?${query}`);
+    if (data?.error) throw new ManagementApiError(`logs → ${JSON.stringify(data.error).slice(0, 300)}`, 400);
+    return data?.result ?? [];
+  }
+
   /** SQL through the read-only endpoint: the database refuses any write in it. */
   readOnlyQuery<T = Record<string, unknown>>(ref: string, sql: string) {
     return this.call<T[]>("POST", `/v1/projects/${ref}/database/query/read-only`, { query: sql });

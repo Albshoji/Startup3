@@ -1,4 +1,6 @@
+import { after } from "next/server";
 import { authenticateCli, cliError, siteOrigin } from "@/lib/cli-auth";
+import { enqueue, processDueJobs } from "@/lib/processing";
 import { RECORDING_FILES } from "@/lib/recordings";
 import { snapshotForRecording } from "@/lib/supabase-oauth";
 import { RECORDINGS_BUCKET, supabaseAdmin } from "@/lib/supabase/admin";
@@ -28,5 +30,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   } catch {
     // the recording is received anyway; the snapshot can be taken later
   }
+  // Processing starts right away, after answering the CLI.
+  await enqueue(admin, id, "app");
+  after(() => processDueJobs().catch(() => {}));
   return Response.json({ id, status: "recebida", supabase_schema: supabaseSchema, url: `${siteOrigin(request)}/gravacoes/${id}` });
 }

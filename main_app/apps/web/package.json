@@ -9,6 +9,7 @@
     "start": "next start --port 3300"
   },
   "dependencies": {
+    "@mapa/format": "workspace:*",
     "@mapa/supabase": "workspace:*",
     "@supabase/ssr": "0.12.7",
     "@supabase/supabase-js": "2.117.2",

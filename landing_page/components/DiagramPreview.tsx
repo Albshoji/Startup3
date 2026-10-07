@@ -30,6 +30,11 @@ export default function DiagramPreview() {
                   <span style={{ fontWeight: 600, fontSize: 15, lineHeight: 1.3 }}>{s.title}</span>
                 </span>
                 <span className="mono hcode">{s.code}</span>
+                {s.fail && (
+                  <span className="chip" style={{ alignSelf: 'flex-start', background: 'var(--red-strong)', color: '#fff', borderColor: 'var(--red-strong)' }}>
+                    o problema nasce aqui
+                  </span>
+                )}
               </span>
             </div>
             {i < STEPS.length - 1 && (
