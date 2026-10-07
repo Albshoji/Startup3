@@ -58,4 +58,4 @@ A página está pronta e igual à referência (`docs/landing-reference.html`, ve
 - 07/10/2026 — Nova versão das instruções: novo título e descrição do site, novo título
   principal ("Use seu app. Entenda o que o seu código fez por trás dos panos."), diagrama
   do topo trocado pelo exemplo do pagamento com o Stripe e novo parágrafo na seção
-  "Para quem é".
+  "Para quem é" (commit `10f3f4b`).
