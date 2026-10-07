@@ -42,8 +42,7 @@ A página está pronta e igual à referência (`docs/landing-reference.html`, ve
 2. Preencher `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` (no `.env.local` e na Vercel) e
    fazer um cadastro de teste de verdade.
 3. Publicar na Vercel (Root Directory: `landing_page`).
-4. Definir o nome do produto em `lib/site.ts` (`PRODUCT_NAME`, hoje `[Nome do produto]`).
-5. Criar a imagem de compartilhamento (Open Graph) e o domínio final (TODO em
+4. Criar a imagem de compartilhamento (Open Graph) e o domínio final (TODO em
    `app/layout.tsx`).
 
 ## Pontos em aberto
@@ -78,3 +77,4 @@ A página está pronta e igual à referência (`docs/landing-reference.html`, ve
   "Por que quebrou" (agora "O que aconteceu") (commit `0ca1e45`).
 - 07/10/2026 — Título principal e título do site: "Entenda o que…" virou "Aprenda o que…" (commit `45f80a8`).
 - 07/10/2026 — Seção de comparação: tirada a frase sobre os termos técnicos; fica só "O diagrama conta o que foi gravado, não o que provavelmente aconteceu."
+- 07/10/2026 — Nome do produto definido: **Undercode** (menu, rodapé e título do site).

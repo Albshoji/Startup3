@@ -44,7 +44,7 @@ The product itself does not exist yet: this site is only the landing page.
   (`'use client'`): Mascot, DiagramPreview, Comparison highlight, chat tabs, FAQ,
   WaitlistForm.
 - Put the product name in a single constant (`lib/site.ts` → `PRODUCT_NAME`), used in the
-  nav, the footer and the metadata. It is still `[Nome do produto]`.
+  nav, the footer and the metadata. It is `Undercode` (chosen by the owner on 07/10/2026).
 
 ## Interactions to reproduce (all are in the reference's `<script>`)
 
@@ -111,7 +111,7 @@ submit to the same endpoint.
 ## SEO and metadata
 
 - `lang="pt-BR"`.
-- Title: `[Nome do produto] — aprenda o que seu código fez por trás dos panos`.
+- Title: `Undercode — aprenda o que seu código fez por trás dos panos`.
 - Description: "Ligue a gravação, use seu app e receba um diagrama didático do que rodou no
   seu código, além de um registro completo para a sua IA."
 - Open Graph and Twitter tags with the same text. Leave a TODO for the OG image.

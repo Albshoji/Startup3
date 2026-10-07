@@ -1,4 +1,4 @@
-export const PRODUCT_NAME = '[Nome do produto]';
+export const PRODUCT_NAME = 'Undercode';
 
 export const SITE_TITLE = `${PRODUCT_NAME} — aprenda o que seu código fez por trás dos panos`;
 
