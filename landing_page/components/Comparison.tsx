@@ -10,7 +10,7 @@ export default function Comparison() {
         </div>
         <ComparisonCards />
         <p style={{ margin: 0, fontSize: 17, lineHeight: 1.6, color: 'var(--ink-2)', maxWidth: 800 }}>
-          <strong>O diagrama conta o que foi gravado, não o que provavelmente aconteceu.</strong> Os termos técnicos continuam lá, porque são eles que você vai encontrar no código, mas cada um aparece na ordem em que as coisas aconteceram e é explicado na mesma frase.
+          <strong>O diagrama conta o que foi gravado, não o que provavelmente aconteceu.</strong>
         </p>
       </div>
     </section>
