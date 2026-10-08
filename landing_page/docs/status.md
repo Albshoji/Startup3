@@ -78,3 +78,4 @@ A página está pronta e igual à referência (`docs/landing-reference.html`, ve
 - 07/10/2026 — Título principal e título do site: "Entenda o que…" virou "Aprenda o que…" (commit `45f80a8`).
 - 07/10/2026 — Seção de comparação: tirada a frase sobre os termos técnicos; fica só "O diagrama conta o que foi gravado, não o que provavelmente aconteceu."
 - 07/10/2026 — Nome do produto definido: **Undercode** (menu, rodapé e título do site).
+- 07/10/2026 — Nome desenhado como logotipo no menu e no rodapé: "under" + "code" (fonte de código, azul) + cursor vermelho piscando (`components/Wordmark.tsx`).

@@ -1,4 +1,5 @@
 import { PRODUCT_NAME } from '@/lib/site';
+import Wordmark from './Wordmark';
 
 export default function Footer() {
   return (
@@ -8,7 +9,7 @@ export default function Footer() {
           <span style={{ width: 28, height: 28, border: '2px solid var(--ink)', borderRadius: 6, display: 'grid', placeItems: 'center' }}>
             <span className="rec" style={{ width: 9, height: 9, animation: 'none' }}></span>
           </span>
-          <span style={{ fontWeight: 700, fontSize: 17 }}>{PRODUCT_NAME}</span>
+          <Wordmark size={20} />
         </div>
         <nav style={{ display: 'flex', flexWrap: 'wrap', gap: 24 }} aria-label="Rodapé">
           <a className="footlink" href="#como-funciona">Como funciona</a>

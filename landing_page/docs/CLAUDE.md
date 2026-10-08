@@ -44,7 +44,9 @@ The product itself does not exist yet: this site is only the landing page.
   (`'use client'`): Mascot, DiagramPreview, Comparison highlight, chat tabs, FAQ,
   WaitlistForm.
 - Put the product name in a single constant (`lib/site.ts` → `PRODUCT_NAME`), used in the
-  nav, the footer and the metadata. It is `Undercode` (chosen by the owner on 07/10/2026).
+  nav, the footer and the metadata. It is `Undercode` (chosen by the owner on 07/10/2026). In the nav and footer it is drawn
+  as a logo by `components/Wordmark.tsx`: lowercase "under" + "code" in the mono font
+  (blue) + a blinking red "_" cursor.
 
 ## Interactions to reproduce (all are in the reference's `<script>`)
 

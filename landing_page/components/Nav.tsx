@@ -1,4 +1,4 @@
-import { PRODUCT_NAME } from '@/lib/site';
+import Wordmark from './Wordmark';
 
 export default function Nav() {
   return (
@@ -11,7 +11,7 @@ export default function Nav() {
             <i style={{ right: 5, top: 5, background: 'var(--yellow)' }}></i>
             <i style={{ right: 5, bottom: 5, background: 'var(--green)' }}></i>
           </span>
-          <span className="brand-name">{PRODUCT_NAME}</span>
+          <Wordmark />
         </a>
         <nav className="nav-links" aria-label="Seções">
           <a className="navlink" href="#como-funciona">Como funciona</a>
