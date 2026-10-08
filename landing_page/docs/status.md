@@ -32,17 +32,21 @@ A página está pronta e igual à referência (`docs/landing-reference.html`, ve
   - e-mail repetido responde sucesso;
   - campo escondido contra robôs: se vier preenchido, nada é salvo;
   - limite de 5 envios por minuto por IP.
-- Testado contra um servidor que imita o Supabase (não contra o Supabase de verdade).
+- Lista de espera no Supabase de verdade: tabela `waitlist` no projeto **`mapa-site`** (o
+  mesmo do site do Mapa), criada pela migração `main_app/supabase/migrations/20261007000001_waitlist.sql`.
+  `landing_page/.env.local` (fora do Git) tem o endereço e a chave secreta desse projeto.
+  Testado em 07/10: cadastro salvo, e-mail repetido responde sucesso, ninguém consegue ler a
+  lista sem a chave secreta. O e-mail de teste foi apagado. Para ver os cadastros: painel do
+  Supabase → projeto `mapa-site` → Table Editor → `waitlist`.
 - `npm run build` sem erros. Lighthouse: acessibilidade 96, SEO 100, boas práticas 100.
 - README com como rodar, criar a tabela e publicar na Vercel.
 
 ## O que falta
 
-1. Criar a tabela no Supabase com `supabase/waitlist.sql`.
-2. Preencher `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` (no `.env.local` e na Vercel) e
-   fazer um cadastro de teste de verdade.
-3. Publicar na Vercel (Root Directory: `landing_page`).
-4. Criar a imagem de compartilhamento (Open Graph) e o domínio final (TODO em
+1. Colocar `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` na Vercel (os mesmos do
+   `.env.local`, que é o projeto `mapa-site`).
+2. Publicar na Vercel (Root Directory: `landing_page`).
+3. Criar a imagem de compartilhamento (Open Graph) e o domínio final (TODO em
    `app/layout.tsx`).
 
 ## Pontos em aberto
@@ -79,3 +83,7 @@ A página está pronta e igual à referência (`docs/landing-reference.html`, ve
 - 07/10/2026 — Seção de comparação: tirada a frase sobre os termos técnicos; fica só "O diagrama conta o que foi gravado, não o que provavelmente aconteceu."
 - 07/10/2026 — Nome do produto definido: **Undercode** (menu, rodapé e título do site).
 - 07/10/2026 — Nome desenhado como logotipo no menu e no rodapé: "under" + "code" (fonte de código, azul) + cursor vermelho piscando (`components/Wordmark.tsx`).
+- 07/10/2026 — Lista de espera ligada ao Supabase de verdade (projeto `mapa-site`) e testada.
+- 07/10/2026 — Domínios pesquisados: undercode.com, .com.br, .ai, .io, .dev, .co, .org, .me e
+  .tech já têm dono; undercode.app, getundercode.com, useundercode.com e undercodehq.com
+  pareciam livres (conferir no registrador antes de comprar).
