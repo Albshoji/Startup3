@@ -55,6 +55,8 @@
 2. Claude: ligar o site (`cd apps/web && npx next dev --port 3300`), o processador (`node apps/web/scripts/worker.mjs`) e o app de teste com o comando conectado à conta albshoji (criar um token de comando de teste pela chave secreta, `MAPA_CONFIG_DIR` temporário, `.mapa/settings.json` com `"upload": "auto"`), gravar os cenários **A** (cadastro), **C** (lista sem login) e **D** (Edge Function) e conferir os critérios: A mostra o perfil criado pelo gatilho ("configurado no banco"); C atribui a resposta vazia à regra de acesso, citando a política; D mostra os `console.log` ("confirmado pelos registros", leva 1–3 minutos).
 3. Documentar em `docs/decisions.md`, atualizar este arquivo e fazer o commit da etapa.
 
+**Também no projeto `mapa-site` (07/10):** a tabela `waitlist` da landing page, criada pela migração `supabase/migrations/20261007000001_waitlist.sql` (só leitura/escrita com a chave secreta). A landing usa o mesmo projeto; ver `landing_page/docs/status.md`.
+
 **Atenção:** desde 2026-10-06 o projeto fica na pasta **`main_app/`** (o repositório Git é a pasta de cima, `Startup3/`). Todos os comandos abaixo são rodados dentro de `main_app/`.
 
 **Para uma nova sessão do Claude Code:** o CLAUDE.md (§14) já manda ler este arquivo; basta abrir na pasta do projeto e dizer *"continue de onde parou"*.
@@ -91,7 +93,7 @@ Observação: os registros usam a permissão Analytics do OAuth App (já concedi
 | Item | Dono | Quando |
 |---|---|---|
 | Confirmar com advogado o uso do formato AppMap num produto pago | Dono do projeto | Antes do lançamento |
-| Nome definitivo do pacote no npm (provisório: `@mapa/cli`) | Dono do projeto | Antes de publicar |
+| Nome do produto decidido em 07/10: **Undercode** (a landing já usa). Falta decidir quando renomear o app (comando `mapa`, pacote `@mapa/cli`, pastas `.mapa/`, textos do site) | Dono decide quando; Claude faz | Antes de publicar |
 | Testar no Next 15 (sem app Next 15 por enquanto) | Claude | Etapa 11 |
 | "Confirm email" do projeto do site (hoje ligado) e página de retorno da confirmação | Dono + Claude | Antes do lançamento |
 | Hospedagem e endereço de produção do site (e trocar callback/Website URL do OAuth App) | Dono | Antes dos primeiros usuários |
@@ -114,3 +116,4 @@ Observação: os registros usam a permissão Analytics do OAuth App (já concedi
 | 2026-10-06 | Etapa 5 concluída: site, contas, `mapa login`/`logout`/`upload`, envio, RLS testada com 2 usuários | `436583f` |
 | 2026-10-06 | Etapa 4 concluída: botão flutuante, limites estritos, teto por função, `mapa stats`, várias abas | `41e22a2` |
 | 2026-10-06 | Etapa 3 concluída: ações do usuário, pedidos ao Supabase traduzidos, requisições ao servidor, Realtime, erros | `85d1123` |
+| 2026-10-07 | Tabela da lista de espera da landing (`waitlist`) criada no `mapa-site` | `2a8c287` |

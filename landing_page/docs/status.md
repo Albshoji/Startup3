@@ -1,11 +1,32 @@
 # Status da landing page
 
-Última atualização: 07/10/2026
+Última atualização: 07/10/2026 (fim do dia)
 
 ## Onde estamos
 
-A página está pronta e igual à referência (`docs/landing-reference.html`, versão de
-07/10/2026 08:42, que veio em `landing-claude-code.zip`). Ainda não está publicada.
+A página está pronta, com o nome **Undercode**, e a lista de espera já salva no Supabase de
+verdade. Segue a referência (`docs/landing-reference.html`, versão de 07/10/2026 08:42),
+**menos o diagrama do topo**, que foi refeito de propósito (ver abaixo). Ainda não está
+publicada.
+
+## Como retomar (parou em 07/10/2026)
+
+**Ponto exato:** o dono estava publicando na **Vercel** (passo a passo dado na conversa):
+conta Hobby com o GitHub `Albshoji` → Add New → Project → importar `Startup3` →
+**Root Directory: `landing_page`** → Environment Variables:
+- `SUPABASE_URL` = `https://fvjicfztwdsoizbngfor.supabase.co` (projeto `mapa-site`);
+- `SUPABASE_SERVICE_ROLE_KEY` = valor que está em `landing_page/.env.local` (ver com
+  `grep SUPABASE_SERVICE_ROLE_KEY landing_page/.env.local`; nunca escrever na conversa).
+
+→ Deploy. Depois: abrir o endereço `*.vercel.app`, cadastrar um e-mail e conferir no
+Supabase (`mapa-site` → Table Editor → `waitlist`). Ainda não sabemos se o deploy foi feito.
+
+**Domínio:** decidido **`undercode.app`** como favorito (≈ US$ 14/ano na Cloudflare; o
+dono ainda não comprou). Pode ser comprado depois da Vercel e ligado ao projeto sem
+publicar de novo. Alternativas que pareciam livres: `getundercode.com`, `useundercode.com`.
+
+**Rodar no computador:** `cd landing_page && npx next dev --port 3000` (usa o `.env.local`,
+então o formulário salva de verdade no `mapa-site`).
 
 ## O que está feito
 
@@ -43,11 +64,17 @@ A página está pronta e igual à referência (`docs/landing-reference.html`, ve
 
 ## O que falta
 
-1. Colocar `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` na Vercel (os mesmos do
-   `.env.local`, que é o projeto `mapa-site`).
-2. Publicar na Vercel (Root Directory: `landing_page`).
-3. Criar a imagem de compartilhamento (Open Graph) e o domínio final (TODO em
-   `app/layout.tsx`).
+1. Terminar a publicação na Vercel (ver "Como retomar") e testar o formulário lá.
+2. Comprar o domínio (`undercode.app`) e ligá-lo ao projeto na Vercel.
+3. Colocar o domínio final no código (`metadataBase`, TODO em `app/layout.tsx`) e criar a
+   imagem de compartilhamento (Open Graph).
+4. Página curta de privacidade (LGPD: para que serve o e-mail e como sair da lista), com
+   link no rodapé. Claude escreve, o dono confere.
+5. Opcionais: reforçar o limite de envios (hoje fica na memória de cada servidor da
+   Vercel); escurecer a frase "passe o mouse nas palavras sublinhadas" (contraste 4,27);
+   contador de visitas (Vercel Analytics).
+6. Verificar a marca "Undercode" no INPI antes de investir no nome (há sites de segurança
+   "Undercode Testing"/"UnderCode News" e a empresa colombiana "UnderCodes").
 
 ## Pontos em aberto
 
